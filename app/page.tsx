@@ -1,9 +1,9 @@
-import { Suspense } from 'react'
-import { NewsFeed } from '@/components/feed/news-feed'
-import { FeedSkeleton } from '@/components/feed/feed-skeleton'
-import { SuggestedUsers } from '@/components/feed/suggested-users'
-import { WhatsHappening } from '@/components/feed/whats-happening'
-import { CreatePostCard } from '@/components/feed/create-post-card'
+import { Suspense } from "react";
+import { NewsFeed } from "@/app/_components/news-feed";
+import { FeedSkeleton } from "@/src/components/feed/feed-skeleton";
+import { SuggestedUsers } from "@/app/_components/suggested-users";
+import { WhatsHappening } from "@/app/_components/whats-happening";
+import { CreatePostCard } from "@/app/_components/create-post-card";
 
 export default function Home() {
   return (
@@ -21,5 +21,5 @@ export default function Home() {
         </div>
       </div>
     </div>
-  )
+  );
 }

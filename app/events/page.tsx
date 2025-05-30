@@ -9,13 +9,18 @@ import {
   MapPin,
   Users,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { SearchBar } from "@/components/search/SearchBar";
-import { Pagination } from "@/components/shared/pagination";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/src/components/ui/tabs";
+import { Badge } from "@/src/components/ui/badge";
+import { cn } from "@/src/lib/utils";
+import { SearchBar } from "@/src/components/search/SearchBar";
+import { Pagination } from "@/src/components/shared/pagination";
 import { Suspense } from "react";
 import {
   createSearchParamsCache,
@@ -147,7 +152,7 @@ export default async function EventsPage({
         <Suspense
           fallback={
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Rechercher..."
@@ -159,7 +164,7 @@ export default async function EventsPage({
           <SearchBar />
         </Suspense>
         <Button variant="outline" className="gap-2 md:w-auto">
-          <Filter className="h-4 w-4" />
+          <Filter className="size-4" />
           Filtrer
         </Button>
       </div>

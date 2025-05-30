@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { EventType } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import { EventType } from "@/src/components/utils/types";
+import { Badge } from "@/src/components/ui/badge";
 import { Clock, MapPin, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/src/components/ui/button";
+import { cn } from "@/src/lib/utils";
 
 export default function EventCard({ event }: { event: EventType }) {
   return (
@@ -19,7 +19,7 @@ export default function EventCard({ event }: { event: EventType }) {
         <img
           src={event.image}
           alt={event.title}
-          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          className="size-full object-cover transition-transform group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
           <div className="absolute bottom-3 left-3">
@@ -55,7 +55,7 @@ export default function EventCard({ event }: { event: EventType }) {
 
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
+            <Clock className="size-4" />
             <span>
               {new Date(event.date).toLocaleTimeString([], {
                 hour: "2-digit",
@@ -69,11 +69,11 @@ export default function EventCard({ event }: { event: EventType }) {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
+            <MapPin className="size-4" />
             <span>{event.location}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
+            <Users className="size-4" />
             <span>{event.attendeesCount} participants</span>
           </div>
         </div>

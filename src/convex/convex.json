@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "codegen": {
+      "provider": "custom",
+      "path": "codegen.ts"
+    }
+  },
+  "project": "YOUR_PROJECT_ID_HERE",
+  "team": "YOUR_TEAM_ID_HERE"
+}

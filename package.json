@@ -45,6 +45,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "convex": "^1.24.3",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
     "eslint": "8.49.0",

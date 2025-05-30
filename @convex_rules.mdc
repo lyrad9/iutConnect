@@ -1,0 +1,119 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+### Pagination
+- Paginated queries are queries that return a list of results in incremental pages.
+- You can define pagination using the following syntax:
+
+                            ```ts
+                            import { v } from "convex/values";
+                            import { query, mutation } from "./_generated/server";
+                            import { paginationOptsValidator } from "convex/server";
+                            export const listWithExtraArg = query({
+                                args: { paginationOpts: paginationOptsValidator, author: v.string() },
+                                handler: async (ctx, args) => {
+                                    return await ctx.db
+                                    .query("messages")
+                                    .filter((q) => q.eq(q.field("author"), args.author))
+                                    .order("desc")
+                                    .paginate(args.paginationOpts);
+                                },
+                            });
+                            ```
+                            Note: `paginationOpts` is an object with the following properties:
+                            - `numItems`: the maximum number of documents to return (the validator is `v.number()`)
+                            - `cursor`: the cursor to use to fetch the next page of documents (the validator is `v.union(v.string(), v.null())`)
+- A query that ends in `.paginate()` returns an object that has the following properties:
+                            - page (contains an array of documents that you fetches)
+                            - isDone (a boolean that represents whether or not this is the last page of documents)
+                            - continueCursor (a string that represents the cursor to use to fetch the next page of documents)
+
+### Transformation des résultats
+
+Vous pouvez appliquer des transformations arbitraires à la propriété `page` de l'objet retourné par `paginate`, qui contient le tableau de documents :
+
+```ts
+export const listWithTransformation = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    const results = await ctx.db
+      .query("messages")
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return {
+      ...results,
+      page: results.page.map((message) => ({
+        author: message.author.slice(0, 1),
+        body: message.body.toUpperCase(),
+      })),
+    };
+  },
+});
+```
+
+### Pagination dans les composants React
+
+Pour gérer la pagination dans un composant React, utilisez le hook `usePaginatedQuery`. Ce hook offre une interface simple pour afficher les éléments actuels et demander plus d'éléments. En interne, ce hook gère les curseurs de continuation.
+
+Les arguments de ce hook sont :
+
+- Le nom de la fonction de requête paginée.
+- L'objet d'arguments à transmettre à la fonction de requête, à l'exclusion du `paginationOpts` (qui est injecté par le hook).
+- Un objet options avec le paramètre `initialNumItems` pour définir le nombre d'éléments à charger sur la première page.
+
+Le hook retourne un objet contenant :
+
+- `results` : Un tableau des résultats actuellement chargés.
+- `isLoading` : Indique si le hook est en train de charger des résultats.
+- `status` : Le statut de la pagination. Les statuts possibles sont :
+  - `"LoadingFirstPage"` : Le hook charge la première page de résultats.
+  - `"CanLoadMore"` : Cette requête peut avoir plus d'éléments à récupérer. Appelez `loadMore` pour charger une autre page.
+  - `"LoadingMore"` : Nous chargeons actuellement une autre page de résultats.
+  - `"Exhausted"` : Nous avons paginé jusqu'à la fin de la liste.
+- `loadMore(n)` : Un callback pour récupérer plus de résultats. Ce callback ne récupérera plus de résultats que si le statut est `"CanLoadMore"`.
+
+```tsx
+import { usePaginatedQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
+
+export function App() {
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.messages.list,
+    {},
+    { initialNumItems: 5 },
+  );
+  return (
+    <div>
+      {results?.map(({ _id, body }) => <div key={_id}>{body}</div>)}
+      <button onClick={() => loadMore(5)} disabled={status !== "CanLoadMore"}>
+        Load More
+      </button>
+    </div>
+  );
+}
+```
+
+Vous pouvez également passer des arguments supplémentaires dans l'objet arguments si votre fonction en attend :
+
+```tsx
+import { usePaginatedQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
+
+export function App() {
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.messages.listWithExtraArg,
+    { author: "Alex" },
+    { initialNumItems: 5 },
+  );
+  return (
+    <div>
+      {results?.map(({ _id, body }) => <div key={_id}>{body}</div>)}
+      <button onClick={() => loadMore(5)} disabled={status !== "CanLoadMore"}>
+        Load More
+      </button>
+    </div>
+  );
+}
+```

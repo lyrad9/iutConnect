@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/src/components/ui/button";
 import { PlusCircle } from "lucide-react";
 export default function HeaderEvents() {
   return (
@@ -10,7 +10,7 @@ export default function HeaderEvents() {
         </p>
       </div>
       <Button className="gap-2">
-        <PlusCircle className="h-4 w-4" />
+        <PlusCircle className="size-4" />
         Créer un événement
       </Button>
     </div>
