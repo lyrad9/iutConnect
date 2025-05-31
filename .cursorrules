@@ -15,315 +15,182 @@ University Social Network
 
 ## Overview
 
-provide students with a secure, intuitive, and responsive platform to foster communication and collaboration on campus. The goal is to allow everyone to connect, exchange messages, participate in thematic groups, and learn about university events
+Provide students with a secure, intuitive, and responsive platform to foster communication and collaboration on campus. The goal is to allow everyone to connect, exchange messages, participate in thematic groups, and learn about university events.
 
-## key features
+## Key features
 
-### Authentification
+### Authentication
 
-### Gestion des utilisateurs
+### User Management
 
-Un utilisateur est identifié par:
--photo de profil(optionnelle)
+A user is identified by:
 
-- Le nom de l'utilisateur
-- Le prenom de l'utilisateur
-- L'email de l'utilisateur
-- Le matricule de l'utilisateur
-- Le numéro de téléphone de l'utilisateur
-- La fonction de l'utilisateur(étudiant, professeur, comptable, RH, etc.)
-- La filière de l'utilisateur(pour l'étudiant)
-- La salle de l'utilisateur(pour l'étudiant)
-- Le statut de l'utilisateur(actif, inactif, en attente). Qui détermine si l'utilisateur peut se connecter à l'application.
-- Le rôle de l'utilisateur(USER, ADMIN, SUPERADMIN)
-- Les permissions de l'utilisateur. Par défaut, un user a comme permissions: COMMENT, LIKE. Certaines permissions comme : CREATE GROUP, CREATE EVENT, CREATE POST, CREATE USER et ALL peuvent être ajoutées par l'administrateur.
-- Centres d'intérêt de l'utilisateur(optionnel)
-- Des liens externes comme lien pour son site personnel, linkedln(optionnel).
-- La biographie de l'utilisateur(optionnel)
-- Les skills(marketing, communication, dev typescript, etc.) de l'utilisateur(optionnel)
+- Profile picture (optional)
+- Cover photo (optional)
+- User's last name
+- User's first name
+- User's email
+- User's registration number
+- User's phone number
+- User's function (student, professor, accountant, HR, etc.)
+- User's field of study (for students)
+- User's classroom (for students)
+- User's status (active, inactive, pending). Determines if the user can connect to the application.
+- User's role (USER, ADMIN, SUPERADMIN)
+- User's permissions. By default, a user has the following permissions: COMMENT, LIKE. Some permissions such as: CREATE GROUP, CREATE EVENT, CREATE POST, CREATE USER and ALL can be added by the administrator.
+- User's interests (optional)
+- User's social networks (optional): e.g., personal website, LinkedIn, etc.
+- User's bio (optional)
+- Skills (optional): marketing, communication, typescript development, etc.
+- isOnline (online or not)
 
-1. **Inscription et validation**
+1. **Registration and validation**
 
-- Un utilisateur s'inscrit avec ses informations personnelles(poto de profil,nom, prenom, email, matricule, numéro de téléphone, choix de sa fonction, filière et salle(pour les étudiants uniquement))
-- Un administrateur valide l'inscription(via mail ou in-app).
-- L'utilisateur reçoit une notification d'activation(via mail)
+- A user registers with their personal information (profile picture, last name, first name, email, registration number, phone number, choice of function, field of study and classroom (for students only))
+- An administrator validates the registration (via email or in-app)
+- The user receives an activation notification (via email)
 
-2. **Profil utilisateur**
+2. **User profile**
 
-- Un utilisateur consulte/modifie son profil
-- Un utilisateur définit ses centres d'intérêt, ses compétences professionnelles, ses skills et sa biographie
+- A user views/modifies their profile
+- A user sets their interests, professional competencies, skills, and biography
 
-3. **Gestion des permissions**
+3. **Permission management**
 
-- Un administrateur attribue des permissions à un utilisateur
-- Un administrateur nomme un utilisateur comme administrateur
+- An administrator assigns permissions to a user
+- An administrator appoints a user as administrator
 
-### Gestion des groupes
+### Group Management
 
-Il existe deux types de groupes : **Salon de discussion** et **forums**
-Un forum contrairement à un salon de discussion est un groupe où les utilisateurs peuvent publier du contenu et des évènements. Les salons de discussion permettront uniquement aux élèves de dialoguer et de s’échanger des informations un peu comme dans les groupes whatsapp.
+There are two types of groups: **Discussion Rooms** and **Forums**.
+A forum, unlike a discussion room, is a group where users can publish content and events. Discussion rooms will only allow students to exchange messages, similar to WhatsApp groups.
 
-Un forum est identifié par:
+A forum is identified by:
 
-- photo de profil
-- photo de couverture
-- son nom
-- sa description(briève max 100 mots, optionnel)
-- à propos du groupe(description longue:max 500 mots)
-- Les centres d'intérêt du groupe(Académique, Technologie, Sport, Social,etc..)
-- La catégorie principale du groupe(Académique, Technologie, Sport, Social,etc..)
-- Etat(actif, suspendu)
-- Statut (public ou privé)
-- son statut (actif ou inactif)
+- Its author
+- Profile picture
+- Cover photo
+- Its name
+- Its description (brief, max 100 words, optional)
+- About the group (long description: max 500 words)
+- Group interests (Academic, Technology, Sports, Social, etc.)
+- The main category of the group (Academic, Technology, Sports, Social, etc.)
+- Status (active, suspended)
+- Visibility (public or private)
 
-Un salon de discussion est identifié par:
+A discussion room is identified by:
 
-- photo de profil
-- photo de couverture
-- son nom
-- sa description(briève max 100 mots, optionnel)
-- à propos du groupe(description longue:max 500 mots)
-- sa filière(ex: Génie Logiciel, Administration réseau et systèmes, etc.)
-- son type (public ou privé)
-- sa classe (e.g: GL3C, GL2C, ASR1, etc.)
-- son statut (actif ou inactif)
+- Its author
+- Profile picture
+- Cover photo
+- Its name
+- Its description (brief, max 100 words, optional)
+- About the group (long description: max 500 words)
+- Its field of study (e.g., Software Engineering, Network and Systems Administration, etc.)
+- Its type (public or private)
+- Its class (e.g., GL3C, GL2C, ASR1, etc.)
+- Status (active, suspended)
+- Visibility (public or private)
 
-### Gestion des salles de fêtes
+4. Creation and management of discussion rooms
 
-Une salle de fête est caractérisée par : son nom, sa description, son localisation, capacité(e.g:200 places), son prix(pour une nuit), une taxe de séjour par nuitée et ses photos, la date de création et de modification, sa ville ainsi que son agence, le type d'évènement qui peut être plusieurs (Mariage, Anniversaire, etc...).
-L'utilisateur peut rechercher et filtrer des salle de fêtes à travers sa ville, capacité, type d'évènement, prix
+- An authorized user creates a room for their class
+- A user requests to join a private discussion room
+- A user sends a message in a room
 
-### Gestion des utilisateurs
+5. Creation and management of forums
 
-Un utilisateur est caractérisé par son nom, prénom, email, password, date de création, date de modification, photo, et son rôle(ADMIN, MANAGER).
+- An authorized user creates a thematic forum
+- A user requests to join a private forum
+- A group administrator approves a membership request
 
-### Gestion des managers
+### Posts and interactions
 
-Lors de l'inscription, il remplit toutes ces informations puis il valide. c'est à l'admin de valider l'utilisateur.
-Lorsque l'admin le valide il reçoit un mail, avec ses identifiants (mot de passe).
-A la connexion, il entre son email et son mot de passe.
-Le manager peut ajouter, modifier, supprimer des agences, des salles de fête, des locations.
+A post is characterized by:
 
-### Gestion des agences
+- Its author
+- Its content
+- Media (photos, videos)
+- Content (manual input with emojis)
+- Number of likes
 
-Un agence est caractérisé par son logo, nom, description, ville, téléphone, localisation, email,ses banières, matricule agence, date de création, date de modification,manager.
+An event is characterized by:
 
-## Use case
+- Its author
+- Its collaborators
+- Photo
+- Number of participants
+- Event name
+- Event description
+- Event start date
+- Event end date (optional)
+- Event location: on-site (choice of venue) or online (connection link)
+- Event type (party, conference, tournament, exam, etc.)
 
-Processus de réservation « idéal » (du visiteur au manager)
+A comment is characterized by:
 
-    Recherche & sélection
+- Its author
+- Its content
+- Number of likes
 
-        Visiteur choisit dates + type de prestation → le système vérifie en temps réel la dispo.
+6. Content publication
 
-    Formulaire de réservation
+- An authorized user creates a simple post
+- An authorized user creates an event with location and date
+- A user views posts
+- A user views posts from a group they belong to
 
-        Saisie des coordonnées minimales + validation conditions générales.
+7. Social interactions
 
-        ↳ Création d’une réservation « en attente de confirmation » dans la base (statut = pending).
+- A user can like a post
+- A user can like a comment
+- A user can comment on a post
+- A user can comment on a comment
+- A user can participate in an event
 
-    Notification au client
-        Envoi d’un email(e.g: votre réservation a été prise en compte, nous confirmerons votre demande dans les prochains 24H)
+### Messaging and notifications
 
-    Notification manager
+A message is identified by:
 
-        Envoi d’un email au manager/responsable (e.g: les détails de la réservation).
+- Sender
+- Recipient
+- Read (read or unread)
+- Content
+- Message type (text, image, video)
 
-    Validation par le manager
+A notification is characterized by:
 
-        Manager consulte les détails, accepte ou refuse.
+- Sender
+- Recipient
+- Content
+- Read (read or unread)
+- Notification type: like, comment, new event, new post, approval request to join a group (with actions (accept, decline))
+  Examples of notifications:
+- Daryl has created a new event
+- Alex has commented on your post
+- John has requested to join the "Robotics" group
+- Your membership request to the "Computer Science" group has been rejected
+- Your membership request to the "Mathematics" group has been rejected
 
-        Si acceptation → statut de la location passe à unavailable et la réservation à « accepted ».
+### Administration
 
+10. Administrative dashboard
 
+- An administrator views usage statistics
+- An administrator moderates posts
+- An administrator manages registration requests
 
-        Envoi d'un mail à l'utilisateur (e.g: la réservation a été validée, nous vous remercions de votre confiance).
+11. Rights management
 
-    Confirmation de l'utilisateur:
-        L'utilisateur confirme sa réservation à travers son email, le statut de la réservation  passe à « booked ».
+- A super-administrator assigns administration roles
+- An administrator suspends a user
+- An administrator suspends a group
 
 ## Underlying stack
 
-**Laravel 12**
-**Blade/Livewire**
-**Alpine.js**
-**MySQL**
-**Tailwind CSS**
-
-## Project structure
-
-**/app**
-
-- **Objectif :** Contient la logique métier principale de l'application, suivant le modèle MVC.
-- **Contenu :**
-  - Modèles (ex. Agence.php, Location.php, User.php)
-  - Contrôleurs (dans Http/Controllers)
-  - Middleware (dans Http/Middleware)
-  - Services et utilitaires
-- **Techno :** PHP, Laravel
-- **Bonnes pratiques :**
-  - Suivre les conventions de nommage PSR-4
-  - Un modèle par entité
-  - Utiliser les traits pour la réutilisation de code
-- **Améliorations :**
-
-  - Ajouter des repositories pour séparer la logique d'accès aux données
-  - Implémenter des services pour les opérations complexes
-
-- **/app/Models**
-
-  - **Objectif :** Contient les modèles Eloquent qui représentent les tables de la base de données.
-  - **Contenu :**
-    - EventHall.php (Salles de fêtes)
-    - Agence.php
-    - Location.php (Locations)
-    - User.php
-    - Ville.php
-  - **Techno :** Eloquent ORM, PHP
-  - **Bonnes pratiques :**
-    - Définir les relations entre modèles clairement
-    - Utiliser les scopes pour les requêtes fréquentes
-    - Définir les propriétés $fillable ou $guarded
-  - **Améliorations :**
-    - Ajouter des modèles manquants (Reservation, Task, Notification)
-
-- **/app/Http/Controllers**
-
-  - **Objectif :** Contient les contrôleurs qui gèrent les requêtes HTTP
-  - **Contenu :**
-    - Contrôleurs pour chaque entité (AgenceController, LocationController, etc.)
-    - Contrôleurs d'authentification
-  - **Techno :** Laravel, PHP
-  - **Bonnes pratiques :**
-    - Limiter les méthodes à 7 actions RESTful standards
-    - Valider les entrées avec Request
-    - Renvoyer des réponses formatées
-  - **Améliorations :**
-    - Implémenter une API REST complète
-    - Utiliser des Resource classes pour la transformation de données
-
-- **/config**
-
-  - **Objectif :** Contient les fichiers de configuration de l'application
-  - **Contenu :**
-    - Fichiers de configuration (\*.php)
-    - Configuration de la BDD, mail, services externes
-  - **Techno :** PHP
-  - **Bonnes pratiques :**
-    - Ne pas stocker de secrets directement dans les fichiers
-    - Utiliser des variables d'environnement
-  - **Améliorations :**
-    - Documentation des options disponibles
-
-- **/database**
-
-  - **Objectif :** Contient les migrations, seeders et factories pour la base de données
-  - **Contenu :**
-    - Migrations (création de tables)
-    - Seeders (données de test)
-    - Factories (génération de données)
-  - **Techno :** PHP, Laravel Migrations
-  - **Bonnes pratiques :**
-    - Nommer les migrations de façon descriptive
-    - Documenter les champs complexes
-    - Prévoir les rollbacks
-  - **Améliorations :**
-    - Ajouter plus de seeders pour faciliter le développement
-    - Mettre à jour les migrations avec les nouvelles fonctionnalités
-
-- **/public**
-
-  - **Objectif :** Point d'entrée de l'application et stockage des fichiers publics
-  - **Contenu :**
-    - index.php (point d'entrée)
-    - CSS, JS compilés
-    - Images et médias accessibles publiquement
-  - **Techno :** PHP, Assets web
-  - **Bonnes pratiques :**
-    - Ne pas stocker de code applicatif dans ce dossier
-    - Organiser les assets par type
-  - **Améliorations :**
-    - Optimiser les images pour le web
-    - Mettre en place un CDN pour les assets statiques
-
-- **/resources**
-
-  - **Objectif :** Contient les fichiers de ressources non compilés
-  - **Contenu :**
-    - Vues Blade (\*.blade.php)
-    - CSS/SCSS source
-    - JavaScript non compilé
-    - Fichiers de langue
-  - **Techno :** Blade, CSS, JavaScript, Alpine.js
-  - **Bonnes pratiques :**
-    - Organiser les vues par section
-    - Utiliser des composants réutilisables
-    - Séparer la logique et la présentation
-  - **Améliorations :**
-    - Implémenter des composants Blade/Livewire
-
-- **/routes**
-
-  - **Objectif :** Définit les routes de l'application
-  - **Contenu :**
-    - web.php (routes web)
-    - api.php (routes API)
-    - console.php (commandes personnalisées)
-    - auth.php (routes d'authentification)
-  - **Techno :** Laravel Routes
-  - **Bonnes pratiques :**
-    - Grouper les routes par préfixe ou middleware
-    - Nommer les routes
-    - Utiliser des contrôleurs dédiés
-  - **Améliorations :**
-    - Organiser les routes par domaine fonctionnel
-    - Ajouter une documentation des API
-
-- **/storage**
-
-  - **Objectif :** Stockage des fichiers générés par l'application
-  - **Contenu :**
-    - Logs
-    - Fichiers téléchargés
-    - Cache
-    - Sessions
-  - **Techno :** Laravel Storage
-  - **Bonnes pratiques :**
-    - Configurer correctement les permissions
-    - Utiliser le système de disques de Laravel
-  - **Améliorations :**
-    - Mettre en place une stratégie de rotation des logs
-    - Configurer un stockage cloud pour les uploads
-
-- **/tests**
-
-  - **Objectif :** Contient les tests automatisés
-  - **Contenu :**
-    - Tests unitaires
-    - Tests fonctionnels
-    - Tests d'intégration
-  - **Techno :** PHPUnit, Laravel Testing
-  - **Bonnes pratiques :**
-    - Couvrir les fonctionnalités critiques
-    - Organiser les tests par fonctionnalité
-    - Utiliser des factories pour générer des données de test
-  - **Améliorations :**
-    - Augmenter la couverture de tests
-    - Ajouter des tests d'interface utilisateur
-
-- **/vendor**
-  - **Objectif :** Contient les dépendances installées par Composer
-  - **Contenu :**
-    - Packages externes
-    - Laravel framework
-    - Bibliothèques PHP
-  - **Techno :** Composer
-  - **Bonnes pratiques :**
-    - Ne jamais modifier directement les fichiers
-    - Exclure du contrôle de version
-    - Utiliser composer.lock pour des installations cohérentes
-  - **Améliorations:**
-    - Régulièrement mettre à jour les dépendances
-    - Auditer les dépendances pour des problèmes de sécurité
+**Nextjs 15**
+**TailwindCSS V4**
+**ReactJS 19**
+**Convex**
 
 </project>

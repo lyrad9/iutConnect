@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/src/src/lib/utils";
+import { cn } from "@/src/lib/utils";
 import { Home, Users, Calendar, Search, PlusSquare } from "lucide-react";
 
 interface MobileNavProps {

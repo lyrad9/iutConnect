@@ -19,7 +19,7 @@ import {
   AvatarImage,
 } from "@/src/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/src/components/ui/sheet";
-import { NavigationItems } from "@/src/src/lib/navigation-config";
+import { NavigationItems } from "@/src/components/navigation/site/navigation-config";
 
 export default function Header() {
   const pathname = usePathname();
