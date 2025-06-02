@@ -1,6 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-
+import { eventTypes } from "../src/components/utils/const/event-type";
+import { notificationTypes } from "../src/components/utils/const/notifications-type";
 // Types d'énumération pour les valeurs prédéfinies
 const UserStatus = ["active", "inactive", "pending"] as const;
 const UserRole = ["USER", "ADMIN", "SUPERADMIN"] as const;
@@ -29,9 +30,9 @@ export const GroupCategory = [
   "Social",
 ] as const;
 export const MessageType = ["text", "image", "video"] as const;
-export const EventType = ["party", "conference", "tournament", "exam"] as const;
+
 export const EventLocationType = ["on-site", "online"] as const;
-export const NotificationType = [
+/* export const NotificationType = [
   "like",
   "comment",
   "new_event",
@@ -39,7 +40,7 @@ export const NotificationType = [
   "new_post_in_group",
   "group_join_request", // Demande d'adhésion à un groupe(qui va gérer quand la demande d'approbation sera en attente, approuvée ou rejetée)
   "post_approval_request", // Demande d'approbation d'une publication(qui va gérer quand la notification sera en attente, approuvée ou rejetée)
-] as const;
+] as const; */
 export const PostStatus = ["pending", "approved", "rejected"] as const;
 
 export default defineSchema({
@@ -196,7 +197,7 @@ export default defineSchema({
     endDate: v.optional(v.number()), // timestamp
     locationType: v.union(...EventLocationType.map((l) => v.literal(l))),
     locationDetails: v.string(), // lieu physique ou lien en ligne
-    eventType: v.union(...EventType.map((t) => v.literal(t))),
+    eventType: v.union(...Object.keys(eventTypes).map((t) => v.literal(t))),
     groupId: v.id("forums"),
     status: v.union(...PostStatus.map((s) => v.literal(s))), // État de l'événement : en attente, approuvé, rejeté
     moderatorId: v.optional(v.id("users")), // ID de l'admin qui a approuvé/rejeté l'événement
@@ -277,7 +278,9 @@ export default defineSchema({
     recipientId: v.id("users"),
     content: v.string(),
     isRead: v.boolean(),
-    notificationType: v.union(...NotificationType.map((t) => v.literal(t))),
+    notificationType: v.union(
+      ...Object.keys(notificationTypes).map((t) => v.literal(t))
+    ),
     targetId: v.optional(
       v.union(
         v.id("posts"),

@@ -1,8 +1,6 @@
 "use client";
 
-import { usePagination } from "@/src/src/hooks/useSearchParams";
 import { Button } from "@/src/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -10,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/components/ui/select";
+import { usePagination } from "@/src/hooks/useSearchParams";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
   totalItems: number;

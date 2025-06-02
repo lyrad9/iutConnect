@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent } from "react";
-import { useSearch } from "@/src/src/hooks/useSearchParams";
+import { useSearch } from "@/src/hooks/useSearchParams";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { Search } from "lucide-react";

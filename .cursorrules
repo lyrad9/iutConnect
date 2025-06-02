@@ -117,14 +117,14 @@ A post is characterized by:
 An event is characterized by:
 
 - Its author
-- Its collaborators
+- Its collaborators(optionnal)
 - Photo
 - Number of participants
 - Event name
 - Event description
 - Event start date
 - Event end date (optional)
-- Event location: on-site (choice of venue) or online (connection link)
+- Event location: on-site (entry of the place) or online (connection link)
 - Event type (party, conference, tournament, exam, etc.)
 
 A comment is characterized by:

@@ -11,7 +11,7 @@
     var(--tw-gradient-stops)
   );
   --font-sans: var(--font-geist-sans), Inter, sans-serif;
-  --font-caption: var(--font-geist-caption);
+  --font-caption: var(--font-caption);
   --font-serif: Source Serif 4, serif;
   --font-mono: var(--font-geist-mono), JetBrains Mono, monospace;
 

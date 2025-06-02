@@ -38,7 +38,7 @@ export function SuggestedUsers() {
             {users.map((user) => (
               <div key={user.id} className="flex items-start justify-between">
                 <div className="flex gap-2">
-                  <Avatar className="h-10 w-10">
+                  <Avatar className="size-10">
                     <AvatarImage src={user.avatarUrl} alt={user.name} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                   </Avatar>

@@ -42,12 +42,14 @@
     "@types/node": "20.6.2",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
+    "@zod/mini": "^4.0.0-beta.20250505T195954",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "convex": "^1.24.3",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
+    "emoji-picker-react": "^4.12.2",
     "eslint": "8.49.0",
     "eslint-config-next": "15.3.1",
     "input-otp": "^1.4.2",
@@ -67,7 +69,7 @@
     "tw-animate-css": "^1.3.0",
     "typescript": "5.2.2",
     "vaul": "^0.9.9",
-    "zod": "^3.25.34"
+    "zod": "^3.25.46"
   },
   "overrides": {
     "@types/react": "19.1.2",

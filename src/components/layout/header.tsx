@@ -18,48 +18,16 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import { Sheet, SheetContent, SheetTrigger } from "@/src/components/ui/sheet";
-import { NavigationItems } from "@/src/components/navigation/site/navigation-config";
+
+import SiteSheet from "./site-sheet";
+import { NotificationsDropdown } from "../notifications/notifictions-dropdown";
 
 export default function Header() {
-  const pathname = usePathname();
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container flex h-14 items-center justify-between">
+      <div className="flex px-8  h-16 items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-[240px] sm:w-[300px]">
-              <nav className="grid gap-6 text-lg font-medium">
-                <Link
-                  href="/"
-                  className="flex items-center gap-2 text-lg font-semibold"
-                >
-                  <span className="font-bold">UniConnect</span>
-                </Link>
-                {NavigationItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-2 text-sm ${
-                      pathname === item.href
-                        ? "text-primary font-medium"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-            </SheetContent>
-          </Sheet>
+          <SiteSheet />
           <Link href="/" className="hidden items-center space-x-2 md:flex">
             <span className="hidden font-bold sm:inline-block">UniConnect</span>
           </Link>
@@ -76,19 +44,11 @@ export default function Header() {
             </form>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative" asChild>
-            <Link href="/notifications">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
-                3
-              </span>
-              <span className="sr-only">Notifications</span>
-            </Link>
-          </Button>
+        <nav className="flex items-center gap-2">
+          <NotificationsDropdown />
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/messages">
-              <MessageSquare className="h-5 w-5" />
+              <MessageSquare className="size-5" />
               <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
                 5
               </span>
@@ -120,7 +80,7 @@ export default function Header() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
+        </nav>
       </div>
     </header>
   );

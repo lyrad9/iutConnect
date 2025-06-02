@@ -51,8 +51,8 @@ export default function LoginPage() {
             </div>
             <div className="hidden space-y-4 md:block">
               <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <AtSign className="h-5 w-5" />
+                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <AtSign className="size-5" />
                 </div>
                 <div>
                   <h3 className="font-medium">Stay Connected</h3>
@@ -62,8 +62,8 @@ export default function LoginPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <BookOpen className="h-5 w-5" />
+                <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <BookOpen className="size-5" />
                 </div>
                 <div>
                   <h3 className="font-medium">Academic Resources</h3>

@@ -7,6 +7,12 @@
     "convex": {
       "command": "npx",
       "args": ["-y", "convex@latest", "mcp", "start"]
+    },
+    "emoji-picker-react Docs": {
+      "url": "https://gitmcp.io/ealush/emoji-picker-react"
+    },
+    "zod Docs": {
+      "url": "https://gitmcp.io/ealush/zod"
     }
   }
 }

@@ -62,7 +62,7 @@ export function PostCard({ post }: PostCardProps) {
       <div className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
-            <Avatar className="h-10 w-10">
+            <Avatar className="size-10">
               <AvatarImage src={post.author.avatarUrl} alt={post.author.name} />
               <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
             </Avatar>

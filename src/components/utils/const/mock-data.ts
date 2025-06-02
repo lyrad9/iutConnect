@@ -51,6 +51,36 @@ export const mockUsers: UserType[] = [
     bio: "Math genius by day, gamer by night. Let's solve problems together!",
     verified: false,
   },
+  {
+    id: "user5",
+    name: "Michael Chen",
+    avatarUrl:
+      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    department: "Mathematics",
+    year: 2,
+    bio: "Math genius by day, gamer by night. Let's solve problems together!",
+    verified: false,
+  },
+  {
+    id: "user5",
+    name: "Michael Chen",
+    avatarUrl:
+      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    department: "Mathematics",
+    year: 2,
+    bio: "Math genius by day, gamer by night. Let's solve problems together!",
+    verified: false,
+  },
+  {
+    id: "user5",
+    name: "Michael Chen",
+    avatarUrl:
+      "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    department: "Mathematics",
+    year: 2,
+    bio: "Math genius by day, gamer by night. Let's solve problems together!",
+    verified: false,
+  },
 ];
 
 export const mockSuggestedUsers: UserType[] = [

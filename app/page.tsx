@@ -3,7 +3,7 @@ import { NewsFeed } from "@/app/_components/news-feed";
 import { FeedSkeleton } from "@/src/components/feed/feed-skeleton";
 import { SuggestedUsers } from "@/app/_components/suggested-users";
 import { WhatsHappening } from "@/app/_components/whats-happening";
-import { CreatePostCard } from "@/app/_components/create-post-card";
+import { CreatePostCard } from "@/src/components/shared/create-post-card";
 
 export default function Home() {
   return (

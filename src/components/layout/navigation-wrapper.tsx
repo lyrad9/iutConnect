@@ -13,8 +13,9 @@ interface NavigationWrapperProps {
 export function NavigationWrapper({ children }: NavigationWrapperProps) {
   const pathname = usePathname();
   const isAuthPage = pathname === "/login" || pathname === "/register";
+  const isAdminPage = pathname === "/admins";
 
-  if (isAuthPage) {
+  if (isAuthPage || isAdminPage) {
     return <>{children}</>;
   }
 

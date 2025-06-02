@@ -1,3 +1,5 @@
+import { eventTypes } from "./const/event-type";
+
 export interface UserType {
   id: string;
   name: string;
@@ -43,6 +45,14 @@ export interface EventType {
   category?: string;
   image?: string;
   attending?: boolean;
+}
+
+export interface SideEventLinkProps {
+  id: string;
+  name: string;
+  date: string;
+  location: string;
+  type: keyof typeof eventTypes;
 }
 
 export interface PostType {

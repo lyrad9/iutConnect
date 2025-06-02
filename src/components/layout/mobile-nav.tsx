@@ -16,12 +16,12 @@ export default function MobileNav({ className }: MobileNavProps) {
   const navItems = [
     {
       href: "/",
-      icon: <Home className="h-5 w-5" />,
+      icon: <Home className="size-5" />,
       label: "Feed",
     },
     {
       href: "/search",
-      icon: <Search className="h-5 w-5" />,
+      icon: <Search className="size-5" />,
       label: "Search",
     },
     {
@@ -31,12 +31,12 @@ export default function MobileNav({ className }: MobileNavProps) {
     },
     {
       href: "/groups",
-      icon: <Users className="h-5 w-5" />,
+      icon: <Users className="size-5" />,
       label: "Groups",
     },
     {
       href: "/events",
-      icon: <Calendar className="h-5 w-5" />,
+      icon: <Calendar className="size-5" />,
       label: "Events",
     },
   ];
