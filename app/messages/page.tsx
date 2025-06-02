@@ -126,8 +126,8 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="container flex h-screen w-full flex-col border-l border-r border-muted">
-      <div className="sticky top-0 z-20 border-b px-6 py-3">
+    <div className="sticky top-14 max-h-[calc(100svh-3.5rem)] overflow-x-hidden scrollbar-hide flex h-screen w-full flex-col border-l border-r border-muted">
+      <div className="sticky top-0 z-20 border-b px-6 py-6">
         <div className=" flex items-center">
           <h1 className="text-xl lg:text-2xl font-semibold">Messages</h1>
         </div>

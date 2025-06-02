@@ -7,15 +7,15 @@ import { CreatePostCard } from "@/src/components/shared/create-post-card";
 
 export default function Home() {
   return (
-    <div className="container px-4 py-6 md:py-8">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4">
-        <div className="md:col-span-2 lg:col-span-3">
+    <div className="px-4">
+      <div className="flex max-lg:flex-col gap-x-6">
+        <div className="flex-1 lg:py-10">
           <CreatePostCard />
           <Suspense fallback={<FeedSkeleton />}>
             <NewsFeed />
           </Suspense>
         </div>
-        <div className="hidden space-y-6 md:block">
+        <div className="sticky top-14 max-h-[calc(100svh-3.5rem)] overflow-x-hidden pt-10 pb-24 hidden lg:flex overflow-y-auto items-stretch h-screen lg:w-96 w-full scrollbar-hide flex-col gap-y-8">
           <SuggestedUsers />
           <WhatsHappening />
         </div>

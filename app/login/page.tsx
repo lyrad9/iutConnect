@@ -8,7 +8,7 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { Checkbox } from "@/src/components/ui/checkbox";
-import { useToast } from "@/src/src/hooks/use-toast";
+import { useToast } from "@/src/hooks/use-toast";
 import { ModeToggle } from "@/src/components/mode-toggle";
 
 export default function LoginPage() {

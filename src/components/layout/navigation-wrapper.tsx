@@ -23,10 +23,10 @@ export function NavigationWrapper({ children }: NavigationWrapperProps) {
     <div className="flex min-h-screen flex-col">
       <Header />
       <div className="flex flex-1">
-        <Sidebar className="hidden md:flex" />
-        <main className="flex-1 overflow-y-auto pb-16 md:pb-0">{children}</main>
+        <Sidebar className="sticky top-14 max-h-[calc(100svh-3.5rem)] overflow-x-hidden pt-10 pb-16 hidden h-screen lg:flex scrollbar-hide" />
+        <main className="flex-1 max-lg:px-8 pb-16 lg:pb-0">{children}</main>
       </div>
-      <MobileNav className="fixed bottom-0 w-full md:hidden" />
+      <MobileNav className="fixed bottom-0 w-full lg:hidden" />
     </div>
   );
 }

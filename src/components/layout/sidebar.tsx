@@ -16,7 +16,7 @@ export default function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-screen flex-col w-64 border-r pt-6 pb-12 items-stretch overflow-y-auto",
+        "flex-col w-64 border-r pt-6 pb-12 items-stretch overflow-y-auto",
         className
       )}
     >
