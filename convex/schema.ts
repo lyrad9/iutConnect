@@ -2,6 +2,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { eventTypes } from "../src/components/utils/const/event-type";
 import { notificationTypes } from "../src/components/utils/const/notifications-type";
+import { USER_FUNCTIONS } from "../src/components/utils/const/user-functions";
 // Types d'énumération pour les valeurs prédéfinies
 const UserStatus = ["active", "inactive", "pending"] as const;
 const UserRole = ["USER", "ADMIN", "SUPERADMIN"] as const;
@@ -15,12 +16,12 @@ const UserPermission = [
   "CREATE_USER",
   "ALL",
 ] as const;
-export const UserFunction = [
+/* export const UserFunction = [
   "student",
   "professor",
   "accountant",
   "HR",
-] as const;
+] as const; */
 export const GroupStatus = ["active", "suspended"] as const;
 export const GroupVisibility = ["public", "private"] as const;
 export const GroupCategory = [
@@ -54,7 +55,9 @@ export default defineSchema({
     email: v.string(),
     registrationNumber: v.string(),
     phoneNumber: v.string(),
-    function: v.union(...UserFunction.map((f) => v.literal(f))),
+    function: v.union(
+      ...Object.values(USER_FUNCTIONS).map((f) => v.literal(f))
+    ),
 
     // Informations académiques (pour les étudiants)
     fieldOfStudy: v.optional(v.string()),
