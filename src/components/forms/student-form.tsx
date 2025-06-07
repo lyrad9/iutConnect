@@ -33,10 +33,25 @@ import {
   getClassesByLevel,
   USER_FUNCTIONS,
 } from "@/src/components/utils/const/user-functions";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
+import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
+import { CheckCircle2 } from "lucide-react";
+import { sendUserRegistrationApprovedEmail } from "@/app/(auth)/register/sendUserRegistrationApprovedEmail";
+import { generatePassword } from "@/src/lib/utils";
+import { sendUserRegistrationConfirmationEmail } from "@/app/(auth)/register/sendUserRegistrationConfirmationEmail";
 export function StudentRegistrationForm() {
   // État pour gérer les classes disponibles en fonction du niveau et de la filière
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const registerUser = useMutation(api.users.registerUser);
 
   // Initialisation du formulaire avec React Hook Form et validation Zod
   const form = useForm<StudentFormData>({
@@ -75,15 +90,58 @@ export function StudentRegistrationForm() {
   }, [selectedLevel, selectedDepartment, form]);
 
   // Gestion de la soumission du formulaire
-  const onSubmit = (data: StudentFormData) => {
-    // Ici, vous devrez implémenter la logique d'envoi des données au backend
-    console.log("Données de l'étudiant à envoyer:", data);
-    // TODO: Intégrer avec Convex ou autre backend
-  };
+  const onSubmit = async (data: StudentFormData) => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
 
+      // Enregistrer l'utilisateur dans la base de données
+      const userId = await registerUser({
+        ...data,
+        function: USER_FUNCTIONS.STUDENT,
+      });
+
+      // Traiter la réponse
+      setRegistrationSuccess(true);
+
+      // Réinitialiser le formulaire
+      form.reset();
+
+      // Rediriger après un délai
+      setTimeout(() => {
+        router.push("/login");
+      }, 5000);
+    } catch (err) {
+      setError(
+        (err as Error).message ||
+          "Une erreur est survenue lors de l'inscription."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  if (registrationSuccess) {
+    return (
+      <Alert className="bg-green-50 border-green-200">
+        <CheckCircle2 className="h-4 w-4 text-green-600" />
+        <AlertTitle className="text-green-800">Inscription réussie</AlertTitle>
+        <AlertDescription className="text-green-700">
+          Votre demande d&apos;inscription a été envoyée avec succès. Vous
+          recevrez un email de confirmation. Vous serez redirigé vers la page de
+          connexion dans quelques secondes.
+        </AlertDescription>
+      </Alert>
+    );
+  }
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 px-8">
+        {error && (
+          <Alert variant="destructive">
+            <AlertTitle>Erreur</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         {/* Nom et prénom (sur la même ligne) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -93,7 +151,7 @@ export function StudentRegistrationForm() {
               <FormItem>
                 <FormLabel>Nom</FormLabel>
                 <FormControl>
-                  <Input placeholder="Dupont" {...field} />
+                  <Input placeholder="Entrez votre nom" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -106,7 +164,7 @@ export function StudentRegistrationForm() {
               <FormItem>
                 <FormLabel>Prénom</FormLabel>
                 <FormControl>
-                  <Input placeholder="Jean" {...field} />
+                  <Input placeholder="Entrez votre prénom" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -124,7 +182,7 @@ export function StudentRegistrationForm() {
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="jean.dupont@email.com"
+                  placeholder="Entrez votre email"
                   {...field}
                 />
               </FormControl>
@@ -142,7 +200,10 @@ export function StudentRegistrationForm() {
               <FormItem>
                 <FormLabel>Numéro de téléphone</FormLabel>
                 <FormControl>
-                  <Input placeholder="691234567" {...field} />
+                  <Input
+                    placeholder="Entrez votre numéro de téléphone"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -155,7 +216,7 @@ export function StudentRegistrationForm() {
               <FormItem>
                 <FormLabel>Matricule</FormLabel>
                 <FormControl>
-                  <Input placeholder="20E1234" {...field} />
+                  <Input placeholder="Entrez votre matricule" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -255,8 +316,15 @@ export function StudentRegistrationForm() {
           </div>
         </div>
 
-        <Button type="submit" className="w-full">
-          S&apos;inscrire
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Inscription en cours...
+            </>
+          ) : (
+            "S'inscrire"
+          )}
         </Button>
       </form>
     </Form>

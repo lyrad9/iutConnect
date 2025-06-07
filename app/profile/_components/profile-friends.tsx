@@ -13,7 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
-import { mockUsers } from "@/src/src/lib/mock-data";
+import { mockUsers } from "@/src/components/utils/const/mock-data";
 
 export function ProfileFriends() {
   return (

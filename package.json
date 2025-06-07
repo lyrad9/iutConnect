@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "email": "email dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -39,15 +40,18 @@
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@react-email/components": "^0.0.41",
+    "@react-email/tailwind": "1.0.5",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "20.6.2",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.2",
     "@zod/mini": "^4.0.0-beta.20250505T195954",
+    "bcrypt": "^6.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "convex": "^1.24.3",
+    "convex": "^1.24.6",
+    "crypto": "^1.0.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
     "emoji-picker-react": "^4.12.2",
@@ -62,6 +66,7 @@
     "react": "19.1.0",
     "react-day-picker": "^8.10.1",
     "react-dom": "19.1.0",
+    "react-email": "^4.0.15",
     "react-hook-form": "^7.56.4",
     "react-resizable-panels": "^2.1.9",
     "recharts": "^2.15.3",
@@ -79,6 +84,8 @@
     "@types/react-dom": "19.1.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/nodemailer": "^6.4.17",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.8"

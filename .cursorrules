@@ -21,6 +21,19 @@ Provide students with a secure, intuitive, and responsive platform to foster com
 
 ### Authentication
 
+Comme il s'agit d'un réseau social pour une université, seul des étudiants inscrits à l'université, le personnel(professeur, comptable, etc...) et les administrateurs pourront avoir accès à cette plateforme.
+De ce fait, les étudiants et le personnel devront se connecter à travers leur matricule et mot de passe pour accéder à l'application. Quand aux adminstrateurs, ils peuvent se connecter avec soit par mail ou par Google.
+
+Pour l'instant, on ne peut pas avoir accès à la base de donnée de l'université pour récupérer les informations de l'utilisateur à partir du matricule saisi dans la plateforme. Nous allons donc procéder ainsi:
+Dans ce cas de figure, il y'aura une page d'inscription et de connexion.
+L'utilisateur accède à une page d'inscription dédiée. Pour un étudiant, il remplira matricule, nom, prénom, email, numéro de téléphone, fonction(étudiant, professeur, etc...), filière, salle de classe. A la soumission du formulaire, ses informations sont enregistrées dans la base de donnée de la plateforme en attente de validation de son inscription par un administrateur. un email est par la suite envoyé à l'utilisateur pour l'informer que sa demande d'inscription est en attente de validation.
+De son côté, l'administrateur peut se servir du registre du personnel ou de la liste des étudiants pour valider l'inscription en cliquant sur le lien envoyé par mail ou en se connectant à la plateforme avec son compte Google.
+Une fois validé, un mail est envoyé à l'utilisateur avec comme identifiant un mot de passe unique qu'il utilisera pour se connecter à la platefome.
+En cas de rejet de l'inscription:
+
+- Suprimer l'utilisateur de la base de donnée de la plateforme
+- Envoyer un mail à l'utilisateur pour le signaler
+
 ### User Management
 
 A user is identified by:

@@ -62,6 +62,7 @@ export default defineSchema({
     // Informations académiques (pour les étudiants)
     fieldOfStudy: v.optional(v.string()),
     classroom: v.optional(v.string()),
+    level: v.optional(v.string()),
 
     // Statut et rôle
     status: v.union(...UserStatus.map((s) => v.literal(s))),
@@ -81,6 +82,7 @@ export default defineSchema({
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     isOnline: v.boolean(),
+    password: v.optional(v.string()),
 
     // Métadonnées
     createdAt: v.number(), // timestamp

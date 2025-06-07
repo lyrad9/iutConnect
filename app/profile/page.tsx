@@ -109,7 +109,7 @@ export default function ProfilePage() {
                     Edit Profile
                   </Link>
                 </Button>
-                <Button className="flex-1 md:flex-none">+ Follow</Button>
+                {/*  <Button className="flex-1 md:flex-none">+ Follow</Button> */}
               </div>
             </div>
 
@@ -122,14 +122,14 @@ export default function ProfilePage() {
                 <div className="font-semibold">246</div>
                 <div className="text-xs text-muted-foreground">Posts</div>
               </div>
-              <div className="text-center">
+              {/*  <div className="text-center">
                 <div className="font-semibold">1.5k</div>
                 <div className="text-xs text-muted-foreground">Followers</div>
               </div>
               <div className="text-center">
                 <div className="font-semibold">578</div>
                 <div className="text-xs text-muted-foreground">Following</div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

@@ -31,32 +31,32 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "/admin",
+      url: "/admins",
       icon: BarChart3,
     },
     {
       title: "Gestion des utilisateurs",
-      url: "/admin/users",
+      url: "/admins/users",
       icon: Users,
     },
     {
       title: "Gestion des groupes",
-      url: "/admin/groups",
+      url: "/admins/groups",
       icon: MessageSquare,
     },
     {
       title: "Gestion des événements",
-      url: "/admin/events",
+      url: "/admins/events",
       icon: Calendar,
     },
     {
       title: "Gestion des admins",
-      url: "/admin/admins",
+      url: "/admins/admins",
       icon: Shield,
     },
     {
       title: "Notifications",
-      url: "/admin/notifications",
+      url: "/admins/notifications",
       icon: Bell,
     },
   ],
