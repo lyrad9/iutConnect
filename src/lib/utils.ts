@@ -52,3 +52,20 @@ function shuffleString(str: string): string {
   }
   return array.join("");
 }
+
+/**
+ * Génère les initiales à partir d'un nom
+ * @param name Nom complet
+ * @returns Initiales (maximum 2 caractères)
+ */
+export function getInitialsFromName(name: string): string {
+  if (!name) return "??";
+
+  const parts = name.trim().split(/\s+/);
+
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+
+  // Prendre la première lettre du premier et du dernier nom
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}

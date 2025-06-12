@@ -11,6 +11,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from "@/src/components/ui/form";
 import { EventFormValues, eventFormSchema } from "./event-form-schema";
 import { Input } from "@/src/components/ui/input";
@@ -21,6 +22,15 @@ import { EventPhotoUploader } from "./event-photo-uploader";
 import { EventCollaboratorSelector } from "./event-collaborator-selector";
 import { Collaborator } from "../types";
 import { BaseSyntheticEvent } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Checkbox } from "@/src/components/ui/checkbox";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
 
 export type EventFormRef = {
   submit: (e?: BaseSyntheticEvent | undefined) => Promise<void>;
@@ -47,6 +57,8 @@ export function EventForm({
   onFormChange,
   setIsSubmitting,
 }: EventFormProps) {
+  const generateUploadUrl = useMutation(api.events.generateUploadUrl);
+  const createEventInHome = useMutation(api.events.createEventInHome);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
@@ -59,12 +71,13 @@ export function EventForm({
       startDate: "",
       endDate: "",
       location: {
-        type: "onsite",
+        type: "on-site",
         value: "",
       },
       eventType: "",
       collaborators: [],
-      photo: "",
+      photo: undefined,
+      allowsParticipants: true,
     },
     mode: "onChange",
   });
@@ -78,18 +91,38 @@ export function EventForm({
   }, [form, onFormChange]);
 
   const onSubmit = async (data: EventFormValues) => {
+    console.log("data", data);
     setIsSubmitting(true);
     try {
-      console.log("Données du formulaire d'événement soumises:", data);
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const eventInHomeUrl = await generateUploadUrl();
+      const result = await fetch(eventInHomeUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": data.photo!.type,
+        },
+        body: data.photo,
+      })
+        .then((res) => res.json())
+        .then(async (storage) => {
+          const { storageId } = storage;
+          await createEventInHome({
+            event: {
+              ...data,
+              photo: storageId,
+            },
+          });
+        })
+        .catch((error) => {
+          throw new Error(error.message);
+        });
+      /* const { storageId } = await result.json(); */
 
       toast({
         title: "Événement créé",
         description: "Votre événement a été publié avec succès.",
       });
-
       form.reset();
+      onSubmitSuccess();
     } catch (error) {
       console.error("Erreur lors de la soumission:", error);
       toast({
@@ -99,7 +132,7 @@ export function EventForm({
         variant: "destructive",
       });
     } finally {
-      onSubmitSuccess();
+      setIsSubmitting(false);
     }
   };
 
@@ -107,13 +140,10 @@ export function EventForm({
     submit: form.handleSubmit(onSubmit),
     reset: form.reset,
     isValid: (): boolean => {
-      const { name, description, startDate, location } = form.getValues();
+      const { name, description, startDate, location, photo } =
+        form.getValues();
       return Boolean(
-        form.formState.isValid &&
-          name.trim().length > 0 &&
-          description.trim().length > 0 &&
-          startDate.trim().length > 0 &&
-          location.value.trim().length > 0
+        name && description && startDate && location.value.trim() && photo
       );
     },
   }));
@@ -203,6 +233,45 @@ export function EventForm({
           control={form.control}
           isModalOpen={isCollaboratorModalOpen}
           setIsModalOpen={setIsCollaboratorModalOpen}
+        />
+
+        <FormField
+          control={form.control}
+          name="allowsParticipants"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center space-x-2 space-y-0 rounded-md border p-4">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  id="allowsParticipants"
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <div className="flex items-center">
+                  <FormLabel htmlFor="allowsParticipants" className="mr-2">
+                    Permettre aux utilisateurs de participer
+                  </FormLabel>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      Activez cette option pour permettre aux utilisateurs de
+                      s&apos;inscrire comme participants à cet événement. Ils
+                      pourront indiquer s&apos;ils participent, sont peut-être
+                      intéressés ou déclinent l&apos;invitation.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <FormDescription className="text-xs">
+                  Les participants pourront voir la liste des autres
+                  participants et recevoir des notifications concernant
+                  l&apos;événement.
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
         />
 
         <EventPhotoUploader

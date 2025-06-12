@@ -18,6 +18,7 @@ import { cn } from "@/src/lib/utils";
 import EmojiPicker from "emoji-picker-react";
 import { BaseSyntheticEvent } from "react";
 import { error } from "console";
+import { useAuthToken } from "@convex-dev/auth/react";
 
 export type PostFormRef = {
   submit: (e?: BaseSyntheticEvent | undefined) => Promise<void>;
@@ -45,6 +46,13 @@ export function PostForm({
   onFormChange,
   setIsSubmitting,
 }: PostFormProps) {
+  const url = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+  /*   console.log("url", url); */
+  const token = useAuthToken();
+  const [previewAttachments, setPreviewAttachments] = React.useState<string[]>(
+    []
+  );
+  /*   console.log("previewAttachments", previewAttachments); */
   const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -112,8 +120,11 @@ export function PostForm({
 
       Array.from(files).forEach((file) => {
         const url = URL.createObjectURL(file);
-        currentAttachments.push(url);
+        currentAttachments.push(file);
       });
+      setPreviewAttachments(
+        Array.from(files).map((file) => URL.createObjectURL(file))
+      );
 
       form.setValue("attachments", currentAttachments, {
         shouldValidate: true,
@@ -130,6 +141,7 @@ export function PostForm({
     const currentAttachments = form.getValues("attachments") || [];
     const updatedAttachments = currentAttachments.filter((_, i) => i !== index);
     form.setValue("attachments", updatedAttachments, { shouldValidate: true });
+    setPreviewAttachments(previewAttachments.filter((_, i) => i !== index));
   };
 
   // Soumission du formulaire
@@ -137,31 +149,52 @@ export function PostForm({
     console.log(data);
     setIsSubmitting(true);
     try {
-      // Ici, vous effectueriez l'appel API pour enregistrer le post
-      console.log("Données du formulaire soumises:", data);
-
-      // Simulation d'un délai de traitement
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      toast({
-        title: "Publication créée",
-        description: "Votre publication a été publiée avec succès.",
+      // Envoyer directement à l'HTTP Action
+      const formData = new FormData();
+      formData.append("content", data.content as string);
+      for (const file of data.attachments as File[]) {
+        formData.append("attachments", file);
+      }
+      const response = await fetch(`${url}/uploadPostImagesInHome`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          /* "Content-Type": "multipart/form-data", */
+        },
       });
-      /* throw new Error("erreur"); */
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message);
+      }
+
+      const result = await response.json();
+      console.log("result", result);
+      if (result.success) {
+        toast({
+          title: "Publication créée",
+          description: "Votre publication a été publiée avec succès.",
+        });
+      }
+
       form.reset();
+      setPreviewAttachments([]);
       onSubmitSuccess();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la soumission:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la publication.",
-        variant: "destructive",
-      });
+      if (error.message) {
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
-  console.log("formulaire", form.getValues());
+  /* console.log("formulaire", form.getValues()); */
   // Exposer les méthodes et états du formulaire
   React.useImperativeHandle(formRef, () => ({
     submit: form.handleSubmit(onSubmit),
@@ -175,8 +208,7 @@ export function PostForm({
 
   const content = form.watch("content") || "";
   const attachments = form.watch("attachments") || [];
-  console.log("content", content);
-  console.log("formRefe", formRef.current?.isValid());
+  /* console.log("formRefe", formRef.current?.isValid()); */
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -220,9 +252,9 @@ export function PostForm({
         </div>
 
         {/* Affichage des pièces jointes */}
-        {attachments.length > 0 && (
+        {previewAttachments.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
-            {attachments.map((url, index) => (
+            {previewAttachments.map((url, index) => (
               <div
                 key={index}
                 className="relative h-20 w-20 overflow-hidden rounded-md"

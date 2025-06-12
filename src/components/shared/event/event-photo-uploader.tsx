@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Control, useController } from "react-hook-form";
 import {
   FormField,
@@ -21,6 +21,9 @@ export function EventPhotoUploader({
   control,
   fileInputRef,
 }: EventPhotoUploaderProps) {
+  const [previewEventImage, setPreviewEventImage] = useState<string | null>(
+    null
+  );
   const { field } = useController({
     name: "photo",
     control,
@@ -35,13 +38,16 @@ export function EventPhotoUploader({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const url = URL.createObjectURL(files[0]);
-      field.onChange(url);
+      const file = files[0];
+      const url = URL.createObjectURL(file);
+      setPreviewEventImage(url);
+      field.onChange(file);
     }
   };
 
   const removePhoto = () => {
     field.onChange("");
+    setPreviewEventImage(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -58,7 +64,7 @@ export function EventPhotoUploader({
             {field.value ? (
               <div className="relative h-40 w-full overflow-hidden rounded-md">
                 <img
-                  src={field.value}
+                  src={previewEventImage || ""}
                   alt="Event"
                   className="h-full w-full object-cover"
                 />

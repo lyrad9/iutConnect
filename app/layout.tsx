@@ -9,6 +9,7 @@ import ConvexClientProvider from "./ConvexClientProvider";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Anek_Telugu } from "next/font/google";
 import { cn } from "@/src/lib/utils";
+import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 const inter = Inter({ subsets: ["latin"] });
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,9 +47,11 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <NuqsAdapter>
-            <ConvexClientProvider>
-              <NavigationWrapper>{children}</NavigationWrapper>
-            </ConvexClientProvider>
+            <ConvexAuthNextjsServerProvider>
+              <ConvexClientProvider>
+                <NavigationWrapper>{children}</NavigationWrapper>
+              </ConvexClientProvider>
+            </ConvexAuthNextjsServerProvider>
           </NuqsAdapter>
           <Toaster />
         </ThemeProvider>

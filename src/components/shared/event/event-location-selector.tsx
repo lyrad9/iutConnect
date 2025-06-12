@@ -30,9 +30,9 @@ export function EventLocationSelector({ control }: EventLocationSelectorProps) {
             <div className="flex gap-2">
               <Button
                 type="button"
-                variant={field.value === "onsite" ? "default" : "outline"}
+                variant={field.value === "on-site" ? "default" : "outline"}
                 size="sm"
-                onClick={() => field.onChange("onsite")}
+                onClick={() => field.onChange("on-site")}
                 className="flex-1"
               >
                 <MapPin className="mr-1 size-4" />
@@ -62,7 +62,7 @@ export function EventLocationSelector({ control }: EventLocationSelectorProps) {
             <FormControl>
               <Input
                 placeholder={
-                  control._formValues.location?.type === "onsite"
+                  control._formValues.location?.type === "on-site"
                     ? "Adresse du lieu"
                     : "Lien de connexion"
                 }

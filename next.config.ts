@@ -1,5 +1,12 @@
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "local-origin.dev",
+    "*.local-origin.dev",
+    "*",
+    "dashboard.convex.dev",
+  ],
+
   /* output: "export", */
   /*  eslint: {
     ignoreDuringBuilds: true,

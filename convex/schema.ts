@@ -3,10 +3,11 @@ import { v } from "convex/values";
 import { eventTypes } from "../src/components/utils/const/event-type";
 import { notificationTypes } from "../src/components/utils/const/notifications-type";
 import { USER_FUNCTIONS } from "../src/components/utils/const/user-functions";
+import { authTables } from "@convex-dev/auth/server";
 // Types d'énumération pour les valeurs prédéfinies
-const UserStatus = ["active", "inactive", "pending"] as const;
+const UserStatus = ["active", "inactive"] as const;
 const UserRole = ["USER", "ADMIN", "SUPERADMIN"] as const;
-const UserPermission = [
+const UserPermission: string[] = [
   "COMMENT",
   "LIKE",
   "CREATE_GROUP",
@@ -45,6 +46,7 @@ export const EventLocationType = ["on-site", "online"] as const;
 export const PostStatus = ["pending", "approved", "rejected"] as const;
 
 export default defineSchema({
+  ...authTables,
   // Utilisateurs
   users: defineTable({
     // Informations personnelles
@@ -52,12 +54,16 @@ export default defineSchema({
     coverPhoto: v.optional(v.string()), // URL de l'image
     lastName: v.string(),
     firstName: v.string(),
+    username: v.optional(v.string()),
     email: v.string(),
+    emailVerificationTime: v.optional(v.number()),
     registrationNumber: v.string(),
-    phoneNumber: v.string(),
-    function: v.union(
+
+    phoneNumber: v.optional(v.string()),
+    /* fonction: v.union(
       ...Object.values(USER_FUNCTIONS).map((f) => v.literal(f))
-    ),
+    ), */
+    fonction: v.string(),
 
     // Informations académiques (pour les étudiants)
     fieldOfStudy: v.optional(v.string()),
@@ -65,7 +71,7 @@ export default defineSchema({
     level: v.optional(v.string()),
 
     // Statut et rôle
-    status: v.union(...UserStatus.map((s) => v.literal(s))),
+    /* status: v.union(...UserStatus.map((s) => v.literal(s))), */
     role: v.union(...UserRole.map((r) => v.literal(r))),
     permissions: v.array(v.union(...UserPermission.map((p) => v.literal(p)))),
 
@@ -82,18 +88,17 @@ export default defineSchema({
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     isOnline: v.boolean(),
-    password: v.optional(v.string()),
-
+    password: v.string(),
     // Métadonnées
     createdAt: v.number(), // timestamp
     updatedAt: v.number(), // timestamp
+    /* tokenIdentifier: v.optional(v.string()), */
   })
     .index("by_email", ["email"])
     .index("by_registrationNumber", ["registrationNumber"])
-    .index("by_status", ["status"])
-    .index("by_role", ["role"])
-    .index("by_function_and_status", ["function", "status"]),
-
+    /* .index("by_status", ["status"]) */
+    .index("by_role", ["role"]),
+  /*  .index("by_function_and_status", ["function", "status"]) */
   // Forums
   forums: defineTable({
     participants: v.array(v.id("users")),
@@ -172,11 +177,11 @@ export default defineSchema({
   posts: defineTable({
     authorId: v.id("users"),
     content: v.string(),
-    media: v.optional(v.array(v.string())), // URLs des médias
+    medias: v.optional(v.array(v.string())), // URLs des médias
     groupId: v.optional(v.id("forums")),
 
     likes: v.array(v.id("users")),
-    status: v.union(...PostStatus.map((s) => v.literal(s))), // État de la publication : en attente, approuvée, rejetée
+    status: v.optional(v.union(...PostStatus.map((s) => v.literal(s)))), // État de la publication : en attente, approuvée, rejetée
     moderatorId: v.optional(v.id("users")), // ID de l'admin qui a approuvé/rejeté la publication
     moderationComment: v.optional(v.string()), // Commentaire éventuel du modérateur
 
@@ -193,7 +198,7 @@ export default defineSchema({
   // Événements
   events: defineTable({
     authorId: v.id("users"),
-    collaborators: v.array(v.id("users")),
+    collaborators: v.optional(v.array(v.id("users"))),
     photo: v.optional(v.string()),
     participants: v.array(v.id("users")),
     name: v.string(),
@@ -203,17 +208,19 @@ export default defineSchema({
     locationType: v.union(...EventLocationType.map((l) => v.literal(l))),
     locationDetails: v.string(), // lieu physique ou lien en ligne
     eventType: v.union(...Object.keys(eventTypes).map((t) => v.literal(t))),
-    groupId: v.id("forums"),
-    status: v.union(...PostStatus.map((s) => v.literal(s))), // État de l'événement : en attente, approuvé, rejeté
+    groupId: v.optional(v.id("forums")),
+    status: v.optional(v.union(...PostStatus.map((s) => v.literal(s)))), // État de l'événement : en attente, approuvé, rejeté
     moderatorId: v.optional(v.id("users")), // ID de l'admin qui a approuvé/rejeté l'événement
     moderationComment: v.optional(v.string()), // Commentaire éventuel du modérateur
+    allowsParticipants: v.boolean(), // Indique si l'événement permet les participants
 
     // Métadonnées
     createdAt: v.number(),
-    updatedAt: v.number(),
+    updatedAt: v.optional(v.number()),
     moderatedAt: v.optional(v.number()), // Date de modération
   })
     .index("by_author", ["authorId"])
+    .index("by_creation_date", ["createdAt"])
     .index("by_start_date", ["startDate"])
     .index("by_event_type", ["eventType"])
     .index("by_group", ["groupId"])
@@ -281,7 +288,8 @@ export default defineSchema({
   notifications: defineTable({
     senderId: v.id("users"),
     recipientId: v.id("users"),
-    content: v.string(),
+    title: v.string(),
+    content: v.optional(v.string()),
     isRead: v.boolean(),
     notificationType: v.union(
       ...Object.keys(notificationTypes).map((t) => v.literal(t))

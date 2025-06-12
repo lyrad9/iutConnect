@@ -128,11 +128,10 @@ export function PostCard({ post }: PostCardProps) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Save Post</DropdownMenuItem>
-              <DropdownMenuItem>Hide Post</DropdownMenuItem>
-              <DropdownMenuItem>Follow {post.author.name}</DropdownMenuItem>
+
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
-                Report Post
+                Delete Post
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Control, useController } from "react-hook-form";
-import { User, X } from "lucide-react";
+import { User, X, Loader2 } from "lucide-react";
 import {
   FormField,
   FormItem,
@@ -26,6 +26,9 @@ import {
 } from "@/src/components/ui/dialog";
 import { EventFormValues } from "./event-form-schema";
 import { Collaborator } from "../types";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { debounce } from "lodash";
 
 type EventCollaboratorSelectorProps = {
   control: Control<EventFormValues>;
@@ -33,7 +36,7 @@ type EventCollaboratorSelectorProps = {
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-// Données fictives pour les collaborateurs
+// Données fictives pour les collaborateurs en attendant l'intégration avec l'API
 const initialCollaborators: Collaborator[] = [
   {
     id: "1",
@@ -68,11 +71,45 @@ export function EventCollaboratorSelector({
   const [collaborators, setCollaborators] =
     useState<Collaborator[]>(initialCollaborators);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   const { field } = useController({
     name: "collaborators",
     control,
   });
+
+  // Utilisation de la requête searchUsers de Convex (à implémenter)
+  // const searchResults = useQuery(api.users.searchUsers,
+  //   searchQuery ? { searchQuery, limit: 20 } : null
+  // );
+
+  // Fonction debounce pour la recherche
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSearch = useCallback(
+    debounce((query: string) => {
+      if (query.length > 2) {
+        setIsSearching(true);
+        // Simuler une recherche asynchrone
+        setTimeout(() => {
+          // Ici, nous filtrons les collaborateurs locaux
+          // À remplacer par l'appel API réel avec searchResults
+          const results = initialCollaborators.filter((c) =>
+            c.name.toLowerCase().includes(query.toLowerCase())
+          );
+          setCollaborators(results);
+          setIsSearching(false);
+        }, 300);
+      } else {
+        setCollaborators(initialCollaborators);
+      }
+    }, 500),
+    []
+  );
+
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+    return () => debouncedSearch.cancel();
+  }, [searchQuery, debouncedSearch]);
 
   const toggleCollaborator = (id: string) => {
     setCollaborators((prev) =>
@@ -166,12 +203,19 @@ export function EventCollaboratorSelector({
               </DialogHeader>
 
               <div className="space-y-4 py-4">
-                <Input
-                  placeholder="Rechercher des personnes..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-background/50 border-border/50"
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="Rechercher des personnes..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-background/50 border-border/50"
+                  />
+                  {isSearching && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
 
                 <div className="max-h-60 space-y-2 overflow-y-auto">
                   {filteredCollaborators.length > 0 ? (
@@ -204,7 +248,11 @@ export function EventCollaboratorSelector({
                     ))
                   ) : (
                     <div className="py-4 text-center text-sm text-muted-foreground">
-                      Aucun résultat trouvé
+                      {isSearching
+                        ? "Recherche en cours..."
+                        : searchQuery.length > 0
+                          ? "Aucun résultat trouvé"
+                          : "Commencez à taper pour rechercher"}
                     </div>
                   )}
                 </div>

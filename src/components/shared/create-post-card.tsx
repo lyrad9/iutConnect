@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useRef, useCallback } from "react";
 import { Image as Photo, Calendar } from "lucide-react";
 import {
@@ -70,7 +69,7 @@ export function CreatePostCard() {
     setIsPostOrEvent("post");
     /*  setIsSubmitting(false); */
   };
-  console.log("isformValide", isFormValid());
+  /*   console.log("isformValide", isFormValid()); */
   return (
     <div className="mb-6 overflow-hidden rounded-xl border bg-card shadow-sm transition-all">
       <div className="p-4">

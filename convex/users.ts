@@ -1,5 +1,10 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import {
+  mutation,
+  query,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import {
   USER_FUNCTIONS,
@@ -8,6 +13,7 @@ import {
 import { sendUserRegistrationApprovedEmail } from "@/app/(auth)/register/sendUserRegistrationApprovedEmail";
 import { generatePassword } from "@/src/lib/utils";
 import { internal } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 // Définition des types de permissions
 type UserPermission =
   | "COMMENT"
@@ -20,12 +26,97 @@ type UserPermission =
   | "ALL";
 
 /**
+ * Recherche des utilisateurs par nom, prénom ou email
+ * Utilise l'indexation Convex pour des performances optimisées
+ */
+export const searchUsers = query({
+  args: {
+    searchQuery: v.string(),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const searchTerm = args.searchQuery.toLowerCase().trim();
+    const limit = args.limit || 20;
+
+    if (!searchTerm) {
+      return [];
+    }
+
+    // Recherche par nom
+    const byLastName = await ctx.db
+      .query("users")
+      .withSearchIndex("search_lastName", (q) =>
+        q.search("lastName", searchTerm)
+      )
+      .take(limit);
+
+    // Recherche par prénom
+    const byFirstName = await ctx.db
+      .query("users")
+      .withSearchIndex("search_firstName", (q) =>
+        q.search("firstName", searchTerm)
+      )
+      .take(limit);
+
+    // Recherche par email
+    const byEmail = await ctx.db
+      .query("users")
+      .withSearchIndex("search_email", (q) => q.search("email", searchTerm))
+      .take(limit);
+
+    // Fusionner et dédupliquer les résultats
+    const results = [...byLastName, ...byFirstName, ...byEmail];
+
+    // Utilisation d'un Set pour dédupliquer par ID
+    const uniqueIds = new Set();
+    const uniqueResults = results.filter((user) => {
+      const isDuplicate = uniqueIds.has(user._id.toString());
+      uniqueIds.add(user._id.toString());
+      return !isDuplicate;
+    });
+
+    return uniqueResults.slice(0, limit).map((user) => ({
+      id: user._id,
+      name: `${user.firstName} ${user.lastName}`,
+      avatar: user.profilePicture || null,
+    }));
+  },
+});
+
+/**
  * Récupère un utilisateur par son ID
  */
 export const getUserById = query({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.userId);
+  },
+});
+/**
+ * Récpérer un utilisateur à partir de son matricule
+ */
+export const getUserByRegistrationNumber = internalQuery({
+  args: { registrationNumber: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_registrationNumber", (q) =>
+        q.eq("registrationNumber", args.registrationNumber)
+      )
+      .first();
+  },
+});
+
+/**
+ * Récupère un utilisateur à partir de son email
+ */
+export const getUserByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
   },
 });
 
@@ -265,5 +356,21 @@ export const getPendingUsers = query({
 export const getAllUsers = query({
   handler: async (ctx) => {
     return await ctx.db.query("users").collect();
+  },
+});
+
+export const currentUser = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return null;
+    }
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
+
+    // Exclure le password et le matricule
+    const { password, registrationNumber, ...userWithoutSensitiveData } = user;
+    return userWithoutSensitiveData;
   },
 });

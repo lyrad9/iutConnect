@@ -1,0 +1,52 @@
+{
+  "students": [
+    {
+      "registrationNumber": "ST001",
+      "password": "password123",
+      "firstName": "Dupont",
+      "lastName": "Jean",
+      "fieldOfStudy": "GL",
+      "level": "III",
+      "classroom": "GL3C",
+      "phoneNumber": "+237699999999"
+    },
+    {
+      "registrationNumber": "ST002",
+      "password": "password456",
+      "firstName": "Mbala",
+      "lastName": "Marie",
+      "fieldOfStudy": "ASR",
+      "level": "II",
+      "classroom": "ASR2A",
+      "phoneNumber": "+237699999999"
+    },
+    {
+      "registrationNumber": "ST003",
+      "password": "password789",
+      "firstName": "Kouam",
+      "lastName": "Pierre",
+      "fieldOfStudy": "MGT",
+      "level": "I",
+      "classroom": "MGT1B",
+      "phoneNumber": "+237699999999"
+    }
+  ],
+  "staff": [
+    {
+      "registrationNumber": "PR0001",
+      "password": "staffpass123",
+      "firstName": "Nkomo",
+      "lastName": "David",
+      "fonction": "Professeur",
+      "phoneNumber": "+237699999999"
+    },
+    {
+      "registrationNumber": "HR001",
+      "password": "staffpass456",
+      "firstName": "Essomba",
+      "lastName": "Sarah",
+      "fonction": "RessourcesHumaines",
+      "phoneNumber": "+237699999999"
+    }
+  ]
+}
