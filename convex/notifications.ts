@@ -219,7 +219,7 @@ export const deleteNotification = mutation({
   },
 });
 
-// Mutation interne pour créer la notification qu'un membre à rejoint un groupe à l'admin
+// Mutation interne pour créer la notification qu'un membre à rejoint un groupe public à l'admin
 export const notifyAdminToJoinPublicGroup = internalMutation({
   args: {
     groupId: v.id("forums"),
@@ -244,5 +244,62 @@ export const notifyAdminToJoinPublicGroup = internalMutation({
       createdAt: Date.now(),
       title: `Un utilisateur a rejoint votre groupe ${group.name}`,
     });
+  },
+});
+
+// Mutation interne pour créer la notification de demande d'adhésion en attente à l'admin
+export const notifyAdminToJoinPrivateGroup = internalMutation({
+  args: {
+    groupMembersId: v.id("groupMembers"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const groupMember = await ctx.db.get(args.groupMembersId);
+    if (!groupMember) {
+      throw new Error("Group member not found");
+    }
+    const group = await ctx.db.get(groupMember.groupId);
+    if (!group) {
+      throw new Error("Group not found");
+    }
+    const admin = await ctx.db.get(group.authorId);
+    if (!admin) {
+      throw new Error("Admin not found");
+    }
+    await ctx.db.insert("notifications", {
+      senderId: args.userId,
+      recipientId: admin._id,
+      notificationType: "request",
+      targetType: "forum",
+      groupMemberId: args.groupMembersId,
+      forumId: group._id as Id<"forums">,
+      isRead: false,
+      createdAt: Date.now(),
+      title: `Un utilisateur a demandé à rejoindre votre groupe ${group.name}`,
+    });
+  },
+});
+
+// Mutation interne pour supprimer la notification de demande d'adhésion à un groupe
+export const deleteGroupJoinRequestNotification = internalMutation({
+  args: {
+    forumId: v.id("forums"),
+    groupMemberId: v.id("groupMembers"),
+  },
+  handler: async (ctx, args) => {
+    // Chercher la notification liée à ce groupe
+    const notification = await ctx.db
+      .query("notifications")
+      .withIndex("by_groupMemberId_groupId_targetType", (q) =>
+        q
+          .eq("groupMemberId", args.groupMemberId)
+          .eq("forumId", args.forumId)
+          .eq("targetType", "forum")
+      )
+      .unique();
+    if (!notification) {
+      throw new Error("Notification not found");
+    }
+    await ctx.db.delete(notification._id);
   },
 });

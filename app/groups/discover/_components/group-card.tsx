@@ -48,9 +48,6 @@ function GroupMembers({
   groupId: string;
   membersCount: number;
 }) {
-  console.log("membersCount", membersCount);
-  const [members, setMembers] = useState<typeMembers[]>([]);
-
   // Récupérer les membres du groupe
   const groupMembers = useQuery(api.users.getGroupMembers, {
     groupId: groupId as Id<"forums">,
@@ -59,19 +56,9 @@ function GroupMembers({
     members: typeMembers[];
   };
 
-  useEffect(() => {
-    if (groupMembers?.members) {
-      setMembers(groupMembers.members);
-    }
-  }, [groupMembers]);
-
-  if (!members.length) {
-    return null;
-  }
-
   return (
     <MultiAvatar
-      users={members}
+      users={groupMembers.members}
       totalCount={membersCount}
       maxDisplayed={5}
       size="lg"

@@ -12,20 +12,10 @@ import { Bell, BellOff, Loader2 } from "lucide-react";
 import { LoadingNotifications } from "./LoadingNotifications";
 import { EmptyState } from "@/src/components/ui/empty-state";
 
-// Mock notifications data for demo purposes
-// In a real implementation, this would come from the Convex API
-
 interface NotificationListProps {
   filter?: "all" | "like" | "comment" | "event" | "group" | "request";
-
-  /*   onRefresh?: () => void; */
 }
 
-/**
- * Component to display a list of notifications with infinite scroll
- * Can be filtered by type and has real-time updates
- * Currently using mock data - will be replaced with Convex API
- */
 export function NotificationsList({
   filter = "all",
 
@@ -70,15 +60,6 @@ export function NotificationsList({
     return <LoadingNotifications />;
   }
 
-  // Show empty state if no notifications
-  /*   if (results.length === 0) {
-    return (
-      <div className="text-center py-8 bg-muted rounded-lg">
-        <p className="text-muted-foreground">No notifications to display</p>
-      </div>
-    );
-  }
- */
   return (
     <div className="space-y-4">
       {/* Display each notification */}

@@ -357,6 +357,7 @@ export default defineSchema({
     eventId: v.optional(v.id("events")),
     commentId: v.optional(v.id("comments")),
     forumId: v.optional(v.id("forums")),
+    groupMemberId: v.optional(v.id("groupMembers")),
     discussionRoomId: v.optional(v.id("discussionRooms")),
     /*  groupMemberId: v.optional(v.id("groupMembers")), */
 
@@ -364,6 +365,12 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_recipient", ["recipientId"])
+    .index("by_forumId", ["forumId", "discussionRoomId"])
+    .index("by_groupMemberId_groupId_targetType", [
+      "groupMemberId",
+      "forumId",
+      "targetType",
+    ])
     .index("by_unread", ["recipientId", "isRead"])
     .index("by_notification_type", ["notificationType"])
     .index("by_creation_date", ["createdAt"])

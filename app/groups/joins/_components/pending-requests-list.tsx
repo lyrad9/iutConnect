@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useEffect, useRef, useState } from "react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
@@ -17,145 +18,162 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import Link from "next/link";
 import { EmptyState } from "@/src/components/ui/empty-state";
-
+import { Badge } from "@/src/components/ui/badge";
+import { SmartAvatar } from "@/src/components/shared/smart-avatar";
 export default function PendingRequestsList() {
-  // Récupérer l'utilisateur connecté
-  const currentUser = useQuery(api.users.currentUser);
-
+  const [, setTick] = useState(0);
   // Récupérer les demandes en attente
-  const pendingRequests = useQuery(api.forums.getUserPendingRequests);
-
+  const { results, status, loadMore, isLoading } = usePaginatedQuery(
+    api.forums.getUserPendingRequests,
+    {},
+    {
+      initialNumItems: 10,
+    }
+  );
   // Mutation pour annuler une demande d'adhésion
   const cancelRequest = useMutation(api.forums.cancelGroupJoinRequest);
+  // Référence pour l'élément d'intersection observer
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (status !== "CanLoadMore" || isLoading) return;
+    const observed = loaderRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore(6);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    if (observed) {
+      observer.observe(observed);
+    }
+
+    return () => {
+      if (observed) {
+        observer.unobserve(observed);
+      }
+    };
+  }, [status, isLoading, loadMore]);
+
+  // Update time display every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick((tick) => tick + 1); // Force re-render to update time
+    }, 60_000); // Every minute
+    return () => clearInterval(interval);
+  }, []);
 
   // Fonction pour annuler une demande d'adhésion
   const handleCancelRequest = async (groupId: Id<"forums">) => {
     try {
       await cancelRequest({ groupId });
-      toast.success("Demande d'adhésion annulée avec succès");
+      toast.success("Votre demande d'adhésion a été annulée");
     } catch (error) {
       console.error("Erreur lors de l'annulation de la demande:", error);
       toast.error("Erreur lors de l'annulation de la demande");
     }
   };
 
-  // Afficher un loader pendant le chargement
-  /*   if (pendingRequests === undefined) {
-    return (
-      <Card className="border border-muted/40">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Demandes en attente
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
-  }
- */
   return (
-    <Card className="border border-muted/40">
+    <Card className="">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
           Demandes en attente
-          {pendingRequests && pendingRequests.length > 0 && (
+          {results && results.length > 0 && (
             <span className="ml-2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
-              {pendingRequests.length}
+              {results.length}
             </span>
           )}
         </CardTitle>
       </CardHeader>
 
       <CardContent>
-        {!pendingRequests || pendingRequests.length === 0 ? (
-          <EmptyState
-            title="Aucune demande en attente"
-            description="Vous n'avez pas de demandes d'adhésion en attente"
-            icons={[Clock]}
-            className="py-8"
-          />
-        ) : (
-          <div className="space-y-4">
-            {pendingRequests.map((request) => (
-              <Card
-                key={request.id}
-                className="overflow-hidden border border-muted/40"
-              >
-                <div className="relative h-24 w-full bg-gradient-to-br from-muted/30 to-muted/10">
-                  <img
-                    src={request.group.coverPhoto || "/placeholder.svg"}
-                    alt={`${request.group.name} couverture`}
-                    className="h-full w-full object-cover"
-                  />
-
-                  {/* Badge de confidentialité */}
-                  <div className="absolute top-2 right-2">
-                    {request.group.confidentiality === "private" ? (
-                      <div className="flex items-center gap-1 rounded-md bg-background/80 px-2 py-1 text-xs backdrop-blur-sm">
-                        <LockKeyhole className="h-3 w-3" />
-                        Privé
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1 rounded-md bg-background/80 px-2 py-1 text-xs backdrop-blur-sm">
-                        <Globe className="h-3 w-3" />
-                        Public
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="absolute -bottom-6 left-3 h-12 w-12 overflow-hidden rounded-full border-2 border-background bg-background">
+        <div className="space-y-4">
+          {results && results.length > 0 ? (
+            <>
+              {results.map((request) => (
+                <Card key={request?.id} className="overflow-hidden pb-6 pt-0">
+                  <div className="relative h-24 w-full bg-gradient-to-br from-muted/30 to-muted/10">
                     <img
-                      src={request.group.profilePicture || "/placeholder.svg"}
-                      alt={`${request.group.name} logo`}
+                      src={request?.group.coverPhoto || "/placeholder.svg"}
+                      alt={`${request?.group.name} couverture`}
                       className="h-full w-full object-cover"
                     />
+
+                    {/* Badge de confidentialité */}
+                    <div className="absolute top-2 right-2">
+                      {request?.group.confidentiality === "private" ? (
+                        <Badge>
+                          {" "}
+                          <LockKeyhole className="h-3 w-3" />
+                          Privé
+                        </Badge>
+                      ) : (
+                        <Badge>
+                          <Globe className="h-3 w-3" />
+                          Public
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="absolute -bottom-8 left-3 size-20 overflow-hidden rounded-full border-2 border-background bg-background">
+                      <SmartAvatar
+                        avatar={request?.group.profilePicture}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="pt-8 px-4 pb-4">
-                  <h3 className="font-semibold line-clamp-1">
-                    {request.group.name}
-                  </h3>
+                  <div className="pt-3 px-4">
+                    <h3 className="font-semibold line-clamp-1">
+                      <Link
+                        href={`/groups/${request?.group._id}`}
+                        className="hover:underline"
+                      >
+                        {request?.group.name}
+                      </Link>
+                    </h3>
 
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Demande envoyée{" "}
-                    {formatDistanceToNow(new Date(request.requestAt || 0), {
-                      addSuffix: true,
-                      locale: fr,
-                    })}
-                  </p>
-
-                  <div className="mt-4 flex gap-2">
-                    <Link
-                      href={`/groups/${request.group._id}`}
-                      className="flex-1"
-                    >
-                      <Button variant="outline" size="sm" className="w-full">
-                        <Eye className="mr-2 h-4 w-4" />
-                        Voir
-                      </Button>
-                    </Link>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Demande envoyée{" "}
+                      {formatDistanceToNow(new Date(request?.requestAt || 0), {
+                        addSuffix: true,
+                        locale: fr,
+                      })}
+                    </p>
+                  </div>
+                  <CardFooter className="px-3">
                     <Button
                       variant="destructive"
-                      size="sm"
-                      className="flex-1"
+                      className="w-full"
                       onClick={() =>
-                        handleCancelRequest(request.group._id as Id<"forums">)
+                        handleCancelRequest(request?.group._id as Id<"forums">)
                       }
                     >
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Annuler
+                      Annuler la demande
                     </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </CardFooter>
+                </Card>
+              ))}
+              <div ref={loaderRef} className="h-10" />
+              {isLoading && (
+                <Loader2 className="animate-spin size-4 mx-auto text-primary" />
+              )}
+            </>
+          ) : isLoading ? (
+            <Loader2 className="animate-spin size-4 mx-auto text-primary" />
+          ) : (
+            <EmptyState
+              title="Aucune demande en attente"
+              description="Vous n'avez pas de demandes d'adhésion en attente"
+              icons={[Clock]}
+              className="py-8"
+            />
+          )}
+        </div>
       </CardContent>
     </Card>
   );

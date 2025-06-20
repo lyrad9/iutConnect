@@ -405,13 +405,13 @@ export const cancelGroupJoinRequest = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Utilisateur non authentifié");
+      throw new Error("User not authentificated");
     }
 
     // Vérifier que le groupe existe
     const group = await ctx.db.get(args.groupId);
     if (!group) {
-      throw new Error("Groupe introuvable");
+      throw new Error("Group not found");
     }
 
     // Vérifier si l'utilisateur a une demande d'adhésion en attente
@@ -423,16 +423,19 @@ export const cancelGroupJoinRequest = mutation({
       .first();
 
     if (!membership) {
-      throw new Error("Vous n'avez pas de demande d'adhésion en attente");
+      throw new Error("You don't have a pending join request");
     }
 
     // Supprimer la demande d'adhésion
-    await ctx.db.patch(membership._id, {
-      status: "rejected",
-      updatedAt: Date.now(),
-    });
-
-    return { success: true };
+    await ctx.db.delete(membership._id);
+    await ctx.scheduler.runAfter(
+      0,
+      internal.notifications.deleteGroupJoinRequestNotification,
+      {
+        forumId: args.groupId,
+        groupMemberId: membership._id,
+      }
+    );
   },
 });
 
@@ -444,13 +447,13 @@ export const requestGroupJoin = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new Error("Utilisateur non authentifié");
+      throw new Error("User not authentificated");
     }
 
     // Vérifier que le groupe existe
     const group = await ctx.db.get(args.groupId);
     if (!group) {
-      throw new Error("Groupe introuvable");
+      throw new Error("Group not found");
     }
 
     // Vérifier si l'utilisateur est déjà membre du groupe
@@ -462,11 +465,11 @@ export const requestGroupJoin = mutation({
       .first();
 
     if (membership) {
-      throw new Error("Vous êtes déjà membre de ce groupe");
+      throw new Error("You are already a member of this group");
     }
 
     // Créer une demande d'adhésion en attente
-    await ctx.db.insert("groupMembers", {
+    const groupMembersId = await ctx.db.insert("groupMembers", {
       userId: userId as Id<"users">,
       groupId: args.groupId,
       groupType: "forum",
@@ -475,6 +478,14 @@ export const requestGroupJoin = mutation({
       requestAt: Date.now(),
       createdAt: Date.now(),
     });
+    await ctx.scheduler.runAfter(
+      0,
+      internal.notifications.notifyAdminToJoinPrivateGroup,
+      {
+        groupMembersId: groupMembersId,
+        userId: userId as Id<"users">,
+      }
+    );
   },
 });
 
@@ -482,7 +493,7 @@ export const requestGroupJoin = mutation({
  * Récupère les groupes dont l'utilisateur est membre
  * @param paginationOpts - Options de pagination
  */
-export const getUserGroups = query({
+export const sidebarGetUserGroups = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
@@ -512,6 +523,74 @@ export const getUserGroups = query({
             /*    avatar: group.profilePicture
               ? ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
               : null, */
+            avatar: group.profilePicture ?? null,
+          };
+        })
+      ),
+    };
+  },
+});
+// recupérer en fonction de la rechercher et du filtre les groupes de l'utilisateur(groupes administrés, groupes rejoints)
+export const getUserGroups = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    searchTerm: v.optional(v.string()),
+    filterType: v.optional(
+      v.union(v.literal("admin"), v.literal("member"), v.literal("all"))
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new Error("User not authentificated");
+    }
+    const results = await ctx.db.query("forums").paginate(args.paginationOpts);
+    let groupsQuery;
+    if (args.searchTerm && args.searchTerm.trim() !== "") {
+      const searchTerm = args.searchTerm.trim();
+      groupsQuery = ctx.db
+        .query("forums")
+        .withSearchIndex("search_name", (q) =>
+          q
+            .search("name", searchTerm)
+            .eq("visibility", "visible")
+            .eq("status", "active")
+        );
+    }
+    if (args.filterType === "admin") {
+      groupsQuery = ctx.db
+        .query("forums")
+        .withIndex("by_author", (q) => q.eq("authorId", userId as Id<"users">));
+    }
+    if (args.filterType === "member") {
+      groupsQuery = ctx.db.query("forums").filter((q) =>
+        // L'utilisateur n'est pas admin ET est dans le tableau members
+        q.and(
+          q.neq(q.field("authorId"), userId),
+          q.in(userId, q.field("members"))
+        )
+      );
+    }
+    if (args.filterType === "all") {
+      groupsQuery = ctx.db.query("forums");
+    }
+    const groups = await groupsQuery?.paginate(args.paginationOpts);
+    if (!groups) {
+      return {
+        page: [],
+        hasMore: false,
+        total: 0,
+      };
+    }
+    return {
+      ...groups,
+      page: await Promise.all(
+        groups.page.map(async (group) => {
+          const author = await ctx.db.get(group.authorId);
+          return {
+            ...group,
+            name: group.name,
+            membersCount: group.members ? group.members.length : 0,
             avatar: group.profilePicture ?? null,
           };
         })
@@ -722,24 +801,27 @@ export const isUserMemberOfGroup = query({
 /**
  * Récupère les demandes d'adhésion en attente de l'utilisateur
  */
+
 export const getUserPendingRequests = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("Utilisateur non authentifié");
+      throw new ConvexError("User not authentificated");
     }
 
-    // Récupérer les demandes d'adhésion en attente
+    // Récupérer les demandes d'adhésion en attente avec pagination
     const pendingMemberships = await ctx.db
       .query("groupMembers")
       .withIndex("by_user", (q) => q.eq("userId", userId as Id<"users">))
       .filter((q) => q.eq(q.field("status"), "pending"))
-      .collect();
+      .paginate(args.paginationOpts);
 
-    // Récupérer les détails des groupes pour chaque demande
+    // Récupérer les détails des groupes pour chaque demande (page courante)
     const pendingRequests = await Promise.all(
-      pendingMemberships.map(async (membership) => {
+      pendingMemberships.page.map(async (membership) => {
         const group = await ctx.db.get(membership.groupId as Id<"forums">);
         if (!group) {
           return null;
@@ -757,9 +839,15 @@ export const getUserPendingRequests = query({
             name: group.name,
             description: group.description,
             confidentiality: group.confidentiality,
-           /*  profilePicture: group.profilePicture, */
+
             profilePicture: group.profilePicture,
             coverPhoto: group.coverPhoto,
+            /*  profilePicture: group.profilePicture
+                  ? await ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
+                  : null,
+                coverPhoto: group.coverPhoto
+                  ? await ctx.storage.getUrl(group.coverPhoto as Id<"_storage">)
+                  : null, */
             authorName: author
               ? `${author.firstName} ${author.lastName}`
               : "Inconnu",
@@ -769,6 +857,9 @@ export const getUserPendingRequests = query({
     );
 
     // Filtrer les éléments null (groupes qui n'existent plus)
-    return pendingRequests.filter(Boolean);
+    return {
+      ...pendingMemberships,
+      page: pendingRequests.filter(Boolean),
+    };
   },
 });

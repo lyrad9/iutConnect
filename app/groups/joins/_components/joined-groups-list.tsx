@@ -42,11 +42,12 @@ import { fr } from "date-fns/locale";
 import Link from "next/link";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { MultiAvatar } from "@/src/components/ui/multi-avatar";
+import { useDebounce } from "use-debounce";
 
 export default function JoinedGroupsList() {
   // États pour la recherche et le filtre
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [rawTerm, setRawTerm] = useState("");
+  const [searchQuery] = useDebounce(rawTerm, 400);
   const [filterType, setFilterType] = useState<"all" | "admin" | "member">(
     "all"
   );
@@ -63,9 +64,12 @@ export default function JoinedGroupsList() {
   } = usePaginatedQuery(
     api.forums.getUserGroups,
     {
-      paginationOpts: {},
+      searchTerm: searchQuery,
+      filterType: filterType,
     },
-    { initialNumItems: 10 }
+    {
+      initialNumItems: 10,
+    }
   );
 
   // Mutation pour quitter un groupe
@@ -122,25 +126,8 @@ export default function JoinedGroupsList() {
       return bJoinedAt - aJoinedAt;
     });
 
-  // Afficher un loader pendant le chargement
-  if (isLoading) {
-    return (
-      <Card className="border border-muted/40">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
-            Mes groupes
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="border border-muted/40">
+    <Card className="">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
@@ -167,7 +154,7 @@ export default function JoinedGroupsList() {
             />
           </div>
           <Select
-            value={filterType}
+            /*   value={filterType} */
             onValueChange={(value) =>
               setFilterType(value as "all" | "admin" | "member")
             }
@@ -197,10 +184,7 @@ export default function JoinedGroupsList() {
         ) : (
           <div className="space-y-4">
             {filteredGroups.map((group) => (
-              <Card
-                key={group._id}
-                className="overflow-hidden border border-muted/40"
-              >
+              <Card key={group._id} className="overflow-hidden">
                 <div className="flex flex-col md:flex-row">
                   {/* Image de couverture (visible seulement sur mobile) */}
                   <div className="relative h-32 w-full md:hidden bg-gradient-to-br from-muted/30 to-muted/10">

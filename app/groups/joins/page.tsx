@@ -17,18 +17,13 @@ export default function JoinsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Section des demandes en attente */}
-        <div className="lg:col-span-4 space-y-6">
-          <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-            <PendingRequestsList />
-          </Suspense>
-        </div>
-
         {/* Section des groupes rejoints */}
         <div className="lg:col-span-8 space-y-6">
-          <Suspense fallback={<Skeleton className="h-[600px] w-full" />}>
-            <JoinedGroupsList />
-          </Suspense>
+          <JoinedGroupsList />
+        </div>
+        {/* Section des demandes en attente */}
+        <div className="lg:col-span-4 space-y-6">
+          <PendingRequestsList />
         </div>
       </div>
     </div>

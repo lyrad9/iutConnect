@@ -25,7 +25,7 @@ import {
   DialogTitle,
 } from "@/src/components/ui/dialog";
 import { EventFormValues } from "./event-form-schema";
-import { Collaborator } from "../types";
+
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useDebounce } from "use-debounce";
@@ -43,9 +43,6 @@ export function EventCollaboratorSelector({
 }: EventCollaboratorSelectorProps) {
   const [rawQuery, setRawQuery] = useState("");
   const [searchQuery] = useDebounce(rawQuery, 400); // 🔹 debounce value
-  /*   const [localCollaborators, setLocalCollaborators] = useState<Collaborator[]>(
-    []
-  ); */
 
   const { field } = useController({
     name: "collaborators",
@@ -58,19 +55,6 @@ export function EventCollaboratorSelector({
       ? { searchQuery, limit: 20 }
       : { searchQuery: undefined, limit: 20 }
   );
-
-  /*   useEffect(() => {
-    if (searchResults) {
-      setLocalCollaborators(
-        searchResults.map((user) => ({
-          id: user.id,
-          name: user.name,
-          avatar: user.avatar || undefined,
-          selected: field.value.includes(user.id),
-        }))
-      );
-    }
-  }, [searchResults, field.value]); */
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setRawQuery(e.target.value);
