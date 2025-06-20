@@ -26,123 +26,67 @@ import {
 } from "@/src/components/ui/dialog";
 import { EventFormValues } from "./event-form-schema";
 import { Collaborator } from "../types";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { debounce } from "lodash";
+import { useDebounce } from "use-debounce";
+import { getInitials } from "@/src/lib/utils";
 
 type EventCollaboratorSelectorProps = {
   control: Control<EventFormValues>;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
-
-// Données fictives pour les collaborateurs en attendant l'intégration avec l'API
-const initialCollaborators: Collaborator[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    selected: false,
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    selected: false,
-  },
-  {
-    id: "3",
-    name: "Bob Johnson",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    selected: false,
-  },
-  {
-    id: "4",
-    name: "Alice Brown",
-    avatar: "https://i.pravatar.cc/150?img=4",
-    selected: false,
-  },
-];
 export function EventCollaboratorSelector({
   control,
   isModalOpen,
   setIsModalOpen,
 }: EventCollaboratorSelectorProps) {
-  const [collaborators, setCollaborators] =
-    useState<Collaborator[]>(initialCollaborators);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
+  const [rawQuery, setRawQuery] = useState("");
+  const [searchQuery] = useDebounce(rawQuery, 400); // 🔹 debounce value
+  /*   const [localCollaborators, setLocalCollaborators] = useState<Collaborator[]>(
+    []
+  ); */
 
   const { field } = useController({
     name: "collaborators",
     control,
   });
 
-  // Utilisation de la requête searchUsers de Convex (à implémenter)
-  // const searchResults = useQuery(api.users.searchUsers,
-  //   searchQuery ? { searchQuery, limit: 20 } : null
-  // );
-
-  // Fonction debounce pour la recherche
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedSearch = useCallback(
-    debounce((query: string) => {
-      if (query.length > 2) {
-        setIsSearching(true);
-        // Simuler une recherche asynchrone
-        setTimeout(() => {
-          // Ici, nous filtrons les collaborateurs locaux
-          // À remplacer par l'appel API réel avec searchResults
-          const results = initialCollaborators.filter((c) =>
-            c.name.toLowerCase().includes(query.toLowerCase())
-          );
-          setCollaborators(results);
-          setIsSearching(false);
-        }, 300);
-      } else {
-        setCollaborators(initialCollaborators);
-      }
-    }, 500),
-    []
+  const searchResults = useQuery(
+    api.users.selectCollaborators,
+    searchQuery.length > 2
+      ? { searchQuery, limit: 20 }
+      : { searchQuery: undefined, limit: 20 }
   );
 
-  useEffect(() => {
-    debouncedSearch(searchQuery);
-    return () => debouncedSearch.cancel();
-  }, [searchQuery, debouncedSearch]);
+  /*   useEffect(() => {
+    if (searchResults) {
+      setLocalCollaborators(
+        searchResults.map((user) => ({
+          id: user.id,
+          name: user.name,
+          avatar: user.avatar || undefined,
+          selected: field.value.includes(user.id),
+        }))
+      );
+    }
+  }, [searchResults, field.value]); */
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRawQuery(e.target.value);
+  };
 
   const toggleCollaborator = (id: string) => {
-    setCollaborators((prev) =>
-      prev.map((collab) =>
-        collab.id === id ? { ...collab, selected: !collab.selected } : collab
-      )
-    );
+    if (field.value.includes(id)) {
+      field.onChange(field.value.filter((collabId) => collabId !== id));
+    } else {
+      field.onChange([...field.value, id]);
+    }
   };
 
-  const saveCollaborators = () => {
-    const selected = collaborators.filter((c) => c.selected).map((c) => c.id);
-    field.onChange(selected);
-    setIsModalOpen(false);
-  };
-
-  const removeCollaborator = (id: string) => {
-    const updatedCollaborators = field.value.filter(
-      (collabId) => collabId !== id
-    );
-    field.onChange(updatedCollaborators);
-
-    // Mise à jour de l'état local
-    setCollaborators((prev) =>
-      prev.map((collab) =>
-        collab.id === id ? { ...collab, selected: false } : collab
-      )
-    );
-  };
-
-  const filteredCollaborators = collaborators.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
+  const saveCollaborators = () => setIsModalOpen(false);
+  const removeCollaborator = (id: string) =>
+    field.onChange(field.value.filter((collabId) => collabId !== id));
   return (
     <FormField
       control={control}
@@ -165,31 +109,36 @@ export function EventCollaboratorSelector({
 
           {field.value.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
-              {collaborators
-                .filter((c) => field.value.includes(c.id))
-                .map((collab) => (
-                  <div
-                    key={collab.id}
-                    className="flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-sm"
-                  >
-                    <Avatar className="size-6">
-                      <AvatarImage src={collab.avatar} alt={collab.name} />
-                      <AvatarFallback>
-                        {collab.name.substring(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{collab.name}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      type="button"
-                      className="h-4 w-4 p-0"
-                      onClick={() => removeCollaborator(collab.id)}
+              {searchResults &&
+                searchResults.length > 0 &&
+                searchResults
+                  .filter((c) => field.value.includes(c.id))
+                  .map((collab) => (
+                    <div
+                      key={collab.id}
+                      className="flex items-center gap-1 rounded-full bg-secondary px-2 py-1 text-sm"
                     >
-                      <X className="size-3" />
-                    </Button>
-                  </div>
-                ))}
+                      <Avatar className="size-6">
+                        <AvatarImage
+                          src={collab.avatar ?? "/placeholder.svg"}
+                          alt={collab.name}
+                        />
+                        <AvatarFallback>
+                          {getInitials(collab.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{collab.name}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        type="button"
+                        className="h-4 w-4 p-0"
+                        onClick={() => removeCollaborator(collab.id)}
+                      >
+                        <X className="size-3" />
+                      </Button>
+                    </div>
+                  ))}
             </div>
           )}
 
@@ -206,11 +155,11 @@ export function EventCollaboratorSelector({
                 <div className="relative">
                   <Input
                     placeholder="Rechercher des personnes..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    defaultValue={searchQuery}
+                    onChange={handleInputChange}
                     className="bg-background/50 border-border/50"
                   />
-                  {isSearching && (
+                  {searchQuery !== rawQuery && (
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     </div>
@@ -218,15 +167,15 @@ export function EventCollaboratorSelector({
                 </div>
 
                 <div className="max-h-60 space-y-2 overflow-y-auto">
-                  {filteredCollaborators.length > 0 ? (
-                    filteredCollaborators.map((collab) => (
+                  {searchResults && searchResults.length > 0 ? (
+                    searchResults.map((collab) => (
                       <div
                         key={collab.id}
                         className="flex items-center space-x-2"
                       >
                         <Checkbox
                           id={`collab-${collab.id}`}
-                          checked={collab.selected}
+                          checked={field.value.includes(collab.id)}
                           onCheckedChange={() => toggleCollaborator(collab.id)}
                         />
                         <Label
@@ -239,7 +188,7 @@ export function EventCollaboratorSelector({
                               alt={collab.name}
                             />
                             <AvatarFallback>
-                              {collab.name.substring(0, 2)}
+                              {getInitials(collab.name)}
                             </AvatarFallback>
                           </Avatar>
                           <span>{collab.name}</span>
@@ -248,7 +197,7 @@ export function EventCollaboratorSelector({
                     ))
                   ) : (
                     <div className="py-4 text-center text-sm text-muted-foreground">
-                      {isSearching
+                      {searchQuery !== rawQuery
                         ? "Recherche en cours..."
                         : searchQuery.length > 0
                           ? "Aucun résultat trouvé"

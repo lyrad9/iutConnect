@@ -162,7 +162,8 @@ A notification is characterized by:
 - Recipient
 - Content
 - Read (read or unread)
-- Notification type: like, comment, new event, new post, approval request to join a group (with actions (accept, decline))
+- targetType: post, comment, event, forum, discussionRoom, groupMember
+- Notification type: like, comment, event, post, request to join a group (with actions (accept, decline)), group(join a group, post,approval post(with groupMember like targetType))
   Examples of notifications:
 - Daryl has created a new event
 - Alex has commented on your post

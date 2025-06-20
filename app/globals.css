@@ -1,7 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "tailwind-scrollbar-hide/v4";
-@config "../tailwind.config.ts";
+/* @config "../tailwind.config.ts"; */
+
 @custom-variant dark (&:is(.dark *));
 @custom-variant hover (&:hover);
 
@@ -234,14 +235,6 @@
   ---break---
 */
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
 /* @layer components {
   .btn {
     @apply border-border outline-ring/50;

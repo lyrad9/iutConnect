@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "convex/authActions.js",
-    "convex/authUtils.js"
+    "convex/authUtils.js",
+    "app/notifications/page.stsx"
   ],
   "exclude": ["node_modules", "convex"]
 }

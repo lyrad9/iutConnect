@@ -15,6 +15,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
   ],
+  jwt: {
+    durationMs: 1000 * 60 * 60 * 24 * 30, // JWT valide 30 jours
+  },
+  session: {
+    inactiveDurationMs: 1000 * 60 * 60 * 24 * 30, // Session inactive max 30 jours
+    totalDurationMs: 1000 * 60 * 60 * 24 * 365, // Session totale max 1 an
+  },
 
   callbacks: {
     async createOrUpdateUser(ctx: MutationCtx, args) {
@@ -62,6 +69,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
             fieldOfStudy: fieldOfStudy as string,
             classroom: classroom as string,
             interests: [],
+            socialNetworks: [],
             phoneNumber: phoneNumber as string,
             permissions: ["COMMENT", "LIKE", "CREATE_POST_IN_GROUP"],
             fonction: "Etudiant",
@@ -78,6 +86,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           lastName: lastName as string,
           firstName: args.profile.firstName as string,
           interests: [],
+          socialNetworks: [],
           phoneNumber: phoneNumber as string,
           permissions: ["COMMENT", "LIKE", "CREATE_POST_IN_GROUP"],
           fonction: fonction as string,

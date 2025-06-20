@@ -28,16 +28,16 @@ export function ProfileFriends() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-1   gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {mockUsers.map((user) => (
           <div
             key={user.id}
-            className="rounded-xl border bg-card p-4 shadow-sm"
+            className="rounded-xl  border bg-card  p-4 shadow-sm"
           >
             <div className="flex items-start justify-between">
               <Link
                 href={`/profile/${user.id}`}
-                className="flex items-center gap-3"
+                className="flex  items-center gap-3"
               >
                 <Avatar className="h-12 w-12">
                   <AvatarImage src={user.avatarUrl} alt={user.name} />

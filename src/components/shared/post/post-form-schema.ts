@@ -2,9 +2,14 @@
 import { z } from "zod";
 
 // Validateur personnalisé pour les fichiers
-const fileValidator = z.any().refine((file) => file instanceof File, {
-  message: "Le fichier doit être valide",
-});
+export const fileValidator = z
+  .any()
+  .refine((file) => file, {
+    message: "Le fichier est requis",
+  })
+  .refine((file) => file instanceof File, {
+    message: "Le fichier doit être valide",
+  });
 
 // Schéma de validation pour un post simple
 export const postFormSchema = z

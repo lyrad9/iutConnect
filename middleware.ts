@@ -15,14 +15,21 @@ const isProtectedRoute = createRouteMatcher([
   "/((?!sign-up|verify-email|auth-admin-iut|register|login|api|trpc).*)",
 ]);
 
-export default convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
-  if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
-    return nextjsMiddlewareRedirect(request, "/");
+export default convexAuthNextjsMiddleware(
+  async (request, { convexAuth }) => {
+    if (isSignInPage(request) && (await convexAuth.isAuthenticated())) {
+      return nextjsMiddlewareRedirect(request, "/");
+    }
+    if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
+      return nextjsMiddlewareRedirect(request, "/sign-up");
+    }
+  },
+  {
+    cookieConfig: {
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
+    },
   }
-  if (isProtectedRoute(request) && !(await convexAuth.isAuthenticated())) {
-    return nextjsMiddlewareRedirect(request, "/sign-up");
-  }
-});
+);
 
 export const config = {
   // The following matcher runs middleware on all routes

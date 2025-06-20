@@ -58,8 +58,9 @@ function shuffleString(str: string): string {
  * @param name Nom complet
  * @returns Initiales (maximum 2 caractères)
  */
-export function getInitialsFromName(name: string): string {
-  if (!name) return "??";
+export function getInitials(name: string): string {
+  const [firstName, lastName] = name.split(" ");
+  if (!firstName || !lastName) return "??";
 
   const parts = name.trim().split(/\s+/);
 

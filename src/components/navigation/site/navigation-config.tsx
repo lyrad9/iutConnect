@@ -15,20 +15,17 @@ export const NavigationItems = [
   {
     href: "/",
     icon: <Home className="size-5" />,
-    label: "Feed",
-    notifications: 0,
+    label: "Fil d\\'actualité",
   },
   {
     href: "/groups",
     icon: <Users className="size-5" />,
-    label: "Groups",
-    notifications: 2,
+    label: "Groupes",
   },
   {
     href: "/events",
     icon: <Calendar className="size-5" />,
-    label: "Events",
-    notifications: 0,
+    label: "Evènements",
   },
   /* {
     href: "/courses",
@@ -40,24 +37,22 @@ export const NavigationItems = [
     href: "/messages",
     icon: <MessageSquare className="size-5" />,
     label: "Messages",
-    notifications: 5,
+    hasMessages: true,
   },
   {
     href: "/notifications",
     icon: <Bell className="size-5" />,
     label: "Notifications",
-    notifications: 3,
+    hasNotifications: true,
   },
   {
     href: "/profile",
     icon: <User className="size-5" />,
-    label: "Profile",
-    notifications: 0,
+    label: "Profil",
   },
   {
     href: "/settings",
     icon: <Settings className="size-5" />,
-    label: "Settings",
-    notifications: 0,
+    label: "Paramètres",
   },
 ];

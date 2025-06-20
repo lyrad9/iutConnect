@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 export const AuthDropdown = () => {
   const { signOut } = useAuthActions();
   const user = useQuery(api.users.currentUser);
@@ -44,9 +44,12 @@ export const AuthDropdown = () => {
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={async () => {
-              await signOut().then(() => {
+              await signOut();
+              redirect("/sign-up");
+
+              /*    .then(() => {
                 router.push("/sign-up");
-              });
+              }); */
             }}
             asChild
           >

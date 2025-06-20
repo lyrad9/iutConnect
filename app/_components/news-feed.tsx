@@ -106,13 +106,13 @@ export function NewsFeed() {
             id: item.id,
             author: item.data.author,
             content: item.data.content,
-            medias: item.data.medias || [],
+            medias: item.data.media || [],
             createdAt: item.data.createdAt || item.createdAt,
             likes: item.data.likes?.length || 0,
             isGroupPost: !!item.data.groupId,
             group: item.data.group,
             commentsCount: item.data.commentsCount || 0,
-            comments: item.data.comments || [],
+            comments: item.data.comments,
           }}
         />
       );

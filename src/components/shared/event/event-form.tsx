@@ -77,7 +77,7 @@ export function EventForm({
       eventType: "",
       collaborators: [],
       photo: undefined,
-      allowsParticipants: true,
+      allowsParticipants: false,
     },
     mode: "onChange",
   });

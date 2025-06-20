@@ -27,7 +27,7 @@ export const eventFormSchema = z.object({
   eventType: z.string().min(1, "Le type d'événement est requis"),
   collaborators: z.array(z.string()).optional().default([]),
   photo: fileValidator.refine((file) => file && file.size <= 2024 * 2024, {
-    message: "La taille de l'image doit être inférieure à 1Mo",
+    message: "La taille de l'image doit être inférieure à 2Mo",
   }),
   allowsParticipants: z.boolean().default(true),
 });

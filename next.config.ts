@@ -1,12 +1,15 @@
 import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
-  allowedDevOrigins: [
+  /* allowedDevOrigins: [
     "local-origin.dev",
     "*.local-origin.dev",
     "*",
     "dashboard.convex.dev",
   ],
-
+ */
+  experimental: {
+    authInterrupts: true,
+  },
   /* output: "export", */
   /*  eslint: {
     ignoreDuringBuilds: true,

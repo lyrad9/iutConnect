@@ -12,6 +12,7 @@ import {
   Users,
   User as UserIcon,
   Check,
+  BadgeCheck,
 } from "lucide-react";
 import {
   Avatar,
@@ -42,8 +43,9 @@ import {
 } from "@/src/components/ui/tooltip";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { cn, getInitialsFromName } from "@/src/lib/utils";
+import { cn, getInitials } from "@/src/lib/utils";
 import { eventTypes } from "@/src/components/utils/const/event-type";
+import { Id } from "@/convex/_generated/dataModel";
 
 // Type pour l'événement
 export interface EventType {
@@ -90,9 +92,7 @@ export function EventCard({ event }: EventCardProps) {
   );
 
   // Mutation pour participer à un événement (à implémenter côté Convex)
-  const toggleParticipation = useMutation(
-    api.eventParticipants?.toggleParticipation as any
-  );
+  const toggleParticipation = useMutation(api.events.toggleParticipation);
 
   // Formater la date de début de l'événement au format complet
   const formattedStartDate = format(
@@ -121,8 +121,7 @@ export function EventCard({ event }: EventCardProps) {
       // Appeler l'API pour mettre à jour la base de données
       if (toggleParticipation) {
         await toggleParticipation({
-          eventId: event.id,
-          status: !isParticipating ? "attending" : "declined",
+          eventId: event.id as Id<"events">,
         });
       }
     } catch (error) {
@@ -151,7 +150,12 @@ export function EventCard({ event }: EventCardProps) {
         <div className="flex items-start justify-between">
           <div className="flex gap-3">
             {/* Avatar de l'auteur ou du groupe si c'est une publication de groupe par un admin */}
-            <Avatar className="size-10">
+            <Avatar
+              className={cn(
+                "size-10",
+                isGroupAdminEvent && "border-2 border-primary"
+              )}
+            >
               {isGroupAdminEvent ? (
                 // Pour les événements de groupe créés par un admin, on affiche l'avatar du groupe
                 <AvatarImage
@@ -166,18 +170,12 @@ export function EventCard({ event }: EventCardProps) {
                 />
               )}
 
-              {/* Fallback en cas d'absence d'image */}
-              <AvatarFallback
-                className={cn(
-                  isGroupAdminEvent && event.group
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                )}
-              >
-                {isGroupAdminEvent && event.group
-                  ? getInitialsFromName(event.group.name)
-                  : getInitialsFromName(event.author.name)}
-              </AvatarFallback>
+              {/* Fallback en cas d'absence d'image pour le user */}
+              {!isGroupAdminEvent && (
+                <AvatarFallback>
+                  getInitialsFromName(event.author.name)
+                </AvatarFallback>
+              )}
             </Avatar>
 
             <div>
@@ -205,12 +203,7 @@ export function EventCard({ event }: EventCardProps) {
 
                 {/* Badge pour les administrateurs */}
                 {event.author.isAdmin && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs px-1 py-0 border-primary text-primary"
-                  >
-                    Admin
-                  </Badge>
+                  <BadgeCheck className="size-4 text-primary" />
                 )}
               </div>
 
@@ -218,16 +211,8 @@ export function EventCard({ event }: EventCardProps) {
                 {/* Date relative */}
                 <span>{relativeDate}</span>
 
-                {/* Afficher le nom de l'auteur si c'est un événement de groupe par un admin */}
-                {isGroupAdminEvent && (
-                  <>
-                    <span>•</span>
-                    <span>Créé par {event.author.name}</span>
-                  </>
-                )}
-
                 {/* Afficher le groupe si ce n'est pas un événement de groupe par un admin */}
-                {event.group && !isGroupAdminEvent && (
+                {event.group && (
                   <>
                     <span>•</span>
                     <Link
@@ -255,10 +240,10 @@ export function EventCard({ event }: EventCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Signaler</DropdownMenuItem>
+              {/*  <DropdownMenuItem>Signaler</DropdownMenuItem>
               <DropdownMenuItem>Partager</DropdownMenuItem>
               <DropdownMenuItem>Ajouter au calendrier</DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator /> */}
               <DropdownMenuItem className="text-destructive">
                 Supprimer
               </DropdownMenuItem>
@@ -277,7 +262,8 @@ export function EventCard({ event }: EventCardProps) {
             className="size-full object-cover transition-transform hover:scale-105"
           />
           <Badge className="absolute right-2 top-2" variant="secondary">
-            {eventTypeLabel}
+            {eventTypeLabel.icon}
+            {eventTypeLabel.content}
           </Badge>
         </div>
 

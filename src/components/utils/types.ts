@@ -1,4 +1,6 @@
+import { Doc } from "@convex-dev/auth/server";
 import { eventTypes } from "./const/event-type";
+import { Id } from "@/convex/_generated/dataModel";
 
 export interface UserType {
   id: string;
@@ -53,21 +55,7 @@ export interface SideEventLinkProps {
   date: string;
   location: string;
   type: keyof typeof eventTypes;
-}
-
-export interface PostType {
-  id: string;
-  author: UserType;
-  content: string;
-  timestamp: string;
-  likesCount: number;
-  commentsCount: number;
-  sharesCount: number;
-  liked?: boolean;
-  media?: MediaType[];
-  group?: GroupType;
-  event?: EventType;
-  comments?: CommentType[];
+  photo?: string | null;
 }
 
 export interface TrendType {
