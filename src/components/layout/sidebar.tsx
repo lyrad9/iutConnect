@@ -21,7 +21,9 @@ export default function Sidebar({ className }: SidebarProps) {
   if (isGroupsPage) {
     return <GroupesContentSidebar className={className} />;
   }
-
+  if (pathname === "/profile") {
+    return;
+  }
   return (
     <aside
       className={cn(

@@ -45,11 +45,11 @@ export default function UserInfo() {
                     avatar={user?.profilePicture as string}
                     name={user?.firstName + " " + user?.lastName}
                     size="xl"
-                    className="size-32 border-4 border-background object-cover aspect-square"
+                    className="size-32 border-4 border-background object-cover aspect-square "
                     fallbackClassName="text-4xl"
                   />
 
-                  <svg
+                  {/*   <svg
                     width="10"
                     height="10"
                     viewBox="0 0 12 12"
@@ -64,17 +64,17 @@ export default function UserInfo() {
                       strokeLinejoin="round"
                     />
                               
-                  </svg>
+                  </svg> */}
                   {/*   <BadgeCheck
                 style={{ color: "currentColor" }}
                 className="size-4 text-blue-800 absolute bottom-1 right-1 bg-clip-border bg-blue-500"
               /> */}
-                  {user?.role === "ADMIN" ||
+                  {/*     {user?.role === "ADMIN" ||
                     (user?.role === "SUPERADMIN" && (
                       <div className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
                         <CheckIcon className="size-4 bg-primary text-primary" />
                       </div>
-                    ))}
+                    ))} */}
                 </div>
 
                 <div>

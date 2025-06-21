@@ -10,7 +10,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/src/components/ui/tabs";
-import { mockUsers, mockPosts } from "@/src/components/utils/const/mock-data";
 
 import {
   Avatar,
@@ -25,10 +24,6 @@ import EditProfilModal from "./_components/edit-profil-modal";
 import UserInfo from "./_components/UserInfo";
 
 export function ProfileLayout() {
-  // Using the first user from mock data for demonstration
-  /*   const user = mockUsers[0];
-  const userPosts = mockPosts.filter((post) => post.author.id === user.id);
- */
   return (
     <div className="container px-4 py-6 md:py-8">
       <div className="space-y-6">
@@ -37,8 +32,8 @@ export function ProfileLayout() {
         {/* Tabs */}
         <Tabs defaultValue="posts">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="about">About</TabsTrigger>
+            <TabsTrigger value="posts">Publications</TabsTrigger>
+            <TabsTrigger value="about">A propos</TabsTrigger>
           </TabsList>
           <TabsContent value="posts" className="mt-6 space-y-6">
             {/*  {userPosts.map((post) => (

@@ -77,104 +77,111 @@ export default function PendingRequestsList() {
   };
 
   return (
-    <Card className="">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          Demandes en attente
-          {results && results.length > 0 && (
-            <span className="ml-2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
-              {results.length}
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
+    <div className="lg:sticky lg:top-14 lg:max-h-[calc(100svh-3.5rem)] lg:overflow-x-hidden lg:pb-24 lg:overflow-y-auto lg:items-stretch lg:h-screen w-full scrollbar-hide">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            Demandes en attente
+            {results && results.length > 0 && (
+              <span className="ml-2 rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground">
+                {results.length}
+              </span>
+            )}
+          </CardTitle>
+        </CardHeader>
 
-      <CardContent>
-        <div className="space-y-4">
-          {results && results.length > 0 ? (
-            <>
-              {results.map((request) => (
-                <Card key={request?.id} className="overflow-hidden pb-6 pt-0">
-                  <div className="relative h-24 w-full bg-gradient-to-br from-muted/30 to-muted/10">
-                    <img
-                      src={request?.group.coverPhoto || "/placeholder.svg"}
-                      alt={`${request?.group.name} couverture`}
-                      className="h-full w-full object-cover"
-                    />
-
-                    {/* Badge de confidentialité */}
-                    <div className="absolute top-2 right-2">
-                      {request?.group.confidentiality === "private" ? (
-                        <Badge>
-                          {" "}
-                          <LockKeyhole className="h-3 w-3" />
-                          Privé
-                        </Badge>
-                      ) : (
-                        <Badge>
-                          <Globe className="h-3 w-3" />
-                          Public
-                        </Badge>
-                      )}
-                    </div>
-
-                    <div className="absolute -bottom-8 left-3 size-20 overflow-hidden rounded-full border-2 border-background bg-background">
-                      <SmartAvatar
-                        avatar={request?.group.profilePicture}
+        <CardContent>
+          <div className="space-y-4">
+            {results && results.length > 0 ? (
+              <>
+                {results.map((request) => (
+                  <Card key={request?.id} className="overflow-hidden pb-6 pt-0">
+                    <div className="relative h-24 w-full bg-gradient-to-br from-muted/30 to-muted/10">
+                      <img
+                        src={request?.group.coverPhoto || "/placeholder.svg"}
+                        alt={`${request?.group.name} couverture`}
                         className="h-full w-full object-cover"
                       />
+
+                      {/* Badge de confidentialité */}
+                      <div className="absolute top-2 right-2">
+                        {request?.group.confidentiality === "private" ? (
+                          <Badge>
+                            {" "}
+                            <LockKeyhole className="h-3 w-3" />
+                            Privé
+                          </Badge>
+                        ) : (
+                          <Badge>
+                            <Globe className="h-3 w-3" />
+                            Public
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="absolute -bottom-8 left-3 size-20 overflow-hidden rounded-full border-2 border-background bg-background">
+                        <SmartAvatar
+                          avatar={request?.group.profilePicture}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="pt-3 px-4">
-                    <h3 className="font-semibold line-clamp-1">
-                      <Link
-                        href={`/groups/${request?.group._id}`}
-                        className="hover:underline"
+                    <div className="pt-3 px-4">
+                      <h3 className="font-semibold line-clamp-1">
+                        <Link
+                          href={`/groups/${request?.group._id}`}
+                          className="hover:underline"
+                        >
+                          {request?.group.name}
+                        </Link>
+                      </h3>
+
+                      <p className="mt-1 text-xs text-muted-foreground ">
+                        Demande envoyée{" "}
+                        {formatDistanceToNow(
+                          new Date(request?.requestAt || 0),
+                          {
+                            addSuffix: true,
+                            locale: fr,
+                          }
+                        )}
+                      </p>
+                    </div>
+                    <CardFooter className="px-3">
+                      <Button
+                        variant="destructive"
+                        className="w-full"
+                        onClick={() =>
+                          handleCancelRequest(
+                            request?.group._id as Id<"forums">
+                          )
+                        }
                       >
-                        {request?.group.name}
-                      </Link>
-                    </h3>
-
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Demande envoyée{" "}
-                      {formatDistanceToNow(new Date(request?.requestAt || 0), {
-                        addSuffix: true,
-                        locale: fr,
-                      })}
-                    </p>
-                  </div>
-                  <CardFooter className="px-3">
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      onClick={() =>
-                        handleCancelRequest(request?.group._id as Id<"forums">)
-                      }
-                    >
-                      Annuler la demande
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-              <div ref={loaderRef} className="h-10" />
-              {isLoading && (
-                <Loader2 className="animate-spin size-4 mx-auto text-primary" />
-              )}
-            </>
-          ) : isLoading ? (
-            <Loader2 className="animate-spin size-4 mx-auto text-primary" />
-          ) : (
-            <EmptyState
-              title="Aucune demande en attente"
-              description="Vous n'avez pas de demandes d'adhésion en attente"
-              icons={[Clock]}
-              className="py-8"
-            />
-          )}
-        </div>
-      </CardContent>
-    </Card>
+                        Annuler la demande
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+                <div ref={loaderRef} className="h-10" />
+                {isLoading && (
+                  <Loader2 className="animate-spin size-7 mx-auto " />
+                )}
+              </>
+            ) : isLoading ? (
+              <Loader2 className="animate-spin size-4 mx-auto text-primary" />
+            ) : (
+              <EmptyState
+                title="Aucune demande en attente"
+                description="Vous n'avez pas de demandes d'adhésion en attente"
+                icons={[Clock]}
+                className="py-8"
+              />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

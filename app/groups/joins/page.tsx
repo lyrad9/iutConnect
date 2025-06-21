@@ -18,11 +18,11 @@ export default function JoinsPage() {
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Section des groupes rejoints */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-6 pt-14">
           <JoinedGroupsList />
         </div>
         {/* Section des demandes en attente */}
-        <div className="lg:col-span-4 space-y-6">
+        <div className="lg:col-span-4 space-y-6 pt-14">
           <PendingRequestsList />
         </div>
       </div>

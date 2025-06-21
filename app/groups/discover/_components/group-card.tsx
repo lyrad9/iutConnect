@@ -41,24 +41,36 @@ type typeMembers = {
   name?: string;
   avatar?: string | null;
 };
-function GroupMembers({
+export function GroupMembers({
   groupId,
   membersCount,
 }: {
   groupId: string;
   membersCount: number;
 }) {
+  const [members, setMembers] = useState<
+    { id: string; name?: string; avatar?: string | null }[]
+  >([]);
+
   // Récupérer les membres du groupe
   const groupMembers = useQuery(api.users.getGroupMembers, {
     groupId: groupId as Id<"forums">,
     limit: 5,
-  }) as {
-    members: typeMembers[];
-  };
+  });
+
+  useEffect(() => {
+    if (groupMembers?.members) {
+      setMembers(groupMembers.members.filter((member) => member !== null));
+    }
+  }, [groupMembers]);
+
+  if (!members.length) {
+    return null;
+  }
 
   return (
     <MultiAvatar
-      users={groupMembers.members}
+      users={members}
       totalCount={membersCount}
       maxDisplayed={5}
       size="lg"
@@ -172,7 +184,7 @@ export function GroupCard({ group }: GroupCardProps) {
             {group.confidentiality === "private" && (
               <>
                 <Lock className="size-3" />
-                <span>private</span>
+                <span>privé</span>
               </>
             )}
           </p>

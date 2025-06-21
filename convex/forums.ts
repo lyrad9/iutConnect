@@ -6,7 +6,7 @@ import { GroupMainCategoryType } from "@/src/components/utils/const/group-main-c
 import { paginationOptsValidator } from "convex/server";
 import { faker } from "@faker-js/faker";
 import { internalMutation } from "./_generated/server";
-
+import { filter } from "convex-helpers/server/filter";
 import { GROUP_MAIN_CATEGORIES } from "@/src/components/utils/const/group-main-categories";
 import { api, internal } from "./_generated/api";
 
@@ -544,54 +544,49 @@ export const getUserGroups = query({
     if (!userId) {
       throw new Error("User not authentificated");
     }
-    const results = await ctx.db.query("forums").paginate(args.paginationOpts);
-    let groupsQuery;
-    if (args.searchTerm && args.searchTerm.trim() !== "") {
-      const searchTerm = args.searchTerm.trim();
-      groupsQuery = ctx.db
-        .query("forums")
-        .withSearchIndex("search_name", (q) =>
-          q
-            .search("name", searchTerm)
-            .eq("visibility", "visible")
-            .eq("status", "active")
-        );
-    }
-    if (args.filterType === "admin") {
-      groupsQuery = ctx.db
-        .query("forums")
-        .withIndex("by_author", (q) => q.eq("authorId", userId as Id<"users">));
-    }
-    if (args.filterType === "member") {
-      groupsQuery = ctx.db.query("forums").filter((q) =>
-        // L'utilisateur n'est pas admin ET est dans le tableau members
-        q.and(
-          q.neq(q.field("authorId"), userId),
-          q.in(userId, q.field("members"))
-        )
-      );
-    }
-    if (args.filterType === "all") {
-      groupsQuery = ctx.db.query("forums");
-    }
-    const groups = await groupsQuery?.paginate(args.paginationOpts);
-    if (!groups) {
-      return {
-        page: [],
-        hasMore: false,
-        total: 0,
-      };
-    }
+    const groups = await filter(ctx.db.query("forums"), (group) => {
+      // Filtre par nom (recherche)
+      const matchesSearch =
+        !args.searchTerm ||
+        group.name?.toLowerCase().includes(args.searchTerm?.toLowerCase());
+
+      // Filtre par rôle
+      let matchesRole = false;
+      if (args.filterType === "admin") {
+        matchesRole = group.authorId === userId;
+      } else if (args.filterType === "member") {
+        matchesRole =
+          group.authorId !== userId && group.members?.includes(userId);
+      } else if (args.filterType === "all") {
+        matchesRole =
+          group.authorId === userId || group.members?.includes(userId);
+      }
+
+      return matchesSearch && matchesRole;
+    }).paginate(args.paginationOpts);
+
     return {
       ...groups,
       page: await Promise.all(
         groups.page.map(async (group) => {
           const author = await ctx.db.get(group.authorId);
+          // Recupérer la propriété joinedAt à la table grupMembers
+          const joinedAt = await ctx.db
+            .query("groupMembers")
+            .withIndex("by_user_and_group", (q) =>
+              q.eq("userId", userId as Id<"users">).eq("groupId", group._id)
+            )
+            .first();
+
           return {
             ...group,
             name: group.name,
             membersCount: group.members ? group.members.length : 0,
             avatar: group.profilePicture ?? null,
+            /* avatar: group.profilePicture
+              ? await ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
+              : null, */
+            joinedAt: joinedAt?.joinedAt,
           };
         })
       ),
@@ -731,25 +726,25 @@ export const leaveGroup = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) {
-      throw new ConvexError("Utilisateur non authentifié");
+      throw new ConvexError("user not authentificated");
     }
 
     // Vérifier que le groupe existe
     const group = await ctx.db.get(args.groupId);
     if (!group) {
-      throw new ConvexError("Groupe introuvable");
+      throw new ConvexError("group not found");
     }
 
     // Vérifier que l'utilisateur n'est pas l'auteur du groupe
     if (group.authorId === userId) {
       throw new ConvexError(
-        "Vous ne pouvez pas quitter un groupe dont vous êtes l'administrateur"
+        "You cannot leave a group you are the administrator of"
       );
     }
 
     // Vérifier que l'utilisateur est membre du groupe
     if (!group.members.includes(userId as Id<"users">)) {
-      throw new ConvexError("Vous n'êtes pas membre de ce groupe");
+      throw new ConvexError("You are not a member of this group");
     }
 
     // Récupérer l'adhésion au groupe
@@ -761,11 +756,11 @@ export const leaveGroup = mutation({
       .first();
 
     if (membership) {
-      // Mettre à jour le statut de l'adhésion
-      await ctx.db.patch(membership._id, {
-        status: "rejected",
-        leftAt: Date.now(),
-        updatedAt: Date.now(),
+      // supprimer l'adhésion de la table groupMembers
+      await ctx.db.delete(membership._id);
+      // supprimer de la liste des membres
+      await ctx.db.patch(args.groupId, {
+        members: group.members.filter((id) => id !== userId),
       });
     }
 
@@ -861,5 +856,29 @@ export const getUserPendingRequests = query({
       ...pendingMemberships,
       page: pendingRequests.filter(Boolean),
     };
+  },
+});
+
+//Supprimer un groupe
+export const deleteGroup = mutation({
+  args: {
+    groupId: v.id("forums"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("User not authentificated");
+    }
+    // Vérifier que l'utilisateur est l'auteur du groupe
+    const group = await ctx.db.get(args.groupId);
+    if (!group) {
+      throw new ConvexError("Group not found");
+    }
+    if (group.authorId !== userId) {
+      throw new ConvexError("You are not the administrator of this group");
+    }
+    // Supprimer le groupe
+    await ctx.db.delete(args.groupId);
+    return { success: true };
   },
 });

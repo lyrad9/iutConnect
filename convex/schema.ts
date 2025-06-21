@@ -216,6 +216,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   })
+    .index("by_userId_isAdmin", ["userId", "isAdmin"])
     .index("by_user", ["userId"])
     .index("by_group", ["groupId", "groupType"])
     .index("by_user_and_group", ["userId", "groupId", "groupType"])
