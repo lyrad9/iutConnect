@@ -23,6 +23,7 @@ import { AdminBadgeCheck } from "@/src/svg/Icons";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Badge } from "@/src/components/ui/badge";
+import { Button } from "@/src/components/ui/button";
 
 export default function UserInfo() {
   const user = useQuery(api.users.currentUser);
@@ -115,35 +116,21 @@ export default function UserInfo() {
                         {user?.email}
                       </span>
                     </div>
-
-                    {/* Vérifier si l'utilisateur a renseigné son portfolio avec comme network "Site personnel" */}
+                    {/* Afficher le site personnel de l'utilisateur où le network est égale à Site personnel*/}
                     {user?.socialNetworks &&
-                      user?.socialNetworks.length > 0 &&
-                      user?.socialNetworks.some(
-                        (network) => network.network === "Site personnel"
-                      ) && (
-                        // Si il y'a un site personnel, afficher le lien
-                        <div className="flex items-center gap-1">
-                          <LinkIcon className="size-4" />
-                          <a
-                            href={
-                              user?.socialNetworks.find(
-                                (network) =>
-                                  network.network === "Site personnel"
-                              )?.link
-                            }
-                            className="text-primary hover:underline"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {
-                              user?.socialNetworks.find(
-                                (network) =>
-                                  network.network === "Site personnel"
-                              )?.link
-                            }
-                          </a>
-                        </div>
+                      user.socialNetworks.map(
+                        (network) =>
+                          network.network === "Site personnel" && (
+                            <div
+                              key={network.network}
+                              className="flex items-center gap-1"
+                            >
+                              <LinkIcon className="size-4" />
+                              <span className="text-ellipsis overflow-hidden whitespace-nowrap">
+                                {network.link}
+                              </span>
+                            </div>
+                          )
                       )}
                   </div>
                 </div>
@@ -151,6 +138,31 @@ export default function UserInfo() {
 
               <EditProfileBtn />
             </div>
+
+            {/* Réseaux sociaux - version simplifiée */}
+            {user?.socialNetworks && user.socialNetworks.length > 0 && (
+              <div className="mt-4 border-t pt-4 border-muted">
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  Mes Réseaux sociaux:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {user.socialNetworks
+                    .filter((network) => network.network !== "Site personnel")
+                    .map((network, index) => (
+                      <a
+                        key={index}
+                        href={network.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline flex items-center gap-1 bg-primary/5 px-3 py-1 rounded-full"
+                      >
+                        <LinkIcon className="h-3 w-3" />
+                        {network.network}
+                      </a>
+                    ))}
+                </div>
+              </div>
+            )}
 
             {/* Bio avec un design amélioré */}
             {user?.bio ? (
@@ -216,6 +228,16 @@ export function LoadingUserInfo() {
 
           {/* Bouton Éditer (statique) */}
           <EditProfileBtn />
+        </div>
+
+        {/* Social networks skeleton */}
+        <div className="mt-4 border-t pt-4 border-muted">
+          <Skeleton className="h-4 w-32 mb-2" />
+          <div className="flex gap-2">
+            <Skeleton className="h-8 w-24 rounded-full" />
+            <Skeleton className="h-8 w-32 rounded-full" />
+            <Skeleton className="h-8 w-28 rounded-full" />
+          </div>
         </div>
 
         {/* Bio */}

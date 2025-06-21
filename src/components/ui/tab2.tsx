@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { LucideIcon } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
@@ -8,6 +10,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/src/components/ui/tabs";
+import { cn } from "@/src/lib/utils";
+import { motion } from "framer-motion";
 
 export type TabItem = {
   id: string;
@@ -25,6 +29,7 @@ interface TabsUnderlineProps {
   defaultTab?: string;
   className?: string;
   showIconsOnlyOnMobile?: boolean;
+  fullWidth?: boolean;
 }
 
 export default function TabsUnderline({
@@ -32,47 +37,86 @@ export default function TabsUnderline({
   defaultTab,
   className,
   showIconsOnlyOnMobile = false,
+  fullWidth = false,
 }: TabsUnderlineProps) {
+  const [activeTab, setActiveTab] = React.useState<string>(
+    defaultTab || tabs[0]?.id
+  );
+
   return (
-    <Tabs defaultValue={defaultTab || tabs[0]?.id} className={className}>
-      <ScrollArea>
-        <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1">
-          {tabs.map((tab) => (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-            >
-              {tab.icon && (
-                <tab.icon
-                  className={`-ms-0.5 me-1.5 opacity-60 ${
-                    showIconsOnlyOnMobile ? "md:hidden" : ""
-                  }`}
-                  size={16}
-                  aria-hidden="true"
-                />
-              )}
-              {tab.label}
-              {tab.badge && (
-                <Badge
-                  className={
-                    tab.badge.variant === "secondary"
-                      ? "bg-primary/15 ms-1.5 min-w-5 px-1"
-                      : "ms-1.5"
-                  }
-                  variant={tab.badge.variant || "default"}
+    <Tabs
+      defaultValue={defaultTab || tabs[0]?.id}
+      className={cn(
+        "w-full",
+        fullWidth ? "max-w-full" : "max-w-4xl mx-auto",
+        className
+      )}
+      onValueChange={setActiveTab}
+    >
+      <div className="border-b">
+        <ScrollArea className="w-full">
+          <TabsList className="h-auto bg-transparent p-0 rounded">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  " rounded relative h-10 border-b-2  px-4 pb-3 pt-2 font-medium text-muted-foreground transition-all hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:border-b-primary",
+                  "flex items-center gap-2"
+                )}
+              >
+                {tab.icon && (
+                  <tab.icon
+                    className="size-4 flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                )}
+                <span
+                  className={cn(
+                    "transition-all duration-200",
+                    showIconsOnlyOnMobile && "max-sm:hidden"
+                  )}
                 >
-                  {tab.badge.content}
-                </Badge>
-              )}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+                  {tab.label}
+                </span>
+                {tab.badge && (
+                  <Badge
+                    className={
+                      tab.badge.variant === "secondary"
+                        ? "bg-primary/15 ms-1 min-w-4 px-1 h-5"
+                        : "ms-1 h-5"
+                    }
+                    variant={tab.badge.variant || "default"}
+                  >
+                    {tab.badge.content}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      </div>
+
       {tabs.map((tab) => (
-        <TabsContent key={tab.id} value={tab.id}>
-          {tab.content}
+        <TabsContent
+          key={tab.id}
+          value={tab.id}
+          className={cn(
+            "mt-6 relative",
+            activeTab === tab.id ? "animate-in fade-in-50 duration-300" : ""
+          )}
+        >
+          <div className="overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              {tab.content}
+            </motion.div>
+          </div>
         </TabsContent>
       ))}
     </Tabs>

@@ -8,13 +8,10 @@ import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 
 import SiteSheet from "./site-sheet";
 import { NotificationsDropdown } from "../notifications/notifictions-dropdown";
-import { useQuery } from "convex/react";
-import { api, internal } from "@/convex/_generated/api";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { cn } from "@/src/lib/utils";
-import { buttonVariants } from "@/src/components/ui/button";
+
 import { AuthDropdown } from "../auth/auth-dropdown";
 import AuthBtn from "../auth/auth-btn";
+import { MenuShortcut } from "../ui/menu-shortcut";
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -37,6 +34,8 @@ export default function Header() {
             </form>
           </div>
         </div>
+        {/* Insérer le menu shortcut */}
+        <MenuShortcut />
         <Authenticated>
           <nav className="flex items-center gap-2">
             <NotificationsDropdown />

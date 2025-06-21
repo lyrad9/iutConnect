@@ -20,8 +20,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/src/components/ui/avatar";
-import { ProfileFriends } from "@/app/profile/_components/profile-friends";
-import { ProfilePhotos } from "@/app/profile/_components/profile-photos";
+
 import { About } from "./_components/about";
 import { EditProfileBtn } from "./_components/edit-profile-btn";
 import EditProfilModal from "./_components/edit-profil-modal";
@@ -57,6 +56,10 @@ export function ProfileLayout() {
       id: "events",
       label: "Événements",
       icon: CalendarDays,
+      badge: {
+        content: "0",
+        variant: "secondary",
+      },
       content: (
         <div className="mt-6">
           <p className="text-center text-muted-foreground">
@@ -80,15 +83,16 @@ export function ProfileLayout() {
   ];
 
   return (
-    <div className="container px-4 py-6 md:py-8">
+    <div className="container mx-auto px-4 py-6 md:py-8">
       <div className="space-y-6">
         <UserInfo />
 
-        {/* Utiliser le composant TabsUnderline */}
+        {/* Utiliser le composant TabsUnderline avec les nouvelles options */}
         <TabsUnderline
           tabs={tabs}
           defaultTab="posts"
-          showIconsOnlyOnMobile={true}
+          fullWidth={true}
+          className="mt-8"
         />
       </div>
       <EditProfilModal />

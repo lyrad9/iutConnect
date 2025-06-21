@@ -51,22 +51,17 @@ export default function NavigationGroup() {
     {
       href: "/groups/discover",
       icon: <Compass className="h-4 w-4" />,
-      label: "Découvrir",
+      label: "Explorer des groupes",
     },
-    {
+    /*   {
       href: "/groups/suggest",
       icon: <Compass className="h-4 w-4" />,
       label: "Groupes suggérés",
-    },
+    }, */
     {
       href: "/groups/joins",
       icon: <Users className="h-4 w-4" />,
       label: "Vos groupes",
-    },
-    {
-      href: "/groups/managed",
-      icon: <Shield className="h-4 w-4" />,
-      label: "Groupes gérés",
     },
   ];
 

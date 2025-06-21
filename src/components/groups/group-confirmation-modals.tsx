@@ -4,16 +4,15 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useGroupModal } from "@/src/components/contexts/group-modal-context";
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/src/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/src/components/ui/dialog";
 import { Button } from "@/src/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export function DeleteGroupModal() {
@@ -39,20 +38,33 @@ export function DeleteGroupModal() {
   };
 
   return (
-    <AlertDialog open={isDeleteModalOpen} onOpenChange={closeDeleteModal}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer le groupe</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={isDeleteModalOpen} onOpenChange={closeDeleteModal}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="space-y-3">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+            <AlertTriangle className="h-6 w-6 text-destructive" />
+          </div>
+          <DialogTitle className="text-center text-xl">
+            Supprimer le groupe
+          </DialogTitle>
+          <DialogDescription className="text-center">
             Êtes-vous sûr de vouloir supprimer ce groupe ? Cette action est
             irréversible et tous les messages, publications et événements
             associés seront également supprimés.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>Annuler</AlertDialogCancel>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={closeDeleteModal}
+            disabled={isDeleting}
+          >
+            Annuler
+          </Button>
           <Button
             variant="destructive"
+            className="w-full"
             onClick={handleDelete}
             disabled={isDeleting}
           >
@@ -65,9 +77,9 @@ export function DeleteGroupModal() {
               "Supprimer"
             )}
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -93,20 +105,33 @@ export function LeaveGroupModal() {
   };
 
   return (
-    <AlertDialog open={isLeaveModalOpen} onOpenChange={closeLeaveModal}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Quitter le groupe</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={isLeaveModalOpen} onOpenChange={closeLeaveModal}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="space-y-3">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/20">
+            <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+          </div>
+          <DialogTitle className="text-center text-xl">
+            Quitter le groupe
+          </DialogTitle>
+          <DialogDescription className="text-center">
             Êtes-vous sûr de vouloir quitter ce groupe ? Si c&apos;est un groupe
             privé, vous devrez demander à nouveau l&apos;autorisation pour le
             rejoindre.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLeaving}>Annuler</AlertDialogCancel>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={closeLeaveModal}
+            disabled={isLeaving}
+          >
+            Annuler
+          </Button>
           <Button
             variant="destructive"
+            className="w-full"
             onClick={handleLeave}
             disabled={isLeaving}
           >
@@ -119,8 +144,8 @@ export function LeaveGroupModal() {
               "Quitter le groupe"
             )}
           </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
