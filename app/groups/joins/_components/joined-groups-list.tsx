@@ -49,6 +49,7 @@ import { GroupMembers } from "../../discover/_components/group-card";
 import { Badge } from "@/src/components/ui/badge";
 import LoadingPendingRequests from "./Loading";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
+import { useGroupModal } from "@/src/components/contexts/group-modal-context";
 
 export default function JoinedGroupsList() {
   // États pour la recherche et le filtre
@@ -61,6 +62,8 @@ export default function JoinedGroupsList() {
   const loaderRef = useRef<HTMLDivElement | null>(null);
   // Récupérer l'utilisateur connecté
   const currentUser = useQuery(api.users.currentUser);
+  // Utiliser le contexte des modales
+  const { openLeaveModal, openDeleteModal } = useGroupModal();
 
   // Requête paginée pour récupérer les groupes rejoints
   const {
@@ -78,63 +81,31 @@ export default function JoinedGroupsList() {
       initialNumItems: 10,
     }
   );
-  console.log("joinedGroups", joinedGroups);
-  // Mutation pour quitter un groupe
-  const leaveGroup = useMutation(api.forums.leaveGroup);
-  // Mutation pour supprimer un groupe
-  const deleteGroup = useMutation(api.forums.deleteGroup);
 
-  // Fonction pour supprimer un groupe
-  const handleDeleteGroup = async (groupId: Id<"forums">) => {
-    try {
-      await deleteGroup({ groupId });
-      toast.success("Groupe supprimé avec succès");
-    } catch (error) {
-      console.error("Erreur lors de la suppression du groupe:", error);
-      toast.error("Erreur lors de la suppression du groupe");
+  // Configurer l'intersection observer pour charger plus de groupes
+  useEffect(() => {
+    if (status !== "CanLoadMore" || isLoading) return;
+
+    const observed = loaderRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore(6);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    if (observed) {
+      observer.observe(observed);
     }
-  };
-  // Fonction pour quitter un groupe
-  const handleLeaveGroup = async (groupId: Id<"forums">) => {
-    try {
-      await leaveGroup({ groupId });
-      toast.success("Vous ne faites plus partie de ce groupe");
-    } catch (error) {
-      console.error("Erreur lors de la sortie du groupe:", error);
-      toast.error("Erreur lors de la sortie du groupe");
-    }
-  };
 
-  // Filtrer les groupes en fonction de la recherche et du type de filtre
-  /*   const filteredGroups = joinedGroups
-    .filter((group) => {
-      // Filtrer par terme de recherche
-      if (
-        debouncedSearchTerm &&
-        !group.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
-      ) {
-        return false;
+    return () => {
+      if (observed) {
+        observer.unobserve(observed);
       }
-
-      // Filtrer par type (admin ou membre)
-      if (filterType === "admin" && group.authorId !== currentUser?._id) {
-        return false;
-      } else if (
-        filterType === "member" &&
-        group.authorId === currentUser?._id
-      ) {
-        return false;
-      }
-
-      return true;
-    })
-    // Trier par date de rejointe (joinedAt)
-    .sort((a, b) => {
-      // Récupérer les dates de joinedAt depuis groupMembers
-      const aJoinedAt = a.joinedAt || 0;
-      const bJoinedAt = b.joinedAt || 0;
-      return bJoinedAt - aJoinedAt;
-    }); */
+    };
+  }, [status, isLoading, loadMore]);
 
   return (
     <Card>
@@ -164,7 +135,6 @@ export default function JoinedGroupsList() {
             />
           </div>
           <Select
-            /*   value={filterType} */
             onValueChange={(value) =>
               setFilterType(value as "all" | "admin" | "member")
             }
@@ -306,7 +276,7 @@ export default function JoinedGroupsList() {
                               <DropdownMenuItem
                                 className="text-destructive focus:text-destructive"
                                 onClick={() =>
-                                  handleLeaveGroup(group._id as Id<"forums">)
+                                  openLeaveModal(group._id as Id<"forums">)
                                 }
                               >
                                 <LogOut className="mr-2 h-4 w-4" />
@@ -317,7 +287,7 @@ export default function JoinedGroupsList() {
                               <DropdownMenuItem
                                 className="text-destructive focus:text-destructive"
                                 onClick={() =>
-                                  handleDeleteGroup(group._id as Id<"forums">)
+                                  openDeleteModal(group._id as Id<"forums">)
                                 }
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -327,10 +297,6 @@ export default function JoinedGroupsList() {
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
-
-                      {/*    <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
-                        {group.description}
-                      </p> */}
 
                       <div className="mt-4 flex items-center justify-between">
                         <GroupMembers
@@ -352,11 +318,6 @@ export default function JoinedGroupsList() {
               {isLoading && (
                 <Loader2 className="animate-spin size-7 mx-auto " />
               )}
-              {/*    {status === "LoadingMore" && (
-                <div className="flex justify-center p-4">
-                  <Loader2 className="size-7 animate-spin text-muted-foreground" />
-                </div>
-              )} */}
             </>
           ) : isLoading ? (
             <>
@@ -377,26 +338,6 @@ export default function JoinedGroupsList() {
             />
           )}
         </div>
-
-        {/* Bouton pour charger plus */}
-        {/*    {status === "CanLoadMore" && (
-          <div className="mt-6 flex justify-center">
-            <Button
-              variant="outline"
-              onClick={() => loadMore(5)}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Chargement...
-                </>
-              ) : (
-                "Charger plus"
-              )}
-            </Button>
-          </div>
-        )} */}
       </CardContent>
     </Card>
   );

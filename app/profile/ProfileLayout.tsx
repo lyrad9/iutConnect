@@ -2,14 +2,18 @@
 
 import React from "react";
 import Link from "next/link";
-import { Calendar, MapPin, MailIcon, LinkIcon, PenSquare } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/src/components/ui/tabs";
+  Calendar,
+  MapPin,
+  MailIcon,
+  LinkIcon,
+  PenSquare,
+  User2,
+  BookOpen,
+  Users,
+  CalendarDays,
+} from "lucide-react";
+import { Button } from "@/src/components/ui/button";
 
 import {
   Avatar,
@@ -22,29 +26,70 @@ import { About } from "./_components/about";
 import { EditProfileBtn } from "./_components/edit-profile-btn";
 import EditProfilModal from "./_components/edit-profil-modal";
 import UserInfo from "./_components/UserInfo";
+import TabsUnderline, { TabItem } from "@/src/components/ui/tab2";
 
 export function ProfileLayout() {
+  // Définir les onglets avec leur contenu
+  const tabs: TabItem[] = [
+    {
+      id: "posts",
+      label: "Publications",
+      icon: BookOpen,
+      content: (
+        <div className="mt-6">
+          <p className="text-center text-muted-foreground">
+            Aucune publication pour le moment
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "about",
+      label: "À propos",
+      icon: User2,
+      content: (
+        <div className="mt-6">
+          <About />
+        </div>
+      ),
+    },
+    {
+      id: "events",
+      label: "Événements",
+      icon: CalendarDays,
+      content: (
+        <div className="mt-6">
+          <p className="text-center text-muted-foreground">
+            Aucun événement pour le moment
+          </p>
+        </div>
+      ),
+    },
+    {
+      id: "groups",
+      label: "Groupes",
+      icon: Users,
+      content: (
+        <div className="mt-6">
+          <p className="text-center text-muted-foreground">
+            Aucun groupe pour le moment
+          </p>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="container px-4 py-6 md:py-8">
       <div className="space-y-6">
         <UserInfo />
 
-        {/* Tabs */}
-        <Tabs defaultValue="posts">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="posts">Publications</TabsTrigger>
-            <TabsTrigger value="about">A propos</TabsTrigger>
-          </TabsList>
-          <TabsContent value="posts" className="mt-6 space-y-6">
-            {/*  {userPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))} */}
-          </TabsContent>
-
-          <TabsContent value="about" className="mt-6">
-            <About />
-          </TabsContent>
-        </Tabs>
+        {/* Utiliser le composant TabsUnderline */}
+        <TabsUnderline
+          tabs={tabs}
+          defaultTab="posts"
+          showIconsOnlyOnMobile={true}
+        />
       </div>
       <EditProfilModal />
     </div>

@@ -14,6 +14,11 @@ import { CircleCheckIcon, CircleX } from "lucide-react";
 import { Toaster as Sonner } from "sonner";
 
 import { NotificationProvider } from "@/src/components/contexts/notification-context";
+import { GroupModalProvider } from "@/src/components/contexts/group-modal-context";
+import {
+  DeleteGroupModal,
+  LeaveGroupModal,
+} from "@/src/components/groups/group-confirmation-modals";
 
 const inter = Inter({ subsets: ["latin"] });
 /* const geistSans = Geist({
@@ -54,31 +59,35 @@ export default function RootLayout({
           <NuqsAdapter>
             <ConvexAuthNextjsServerProvider>
               <ConvexClientProvider>
-                <NotificationProvider>
-                  <NavigationWrapper>{children}</NavigationWrapper>
+                <GroupModalProvider>
+                  <NotificationProvider>
+                    <NavigationWrapper>{children}</NavigationWrapper>
 
-                  <Sonner
-                    toastOptions={{
-                      classNames: {
-                        closeButton: "",
-                        title: "text-sm",
-                        default: "text-blue-500",
-                        icon: "",
-                        success:
-                          "border-green-400 dark:border-green-200 border border-green-400 bg-green-100 text-green-500 dark:bg-green-900 dark:text-green-300",
-                        error:
-                          "border-red-400 dark:border-red-200 border-2 border-red-400 bg-red-100 text-red-500 dark:bg-red-900 dark:text-red-300",
-                      },
-                    }}
-                    closeButton
-                    className=""
-                    icons={{
-                      info: <CircleX className="size-5" />,
-                      error: <CircleX className="size-5" />,
-                      success: <CircleCheckIcon className="" />,
-                    }}
-                  />
-                </NotificationProvider>
+                    <Sonner
+                      toastOptions={{
+                        classNames: {
+                          closeButton: "",
+                          title: "text-sm",
+                          default: "text-blue-500",
+                          icon: "",
+                          success:
+                            "border-green-400 dark:border-green-200 border border-green-400 bg-green-100 text-green-500 dark:bg-green-900 dark:text-green-300",
+                          error:
+                            "border-red-400 dark:border-red-200 border-2 border-red-400 bg-red-100 text-red-500 dark:bg-red-900 dark:text-red-300",
+                        },
+                      }}
+                      closeButton
+                      className=""
+                      icons={{
+                        info: <CircleX className="size-5" />,
+                        error: <CircleX className="size-5" />,
+                        success: <CircleCheckIcon className="" />,
+                      }}
+                    />
+                  </NotificationProvider>
+                  <DeleteGroupModal />
+                  <LeaveGroupModal />
+                </GroupModalProvider>
               </ConvexClientProvider>
             </ConvexAuthNextjsServerProvider>
           </NuqsAdapter>

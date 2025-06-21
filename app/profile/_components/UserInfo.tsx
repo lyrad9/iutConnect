@@ -6,6 +6,8 @@ import {
   BadgeCheck,
   CheckIcon,
   Loader2,
+  AtSign,
+  Shield,
 } from "lucide-react";
 import { EditProfileBtn } from "./edit-profile-btn";
 import {
@@ -20,16 +22,16 @@ import Image from "next/image";
 import { AdminBadgeCheck } from "@/src/svg/Icons";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { Skeleton } from "@/src/components/ui/skeleton";
+import { Badge } from "@/src/components/ui/badge";
 
 export default function UserInfo() {
   const user = useQuery(api.users.currentUser);
-  console.log(user);
 
   return (
     <>
       <Authenticated>
-        <div className="relative rounded-xl bg-muted">
-          <div className="h-48 overflow-hidden rounded-t-xl md:h-64">
+        <div className="relative rounded-xl bg-muted overflow-hidden">
+          <div className="h-48 overflow-hidden md:h-72">
             <img
               src={user?.coverPhoto || "/placeholder.svg"}
               alt="Cover"
@@ -37,7 +39,7 @@ export default function UserInfo() {
             />
           </div>
 
-          <div className="p-4">
+          <div className="p-4 md:p-6">
             <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
               <div className="flex items-end">
                 <div className="relative -mt-20 mr-4">
@@ -45,42 +47,48 @@ export default function UserInfo() {
                     avatar={user?.profilePicture as string}
                     name={user?.firstName + " " + user?.lastName}
                     size="xl"
-                    className="size-32 border-4 border-background object-cover aspect-square "
+                    className="size-32 border-4 border-background object-cover aspect-square shadow-md"
                     fallbackClassName="text-4xl"
                   />
 
-                  {/*   <svg
-                    width="10"
-                    height="10"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M10 3L4.5 8.5L2 6"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                              
-                  </svg> */}
-                  {/*   <BadgeCheck
-                style={{ color: "currentColor" }}
-                className="size-4 text-blue-800 absolute bottom-1 right-1 bg-clip-border bg-blue-500"
-              /> */}
-                  {/*     {user?.role === "ADMIN" ||
-                    (user?.role === "SUPERADMIN" && (
-                      <div className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        <CheckIcon className="size-4 bg-primary text-primary" />
-                      </div>
-                    ))} */}
+                  {/* Badge de rôle */}
+                  {(user?.role === "ADMIN" || user?.role === "SUPERADMIN") && (
+                    <div className="absolute -bottom-1 -right-1 rounded-full bg-background p-1">
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center gap-1"
+                      >
+                        <Shield className="h-3 w-3" />
+                        {user.role === "SUPERADMIN" ? "Super Admin" : "Admin"}
+                      </Badge>
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <h1 className="text-2xl font-bold">
+                  {/* Username */}
+                  {user?.username && (
+                    <div className="flex items-center text-sm text-primary mb-1">
+                      <AtSign className="h-3 w-3 mr-1" />
+                      <span className="font-medium">{user.username}</span>
+                    </div>
+                  )}
+
+                  {/* Nom complet */}
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
                     {user?.firstName} {user?.lastName}
                   </h1>
+
+                  {/* Fonction de l'utilisateur */}
+                  {user?.fonction && (
+                    <div className="mt-1 mb-2">
+                      <Badge variant="outline" className="bg-primary/5">
+                        {user.fonction}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Informations de contact et autres */}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                     {/* Vérifier si l'utilisateur a renseigné son adresse et sa ville */}
                     {user?.town && user?.address && (
@@ -101,7 +109,6 @@ export default function UserInfo() {
                       </div>
                     )}
                     {/* Afficher son email */}
-
                     <div className="flex items-center gap-1">
                       <MailIcon className="size-4" />
                       <span className="text-ellipsis overflow-hidden whitespace-nowrap">
@@ -126,6 +133,8 @@ export default function UserInfo() {
                               )?.link
                             }
                             className="text-primary hover:underline"
+                            target="_blank"
+                            rel="noopener noreferrer"
                           >
                             {
                               user?.socialNetworks.find(
@@ -143,10 +152,22 @@ export default function UserInfo() {
               <EditProfileBtn />
             </div>
 
-            <div className="mt-4">
-              <p className="text-sm font-bold">Ma bio ⏬</p>
-              <p className="text-sm">{user?.bio}</p>
-            </div>
+            {/* Bio avec un design amélioré */}
+            {user?.bio ? (
+              <div className="mt-6 p-4 bg-accent/30 rounded-lg border border-accent">
+                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                  <span className="size-1 rounded-full bg-primary"></span>À
+                  propos de moi
+                </h3>
+                <p className="text-sm leading-relaxed">{user?.bio}</p>
+              </div>
+            ) : (
+              <div className="mt-6 p-4 bg-accent/30 rounded-lg border border-accent text-center">
+                <p className="text-sm text-muted-foreground">
+                  Aucune biographie renseignée
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </Authenticated>
@@ -161,21 +182,27 @@ export function LoadingUserInfo() {
   return (
     <div className="relative rounded-xl bg-muted">
       {/* Cover photo */}
-      <div className="h-48 overflow-hidden rounded-t-xl md:h-64">
+      <div className="h-48 overflow-hidden rounded-t-xl md:h-72">
         <Skeleton className="h-full w-full object-cover rounded-b-none" />
       </div>
 
-      <div className="p-4">
+      <div className="p-4 md:p-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
           <div className="flex items-end">
             <div className="relative -mt-20 mr-4">
               {/* Avatar */}
-              <div className="bg-accent h-32 w-32 rounded-full border-4 border-background" />
+              <Skeleton className="h-32 w-32 rounded-full border-4 border-background" />
             </div>
 
             <div className="space-y-2">
+              {/* Username */}
+              <Skeleton className="h-4 w-24 mb-1" />
+
               {/* Name */}
-              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-8 w-64" />
+
+              {/* Function */}
+              <Skeleton className="h-6 w-20 mt-1 mb-2" />
 
               {/* Meta infos (town/address, study/class, email, link) */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
@@ -192,10 +219,8 @@ export function LoadingUserInfo() {
         </div>
 
         {/* Bio */}
-        <div className="mt-4">
-          <p className="text-sm font-bold mb-3">Ma bio ⏬</p>
-          <Skeleton className="h-4 w-3/4 " />
-          <Skeleton className="h-4 w-2/4 mt-2" />
+        <div className="mt-6">
+          <Skeleton className="h-24 w-full rounded-lg" />
         </div>
       </div>
     </div>

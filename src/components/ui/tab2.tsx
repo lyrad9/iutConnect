@@ -1,12 +1,5 @@
-import {
-  BoxIcon,
-  ChartLine,
-  HouseIcon,
-  PanelsTopLeftIcon,
-  SettingsIcon,
-  UsersRoundIcon,
-} from "lucide-react";
-
+import * as React from "react";
+import { LucideIcon } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/src/components/ui/scroll-area";
 import {
@@ -16,117 +9,72 @@ import {
   TabsTrigger,
 } from "@/src/components/ui/tabs";
 
-export default function Tabs2() {
+export type TabItem = {
+  id: string;
+  label: string;
+  icon?: LucideIcon;
+  badge?: {
+    content: React.ReactNode;
+    variant?: "default" | "secondary" | "destructive" | "outline";
+  };
+  content: React.ReactNode;
+};
+
+interface TabsUnderlineProps {
+  tabs: TabItem[];
+  defaultTab?: string;
+  className?: string;
+  showIconsOnlyOnMobile?: boolean;
+}
+
+export default function TabsUnderline({
+  tabs,
+  defaultTab,
+  className,
+  showIconsOnlyOnMobile = false,
+}: TabsUnderlineProps) {
   return (
-    <Tabs defaultValue="tab-1">
+    <Tabs defaultValue={defaultTab || tabs[0]?.id} className={className}>
       <ScrollArea>
         <TabsList className="text-foreground mb-3 h-auto gap-2 rounded-none border-b bg-transparent px-0 py-1">
-          <TabsTrigger
-            value="tab-1"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-          >
-            <HouseIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger
-            value="tab-2"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-          >
-            <PanelsTopLeftIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />
-            Projects
-            <Badge
-              className="bg-primary/15 ms-1.5 min-w-5 px-1"
-              variant="secondary"
+          {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
-              3
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger
-            value="tab-3"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-          >
-            <BoxIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />
-            Packages
-            <Badge className="ms-1.5">New</Badge>
-          </TabsTrigger>
-          <TabsTrigger
-            value="tab-4"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-          >
-            <UsersRoundIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />
-            Team
-          </TabsTrigger>
-          <TabsTrigger
-            value="tab-5"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-          >
-            <ChartLine
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />
-            Insights
-          </TabsTrigger>
-          <TabsTrigger
-            value="tab-6"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative after:absolute after:inset-x-0 after:bottom-0 after:-mb-1 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-          >
-            <SettingsIcon
-              className="-ms-0.5 me-1.5 opacity-60"
-              size={16}
-              aria-hidden="true"
-            />
-            Settings
-          </TabsTrigger>
+              {tab.icon && (
+                <tab.icon
+                  className={`-ms-0.5 me-1.5 opacity-60 ${
+                    showIconsOnlyOnMobile ? "md:hidden" : ""
+                  }`}
+                  size={16}
+                  aria-hidden="true"
+                />
+              )}
+              {tab.label}
+              {tab.badge && (
+                <Badge
+                  className={
+                    tab.badge.variant === "secondary"
+                      ? "bg-primary/15 ms-1.5 min-w-5 px-1"
+                      : "ms-1.5"
+                  }
+                  variant={tab.badge.variant || "default"}
+                >
+                  {tab.badge.content}
+                </Badge>
+              )}
+            </TabsTrigger>
+          ))}
         </TabsList>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-      <TabsContent value="tab-1">
-        <p className="text-muted-foreground pt-1 text-center text-xs">
-          Content for Tab 1
-        </p>
-      </TabsContent>
-      <TabsContent value="tab-2">
-        <p className="text-muted-foreground pt-1 text-center text-xs">
-          Content for Tab 2
-        </p>
-      </TabsContent>
-      <TabsContent value="tab-3">
-        <p className="text-muted-foreground pt-1 text-center text-xs">
-          Content for Tab 3
-        </p>
-      </TabsContent>
-      <TabsContent value="tab-4">
-        <p className="text-muted-foreground pt-1 text-center text-xs">
-          Content for Tab 4
-        </p>
-      </TabsContent>
-      <TabsContent value="tab-5">
-        <p className="text-muted-foreground pt-1 text-center text-xs">
-          Content for Tab 5
-        </p>
-      </TabsContent>
-      <TabsContent value="tab-6">
-        <p className="text-muted-foreground pt-1 text-center text-xs">
-          Content for Tab 6
-        </p>
-      </TabsContent>
+      {tabs.map((tab) => (
+        <TabsContent key={tab.id} value={tab.id}>
+          {tab.content}
+        </TabsContent>
+      ))}
     </Tabs>
   );
 }
