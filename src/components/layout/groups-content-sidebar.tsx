@@ -47,79 +47,10 @@ function GroupsHeader() {
 
 // Composant de navigation principale des groupes
 import NavigationGroup from "@/src/components/navigation/site/groups/navigation-group";
-
-// Composant pour afficher les groupes gérés
-function ManagedGroups() {
-  // Données fictives pour la démonstration
-  const managedGroups = [
-    { id: 1, name: "Développement Web" },
-    { id: 2, name: "Intelligence Artificielle" },
-  ];
-
-  return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between px-4 mb-2">
-        <h3 className="text-sm font-medium">Groupes gérés</h3>
-        <Link
-          href="/groups/managed"
-          className="text-xs text-muted-foreground hover:text-primary flex items-center"
-        >
-          Tout voir
-          <ChevronRight className="h-3 w-3 ml-1" />
-        </Link>
-      </div>
-      <div className="space-y-1 px-2">
-        {managedGroups.map((group) => (
-          <Link
-            key={group.id}
-            href={`/groups/${group.id}`}
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            <Shield className="h-4 w-4 text-blue-500" />
-            <span>{group.name}</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Composant pour afficher les groupes dont l'utilisateur est membre
-function MemberGroups() {
-  // Données fictives pour la démonstration
-  const memberGroups = [
-    { id: 3, name: "Réseau Social Universitaire" },
-    { id: 4, name: "Design UI/UX" },
-    { id: 5, name: "Cybersécurité" },
-  ];
-
-  return (
-    <div>
-      <div className="flex items-center justify-between px-4 mb-2">
-        <h3 className="text-sm font-medium">Vos abonnements</h3>
-        <Link
-          href="/groups/subscribed"
-          className="text-xs text-muted-foreground hover:text-primary flex items-center"
-        >
-          Tout voir
-          <ChevronRight className="h-3 w-3 ml-1" />
-        </Link>
-      </div>
-      <div className="space-y-1 px-2">
-        {memberGroups.map((group) => (
-          <Link
-            key={group.id}
-            href={`/groups/${group.id}`}
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-          >
-            <Users className="h-4 w-4 text-green-500" />
-            <span>{group.name}</span>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-}
+import {
+  JoinedGroups,
+  OwnedGroups,
+} from "@/src/components/navigation/site/sidebar-navigation-content";
 
 // Contenu à afficher quand on est dans /groups
 export default function GroupesContentSidebar({
@@ -139,11 +70,12 @@ export default function GroupesContentSidebar({
       <div className="px-4 py-2">
         <div className="h-px bg-border" />
       </div>
-      <ManagedGroups />
+      <OwnedGroups />
+      {/*  <ManagedGroups /> */}
       <div className="px-4 py-2">
         <div className="h-px bg-border" />
       </div>
-      <MemberGroups />
+      <JoinedGroups />
     </aside>
   );
 }

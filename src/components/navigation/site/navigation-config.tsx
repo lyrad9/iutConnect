@@ -50,9 +50,9 @@ export const NavigationItems = [
     icon: <User className="size-5" />,
     label: "Profil",
   },
-  {
+  /*   {
     href: "/settings",
     icon: <Settings className="size-5" />,
     label: "Paramètres",
-  },
+  }, */
 ];

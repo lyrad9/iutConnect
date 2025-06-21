@@ -1,28 +1,24 @@
+"use client";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ItemsEvents } from "./items-events";
+import { useEffect, useRef } from "react";
+
 import Link from "next/link";
-import ItemsSite from "./items-site";
-import { ItemsGroups } from "./items-groups";
+
 import { Button } from "../../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../../ui/avatar";
 import { eventTypes } from "../../utils/const/event-type";
 import { SideEventLinkProps } from "../../utils/types";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../../ui/tooltip";
-import { CalendarPlus, ChevronRight, Image } from "lucide-react";
+
+import { ChevronRight } from "lucide-react";
 import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+
 import LoadingOwnedGroups from "../loading";
-import { EmptyState } from "../../ui/empty-state";
+
 export default function SidebarNavigationContent() {
   const isAdmin = useQuery(api.forums.isUserAdminOfGroup);
   const isMember = useQuery(api.forums.isUserMemberOfGroup);
+  console.log("isMember", isMember);
   return (
     <>
       {isAdmin && <OwnedGroups />}
@@ -118,10 +114,11 @@ export function OwnedGroups() {
 export function JoinedGroups() {
   // Récupérer les groupes dont l'utilisateur est membre avec pagination
   const { results, loadMore, status, isLoading } = usePaginatedQuery(
-    api.forums.getUserGroups,
+    api.forums.sidebarGetUserGroups,
     {},
     { initialNumItems: 5 }
   );
+  console.log("joinedGroupes", results);
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {

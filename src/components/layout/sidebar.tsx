@@ -16,14 +16,17 @@ interface SidebarProps {
 
 export default function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
-  const isGroupsPage = pathname.startsWith("/groups");
+  // Exclure le chemin /groups/create
+  const isValidGroupsPage =
+    pathname.startsWith("/groups") && pathname !== "/groups/create";
 
-  if (isGroupsPage) {
+  if (isValidGroupsPage) {
     return <GroupesContentSidebar className={className} />;
   }
-  if (pathname === "/profile") {
+  if (pathname === "/profile" || pathname === "/groups/create") {
     return;
   }
+
   return (
     <aside
       className={cn(
