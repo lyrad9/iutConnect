@@ -13,12 +13,44 @@ import { api, internal } from "./_generated/api";
 /**
  * Get a forum by ID
  */
-export const getById = query({
+export const getGroupById = query({
   args: {
     forumId: v.id("forums"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.forumId);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("User not authentificated");
+    }
+    // TU vas enrichir les données avec le nombre de posts et évènements
+    const group = await ctx.db.get(args.forumId);
+    if (!group) throw new ConvexError("Group not found");
+    // Récupérer le nombre de posts et évènements
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_group", (q) => q.eq("groupId", args.forumId))
+      .collect();
+    const events = await ctx.db
+      .query("events")
+      .withIndex("by_group", (q) => q.eq("groupId", args.forumId))
+      .collect();
+    // Vérifier si l'utilisateur actuel est membre de ce groupe
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user_and_group", (q) =>
+        q
+          .eq("userId", userId as Id<"users">)
+          .eq("groupId", group._id)
+          .eq("groupType", "forum")
+      )
+      .first();
+    return {
+      ...group,
+      postsCount: posts.length,
+      eventsCount: events.length,
+      requestStatus: !!membership && membership.status === "pending",
+      /*   members: members.length, */
+    };
   },
 });
 
@@ -880,5 +912,40 @@ export const deleteGroup = mutation({
     // Supprimer le groupe
     await ctx.db.delete(args.groupId);
     return { success: true };
+  },
+});
+
+// Recherche sur les membres du groupes avec pagination
+export const paginatedGroupMembers = query({
+  args: {
+    forumId: v.id("forums"),
+    search: v.optional(v.string()),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, { forumId, search = "", paginationOpts }) => {
+    // Récupérer le forum pour obtenir la liste des membres
+    const forum = await ctx.db.get(forumId);
+    if (!forum) throw new ConvexError("Group not found");
+
+    // Si pas de recherche, paginer simplement sur les membres
+    if (!search) {
+      return filter(ctx.db.query("users"), (user) =>
+        forum.members.includes(user._id)
+      ).paginate(paginationOpts);
+    }
+
+    // Recherche sur les trois champs avec filter et withSearchIndex
+    // On utilise withSearchIndex sur chaque champ, puis on filtre côté JS
+    // pour ne garder que les membres du groupe et ceux qui matchent le terme sur l'un des trois champs
+    const lowerSearch = search.toLowerCase();
+
+    return filter(
+      ctx.db.query("users"),
+      (user) =>
+        forum.members.includes(user._id) &&
+        (user.firstName.toLowerCase().includes(lowerSearch) ||
+          user.lastName.toLowerCase().includes(lowerSearch) ||
+          user.email.toLowerCase().includes(lowerSearch))
+    ).paginate(paginationOpts);
   },
 });

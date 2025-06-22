@@ -45,7 +45,7 @@ import { fr } from "date-fns/locale";
 import Link from "next/link";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { useDebounce } from "use-debounce";
-import { GroupMembers } from "../../discover/_components/group-card";
+import { GroupMembersAvatars } from "@/src/components/groups/group-members-avatars";
 import { Badge } from "@/src/components/ui/badge";
 import LoadingPendingRequests from "./Loading";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
@@ -299,7 +299,7 @@ export default function JoinedGroupsList() {
                       </div>
 
                       <div className="mt-4 flex items-center justify-between">
-                        <GroupMembers
+                        <GroupMembersAvatars
                           groupId={group._id}
                           membersCount={group.membersCount || 0}
                         />

@@ -1,4 +1,4 @@
-import { SelectGroupLayout } from "./SelectGroupLayout";
+import { GroupLayout } from "./_components/GroupLayout";
 
 export default async function GroupPage({
   params,
@@ -9,7 +9,7 @@ export default async function GroupPage({
 
   return (
     <div className="container px-4 py-6 md:py-8">
-      <SelectGroupLayout id={id} />
+      <GroupLayout id={id} />
     </div>
   );
 }

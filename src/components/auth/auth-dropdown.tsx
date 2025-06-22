@@ -3,6 +3,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
 } from "@/src/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -11,6 +14,13 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { redirect, useRouter } from "next/navigation";
+import {
+  UserIcon,
+  SettingsIcon,
+  LogOutIcon,
+  ChevronDownIcon,
+} from "lucide-react";
+import { SmartAvatar } from "../shared/smart-avatar";
 export const AuthDropdown = () => {
   const { signOut } = useAuthActions();
   const user = useQuery(api.users.currentUser);
@@ -19,41 +29,70 @@ export const AuthDropdown = () => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Avatar className="h-8 w-8">
-              <AvatarImage
-                src="https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                alt="User"
-              />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-          </Button>
+          {/*    <Button
+            variant="ghost"
+            className="w-auto h-auto p-0 hover:bg-transparent"
+          > */}
+          <div className="flex items-center gap-2">
+            <SmartAvatar
+              avatar={user?.profilePicture || ""}
+              name={`${user?.firstName} ${user?.lastName}`}
+              size="sm"
+              className="rounded"
+            />
+            <ChevronDownIcon
+              size={16}
+              className="opacity-60"
+              aria-hidden="true"
+            />
+          </div>
+          {/* </Button> */}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem asChild>
-            <Link href="/profile">View Profile</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <p>
+        <DropdownMenuContent className="max-w-64">
+          <DropdownMenuLabel className="flex min-w-0 flex-col">
+            <span className="text-foreground truncate text-sm font-medium">
               {user?.firstName} {user?.lastName}
-            </p>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem asChild>
-            <Link href="/settings">Settings</Link>
-          </DropdownMenuItem>
+            </span>
+            <span className="text-muted-foreground truncate text-xs font-normal">
+              {user?.email}
+            </span>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuGroup>
+            <DropdownMenuItem asChild>
+              <Link href="/profile">
+                <UserIcon
+                  size={16}
+                  className="opacity-60 mr-2"
+                  aria-hidden="true"
+                />
+                <span>Mon profil</span>
+              </Link>
+            </DropdownMenuItem>
+            {/*   <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <SettingsIcon
+                  size={16}
+                  className="opacity-60 mr-2"
+                  aria-hidden="true"
+                />
+                <span>Settings</span>
+              </Link>
+            </DropdownMenuItem> */}
+          </DropdownMenuGroup>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={async () => {
               await signOut();
               redirect("/sign-up");
-
-              /*    .then(() => {
-                router.push("/sign-up");
-              }); */
             }}
-            asChild
           >
-            <p className="text-red-500 cursor-pointer">Logout</p>
+            <LogOutIcon
+              size={16}
+              className="opacity-60 mr-2"
+              aria-hidden="true"
+            />
+            <span className="text-red-500">Déconnexion</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

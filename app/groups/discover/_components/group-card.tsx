@@ -13,6 +13,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/src/lib/utils";
 import { motion } from "motion/react";
 import { MultiAvatar } from "@/src/components/ui/multi-avatar";
+import { GroupMembersAvatars } from "@/src/components/groups/group-members-avatars";
 
 interface GroupCardProps {
   group: {
@@ -31,52 +32,6 @@ interface GroupCardProps {
       name: string;
     } | null;
   };
-}
-
-/**
- * Composant pour afficher les membres d'un groupe avec MultiAvatar
- */
-type typeMembers = {
-  id: string;
-  name?: string;
-  avatar?: string | null;
-};
-export function GroupMembers({
-  groupId,
-  membersCount,
-}: {
-  groupId: string;
-  membersCount: number;
-}) {
-  const [members, setMembers] = useState<
-    { id: string; name?: string; avatar?: string | null }[]
-  >([]);
-
-  // Récupérer les membres du groupe
-  const groupMembers = useQuery(api.users.getGroupMembers, {
-    groupId: groupId as Id<"forums">,
-    limit: 5,
-  });
-
-  useEffect(() => {
-    if (groupMembers?.members) {
-      setMembers(groupMembers.members.filter((member) => member !== null));
-    }
-  }, [groupMembers]);
-
-  if (!members.length) {
-    return null;
-  }
-
-  return (
-    <MultiAvatar
-      users={members}
-      totalCount={membersCount}
-      maxDisplayed={5}
-      size="lg"
-      className="mt-1"
-    />
-  );
 }
 
 export function GroupCard({ group }: GroupCardProps) {
@@ -194,7 +149,10 @@ export function GroupCard({ group }: GroupCardProps) {
           </p>
 
           {/* Affichage des membres avec MultiAvatar */}
-          <GroupMembers groupId={group.id} membersCount={group.membersCount} />
+          <GroupMembersAvatars
+            groupId={group.id}
+            membersCount={group.membersCount}
+          />
         </CardContent>
 
         <CardFooter className="p-4 pt-2">

@@ -7,7 +7,7 @@ export default function JoinsPage() {
   return (
     <div className="container px-4 py-6 md:py-8 mx-auto">
       {/* En-tête avec titre */}
-      <div className="mb-8 text-center">
+      <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight">
           Mes Groupes et Demandes
         </h1>

@@ -243,7 +243,8 @@ export default defineSchema({
     .index("by_author", ["authorId"])
     .index("by_creation_date", ["createdAt"])
     .index("by_group_and_status", ["groupId", "status"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_group", ["groupId"]),
 
   // Événements
   events: defineTable({

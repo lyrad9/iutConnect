@@ -54,14 +54,14 @@ export function DeleteGroupModal() {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
+          {/*   <Button
             variant="outline"
             className="w-full"
             onClick={closeDeleteModal}
             disabled={isDeleting}
           >
             Annuler
-          </Button>
+          </Button> */}
           <Button
             variant="destructive"
             className="w-full"
@@ -121,14 +121,14 @@ export function LeaveGroupModal() {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
+          {/* <Button
             variant="outline"
             className="w-full"
             onClick={closeLeaveModal}
             disabled={isLeaving}
           >
             Annuler
-          </Button>
+          </Button> */}
           <Button
             variant="destructive"
             className="w-full"
