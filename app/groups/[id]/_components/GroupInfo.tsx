@@ -25,19 +25,20 @@ import { InviteMemberDialog } from "./invite-member-dialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import { selectGroupProps } from "@/app/groups/[id]/_components/GroupLayout";
+import { useGroupModal } from "@/src/components/contexts/group-modal-context";
 /**
  * Composant pour afficher les informations d'un groupe
  * Inspiré du composant UserInfo mais adapté pour les groupes
  */
 export function GroupInfo({ group }: selectGroupProps) {
-  const [isLeaving, setIsLeaving] = useState(false);
+  const { openLeaveModal, openDeleteModal } = useGroupModal();
+
   // Récupérer l'utilisateur connecté pour vérifier s'il est admin
   const currentUser = useQuery(api.users.currentUser);
 
   // Vérifier si l'utilisateur est admin du groupe
   const isAdmin = group.authorId === currentUser?._id;
-  // Quitter un groupe
-  const leaveGroup = useMutation(api.forums.leaveGroup);
+
   // Annuler une demande de rejoindre un groupe
   const cancelGroupJoinRequest = useMutation(api.forums.cancelGroupJoinRequest);
   // Faire une demande de rejoindre un groupe pour un groupe  privé
@@ -76,21 +77,6 @@ export function GroupInfo({ group }: selectGroupProps) {
       } finally {
         setIsLoading(false);
       }
-    }
-  };
-
-  const handleLeave = async () => {
-    if (!group._id) return;
-
-    setIsLeaving(true);
-    try {
-      await leaveGroup({ groupId: group._id });
-      toast.success("Vous avez quitté le groupe");
-    } catch (error) {
-      console.error("Erreur lors de la sortie du groupe:", error);
-      toast.error("Erreur lors de la sortie du groupe");
-    } finally {
-      setIsLeaving(false);
     }
   };
 
@@ -209,17 +195,9 @@ export function GroupInfo({ group }: selectGroupProps) {
                 <Button
                   variant="destructive"
                   className="flex items-center gap-2"
-                  onClick={handleLeave}
-                  disabled={isLeaving}
+                  onClick={() => openLeaveModal(group._id as Id<"forums">)}
                 >
-                  {isLeaving ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {/*   En cours... */}
-                    </>
-                  ) : (
-                    "Quitter le groupe"
-                  )}
+                  Quitter le groupe
                 </Button>
               )}
           </div>

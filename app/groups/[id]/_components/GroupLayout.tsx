@@ -56,7 +56,7 @@ export function GroupLayout({ id }: { id: string }) {
   }
 
   // Si le groupe n'existe pas
-  /*   if (group === null) {
+  if (group === null) {
     return (
       <EmptyState
         title="Groupe introuvable"
@@ -65,7 +65,7 @@ export function GroupLayout({ id }: { id: string }) {
       />
     );
   }
- */
+
   // Définir les onglets avec leur contenu
   const tabs: TabItem[] = [
     {

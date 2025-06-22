@@ -9,7 +9,6 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { PostForm, PostFormRef } from "./post/post-form";
 import { EventForm, EventFormRef } from "./event/event-form";
-import { Collaborator } from "./types";
 
 export function CreatePostCard() {
   // États généraux
