@@ -20,7 +20,6 @@ import { EventLocationSelector } from "./event-location-selector";
 import { EventTypeSelector } from "./event-type-selector";
 import { EventPhotoUploader } from "./event-photo-uploader";
 import { EventCollaboratorSelector } from "./event-collaborator-selector";
-import { Collaborator } from "../types";
 import { BaseSyntheticEvent } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -41,8 +40,6 @@ export type EventFormRef = {
 type EventFormProps = {
   /* onCancel: () => void; */
   onSubmitSuccess: () => void;
-  isCollaboratorModalOpen: boolean;
-  setIsCollaboratorModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   formRef: React.RefObject<EventFormRef | null>;
   onFormChange?: () => void;
   setIsSubmitting: (isSubmitting: boolean) => void;
@@ -51,8 +48,6 @@ type EventFormProps = {
 export function EventForm({
   /* onCancel, */
   onSubmitSuccess,
-  isCollaboratorModalOpen,
-  setIsCollaboratorModalOpen,
   formRef,
   onFormChange,
   setIsSubmitting,
@@ -128,7 +123,7 @@ export function EventForm({
       toast({
         title: "Erreur",
         description:
-          "Une erreur est survenue lors de la création de l'événement.",
+          "Une erreur est survenue lors de la création de l&apos;événement.",
         variant: "destructive",
       });
     } finally {
@@ -229,11 +224,7 @@ export function EventForm({
 
         <EventLocationSelector control={form.control} />
 
-        <EventCollaboratorSelector
-          control={form.control}
-          isModalOpen={isCollaboratorModalOpen}
-          setIsModalOpen={setIsCollaboratorModalOpen}
-        />
+        <EventCollaboratorSelector control={form.control} />
 
         <FormField
           control={form.control}
@@ -258,9 +249,7 @@ export function EventForm({
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-xs">
                       Activez cette option pour permettre aux utilisateurs de
-                      s&apos;inscrire comme participants à cet événement. Ils
-                      pourront indiquer s&apos;ils participent, sont peut-être
-                      intéressés ou déclinent l&apos;invitation.
+                      s&apos;inscrire comme participants à cet événement.
                     </TooltipContent>
                   </Tooltip>
                 </div>

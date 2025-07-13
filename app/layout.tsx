@@ -6,8 +6,8 @@ import { Toaster } from "@/src/components/ui/toaster";
 import { NavigationWrapper } from "@/src/components/layout/navigation-wrapper";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import ConvexClientProvider from "./ConvexClientProvider";
-/* import { Geist, Geist_Mono } from "next/font/google";
-import { Anek_Telugu } from "next/font/google"; */
+import { Geist, Geist_Mono } from "next/font/google";
+import { Anek_Telugu } from "next/font/google";
 import { cn } from "@/src/lib/utils";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { CircleCheckIcon, CircleX } from "lucide-react";
@@ -21,7 +21,7 @@ import {
 } from "@/src/components/groups/group-confirmation-modals";
 
 const inter = Inter({ subsets: ["latin"] });
-/* const geistSans = Geist({
+const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -33,7 +33,7 @@ const geistMono = Geist_Mono({
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
   variable: "--font-caption",
-}); */
+});
 export const metadata: Metadata = {
   title: "UniConnect - University Social Network",
   description:
@@ -49,9 +49,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          /*  geistSans.variable,
+          geistSans.variable,
           geistMono.variable,
-          AnekTelugu.variable, */
+          AnekTelugu.variable,
           "antialiased size-full bg-background font-sans  text-foreground"
         )}
       >

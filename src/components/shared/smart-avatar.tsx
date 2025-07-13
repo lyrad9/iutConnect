@@ -54,7 +54,7 @@ export function SmartAvatar({
             fallbackClassName
           )}
         >
-          {getInitials(name)}
+          {getInitials(name).trim()}
         </AvatarFallback>
       )}
     </Avatar>

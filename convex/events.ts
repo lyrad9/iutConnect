@@ -18,6 +18,8 @@ export const createEventInHome = mutation({
       description: v.string(),
       startDate: v.string(),
       endDate: v.optional(v.string()),
+      startTime: v.optional(v.string()),
+      endTime: v.optional(v.string()),
       photo: v.string(),
       location: v.object({
         value: v.string(),
@@ -26,6 +28,7 @@ export const createEventInHome = mutation({
       eventType: v.string(),
       collaborators: v.optional(v.array(v.string())),
       allowsParticipants: v.boolean(),
+      target: v.optional(v.string()),
     }),
   },
   handler: async (ctx, args) => {
@@ -51,7 +54,9 @@ export const createEventInHome = mutation({
       locationType: event.location.type,
       locationDetails: event.location.value,
       startDate: new Date(event.startDate).getTime(),
+      startTime: event.startTime,
       endDate: event.endDate ? new Date(event.endDate).getTime() : undefined,
+      endTime: event.endTime ?? undefined,
       name: event.name,
       description: event.description,
       collaborators:
@@ -69,6 +74,7 @@ export const createEventInHome = mutation({
       allowsParticipants: event.allowsParticipants ?? false,
       comments: [],
       likes: [],
+      target: event.target,
     });
 
     // Envoyer une notification à tous les utilsateurs sauf à lui meme

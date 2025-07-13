@@ -24,7 +24,7 @@ export default function SidebarNavigationContent() {
       {isAdmin && <OwnedGroups />}
       {isMember && <JoinedGroups />}
       {/*     <JoinedGroups />
-      <YoursEvents />
+      <CreatedEvents />
       <UpcomingEvents /> */}
     </>
   );
@@ -275,7 +275,7 @@ function EventLink({
 /**
  * Composant pour afficher les événements créés par l'utilisateur dans la barre laterale
  */
-export function YoursEvents() {
+export function OwnedEvents() {
   // Récupérer les événements créés par l'utilisateur avec pagination
   const userEvents = useQuery(api.events.getUserEvents, {
     paginationOpts: { numItems: 10 },

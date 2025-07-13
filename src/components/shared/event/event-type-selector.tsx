@@ -33,10 +33,10 @@ export function EventTypeSelector({ control }: EventTypeSelectorProps) {
           <FormLabel>Type d&apos;événement</FormLabel>
           <FormControl>
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className="bg-background/50 border-border/50">
+              <SelectTrigger className="bg-background/50 border-border/50 w-full">
                 <SelectValue placeholder="Sélectionnez un type d'événement" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="">
                 {Object.entries(eventTypes).map(([key, { content }]) => (
                   <SelectItem key={key} value={key}>
                     {content}

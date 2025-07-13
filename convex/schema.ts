@@ -255,6 +255,10 @@ export default defineSchema({
     name: v.string(),
     description: v.string(),
     startDate: v.number(), // timestamp
+    startTime: v.optional(v.string()), // HH:MM
+    endTime: v.optional(v.string()), // HH:MM
+    target: v.optional(v.string()), // Cible de l'événement (ex: "Étudiants en informatique")
+
     endDate: v.optional(v.number()), // timestamp
     locationType: v.union(...EventLocationType.map((l) => v.literal(l))),
     locationDetails: v.string(), // lieu physique ou lien en ligne

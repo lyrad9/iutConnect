@@ -9,6 +9,7 @@ import { api } from "@/convex/_generated/api";
 import { useQuery } from "convex/react";
 import GroupesContentSidebar from "./groups-content-sidebar";
 import SidebarNavigationContent from "../navigation/site/sidebar-navigation-content";
+import EventsContentSidebar from "./events-content-sidebar";
 
 interface SidebarProps {
   className?: string;
@@ -19,9 +20,14 @@ export default function Sidebar({ className }: SidebarProps) {
   // Exclure le chemin /groups/create
   const isValidGroupsPage =
     pathname.startsWith("/groups") && pathname !== "/groups/create";
+  const isValidEventsPage =
+    pathname.startsWith("/events") && pathname !== "/events/create";
 
   if (isValidGroupsPage) {
     return <GroupesContentSidebar className={className} />;
+  }
+  if (isValidEventsPage) {
+    return <EventsContentSidebar className={className} />;
   }
   if (pathname === "/profile" || pathname === "/groups/create") {
     return;

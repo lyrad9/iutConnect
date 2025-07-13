@@ -10,26 +10,28 @@ const fileValidator = z
   });
 // Schéma de validation pour un événement
 export const eventFormSchema = z.object({
-  name: z.string().min(1, "Le nom de l'événement est requis"),
+  name: z.string().min(1, "Le nom est requis"),
   description: z.string().min(1, "La description est requise"),
   startDate: z.string().min(1, "La date de début est requise"),
+  startTime: z.string().min(1, "L'heure de début est requise"),
   endDate: z.string().optional(),
+  endTime: z.string().optional(),
   location: z.object({
-    type: z
-      .enum(["on-site", "online"], {
-        required_error: "Le type d'emplacement est requis",
-      })
-      .refine((value) => value === "on-site" || value === "online", {
-        message: "L'emplacement doit être soit sur place, soit en ligne",
+    type: z.enum(["on-site", "online"]),
+    //url
+    value: z
+      .string({ required_error: "L'adresse ou le lien est requis" })
+      .min(1, "L'adresse ou le lien est requis")
+      .url({ message: "L'adresse ou le lien est invalide" })
+      .refine((url) => url.includes("https://"), {
+        message: "L'adresse ou le lien doit commencer par https://",
       }),
-    value: z.string().min(1, "L'emplacement est requis"),
   }),
   eventType: z.string().min(1, "Le type d'événement est requis"),
-  collaborators: z.array(z.string()).optional().default([]),
-  photo: fileValidator.refine((file) => file && file.size <= 2024 * 2024, {
-    message: "La taille de l'image doit être inférieure à 2Mo",
-  }),
+  collaborators: z.array(z.string()),
+  photo: z.instanceof(File).optional(),
   allowsParticipants: z.boolean().default(true),
+  target: z.string().optional(),
 });
 
 export type EventFormValues = z.infer<typeof eventFormSchema>;
