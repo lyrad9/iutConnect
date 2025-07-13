@@ -172,8 +172,8 @@ export default function GroupCreateLayout() {
       // Réinitialiser l'état du formulaire
       form.reset({
         ...defaultGroupFormValues,
-        profilePicture: null,
-        coverPhoto: null,
+        profilePicture: undefined,
+        coverPhoto: undefined,
       });
 
       // Rediriger vers la page du nouveau groupe
