@@ -13,16 +13,7 @@ import {
   Users,
   CalendarDays,
 } from "lucide-react";
-import { Button } from "@/src/components/ui/button";
-
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
-
 import { About } from "./_components/about";
-import { EditProfileBtn } from "./_components/edit-profile-btn";
 import EditProfilModal from "./_components/edit-profil-modal";
 import UserInfo from "./_components/UserInfo";
 import TabsUnderline, { TabItem } from "@/src/components/ui/tab2";

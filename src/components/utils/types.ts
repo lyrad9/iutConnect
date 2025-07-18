@@ -1,6 +1,4 @@
-import { Doc } from "@convex-dev/auth/server";
 import { eventTypes } from "./const/event-type";
-import { Id } from "@/convex/_generated/dataModel";
 
 export interface UserType {
   id: string;
@@ -56,4 +54,12 @@ export interface SideEventLinkProps {
   location: string;
   type: keyof typeof eventTypes;
   photo?: string | null;
+}
+
+export interface TrendType {
+  id: string;
+  title: string;
+  category: string;
+  timestamp: string;
+  engagementCount: number;
 }
