@@ -65,7 +65,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/components/ui/popover";
-import { getInitials, toLocalStartOfDayTimestamp } from "@/src/lib/utils";
 import { EventCollaboratorSelector } from "./event-collaborator-selector";
 import { SmartAvatar } from "../smart-avatar";
 import { Id } from "@/convex/_generated/dataModel";
