@@ -14,9 +14,7 @@ import {
 } from "@/src/components/ui/avatar";
 import { Button } from "@/src/components/ui/button";
 import { useToast } from "@/src/hooks/use-toast";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { NotificationData } from "./NotificationItem";
+import { NotificationData } from "@/app/notifications/NotificationItem";
 import { useState } from "react";
 import { getInitials } from "@/src/lib/utils";
 
