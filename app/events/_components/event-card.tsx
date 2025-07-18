@@ -7,6 +7,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Clock, MapPin, Users } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { cn } from "@/src/lib/utils";
+import Image from "next/image";
 
 export default function EventCard({ event }: { event: EventType }) {
   return (
@@ -16,10 +17,12 @@ export default function EventCard({ event }: { event: EventType }) {
       className="group overflow-hidden rounded-lg border bg-card transition-all hover:shadow-md"
     >
       <div className="relative h-48 overflow-hidden">
-        <img
-          src={event.image}
+        <Image
+          src={event.image || ""}
           alt={event.title}
           className="size-full object-cover transition-transform group-hover:scale-105"
+          width={400}
+          height={200}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent">
           <div className="absolute bottom-3 left-3">

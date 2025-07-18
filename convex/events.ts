@@ -465,7 +465,7 @@ export const getDiscoverEvents = query({
           participantsCount,
           allowsParticipants: event.allowsParticipants ?? false,
           isParticipating,
-          isCancelled: event.isCancelled,
+          isCancelled: event.isCancelled as boolean,
         };
       })
     );

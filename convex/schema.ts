@@ -276,7 +276,7 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
     moderatedAt: v.optional(v.number()), // Date de modération
     // Déterminer si l'évènement est annulé
-    isCancelled: v.optional(v.boolean()),
+    isCancelled: v.boolean(),
   })
     .searchIndex("search_events", {
       searchField: "name",
