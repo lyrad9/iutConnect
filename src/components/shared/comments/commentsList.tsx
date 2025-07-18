@@ -1,34 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
-import {
-  MoreHorizontal,
-  MessageSquare,
-  Heart,
-  Share,
-  BookmarkPlus,
-  Send,
-  BadgeCheck,
-} from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+import { Send, BadgeCheck } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
-import { Badge } from "@/src/components/ui/badge";
-
-import { cn, getInitials } from "@/src/lib/utils";
 import { Textarea } from "@/src/components/ui/textarea";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { likePost, unlikePost } from "@/convex/posts";
 import { Id } from "@/convex/_generated/dataModel";
 import { PostCommentType, PostType } from "../post/post-card";
 import { LoadingComment } from "./LoadingCommment";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
 import { Comment } from "./comment";
+import { SmartAvatar } from "../smart-avatar";
 export function CommentsList({
   postId,
   showComments,
@@ -107,19 +88,11 @@ export function CommentsList({
         <div key={postId} className="border-t p-4">
           {/* Formulaire de commentaire */}
           <div className="mb-4 flex gap-2">
-            <Avatar className="size-8">
-              {/* Remplacer par l'avatar de l'utilisateur connecté */}
-              <AvatarImage
-                src={currentUser?.profilePicture}
-                alt="Utilisateur connecté"
-              />
-              <AvatarFallback className="bg-primary dark:bg-white text-white dark:text-primary font-bold">
-                {/* Remplacer par les initiales de l'utilisateur connecté */}
-                {getInitials(
-                  `${currentUser?.firstName} ${currentUser?.lastName}`
-                )}
-              </AvatarFallback>
-            </Avatar>
+            <SmartAvatar
+              avatar={currentUser?.profilePicture as string | undefined}
+              name={`${currentUser?.firstName} ${currentUser?.lastName}`}
+              size="sm"
+            />
             <div className="flex-1 space-y-2">
               <div className="flex flex-col items-start gap-1">
                 <p className="text-xs font-medium text-muted-foreground">
