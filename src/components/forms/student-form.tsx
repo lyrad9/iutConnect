@@ -40,9 +40,7 @@ import { api } from "@/convex/_generated/api";
 
 import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert";
 import { CheckCircle2 } from "lucide-react";
-import { sendUserRegistrationApprovedEmail } from "@/app/(auth)/register/sendUserRegistrationApprovedEmail";
-import { generatePassword } from "@/src/lib/utils";
-import { sendUserRegistrationConfirmationEmail } from "@/app/(auth)/register/sendUserRegistrationConfirmationEmail";
+
 export function StudentRegistrationForm() {
   // État pour gérer les classes disponibles en fonction du niveau et de la filière
   const [availableClasses, setAvailableClasses] = useState<string[]>([]);

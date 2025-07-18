@@ -50,7 +50,7 @@ const staffFunctions = [
   { id: USER_FUNCTIONS.PROFESSOR, label: "Professeur" },
   { id: USER_FUNCTIONS.ACCOUNTANT, label: "Comptable" },
   { id: USER_FUNCTIONS.HR, label: "Ressources Humaines" },
-  { id: USER_FUNCTIONS.ADMIN_STAFF, label: "Personnel Administratif" },
+  { id: USER_FUNCTIONS.OTHER, label: "Autre" },
 ];
 
 export function StaffRegistrationForm() {
