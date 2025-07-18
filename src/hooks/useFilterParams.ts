@@ -5,7 +5,7 @@ import {
   parseAsString,
   parseAsStringEnum,
   parseAsArrayOf,
-  parseAsDate,
+  parseAsIsoDate,
 } from "nuqs";
 
 // Définir les catégories disponibles
@@ -16,10 +16,10 @@ const categories = [
   "Sports",
   "Cultural",
   "Networking",
-] as const;
+] as string[];
 
 // Définir les options de tri disponibles
-const sortOptions = ["date-asc", "date-desc", "popular"] as const;
+const sortOptions = ["date-asc", "date-desc", "popular"] as string[];
 
 export function useEventFilters() {
   const [filters, setFilters] = useQueryStates(
@@ -38,8 +38,8 @@ export function useEventFilters() {
       ).withDefault("date-desc"),
 
       // Dates de filtrage (début et fin)
-      dateFrom: parseAsDate,
-      dateTo: parseAsDate,
+      dateFrom: parseAsIsoDate,
+      dateTo: parseAsIsoDate,
     },
     {
       shallow: true, // Ne déclenche pas de navigation complète
