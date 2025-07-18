@@ -21,11 +21,12 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { generatePassword } from "@/src/lib/utils";
+import { use } from "react";
 
 export default function UserValidationPage({
   params,
 }: {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,7 +38,7 @@ export default function UserValidationPage({
   const [rejectionReason, setRejectionReason] = useState("");
   const [autoProcess, setAutoProcess] = useState(false);
 
-  const userId = params.userId as Id<"users">;
+  const userId = use(params).userId as Id<"users">;
 
   const user = useQuery(api.users.getUserById, { userId });
   const approveUserAction = useMutation(api.auth.approveUserAction);
