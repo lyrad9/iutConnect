@@ -18,7 +18,6 @@ import {
   FormMessage,
 } from "@/src/components/ui/form";
 import { useToast } from "@/src/hooks/use-toast";
-import { ModeToggle } from "@/src/components/mode-toggle";
 
 // Schéma de validation pour le formulaire de connexion
 const loginSchema = z.object({
