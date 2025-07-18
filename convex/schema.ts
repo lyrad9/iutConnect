@@ -10,7 +10,7 @@ import {
 } from "@/src/components/utils/const/group-main-categories";
 // Types d'énumération pour les valeurs prédéfinies
 const UserStatus = ["active", "inactive"] as const;
-const UserRole = ["USER", "ADMIN", "SUPERADMIN"] as const;
+export const UserRole = ["USER", "ADMIN", "SUPERADMIN"] as const;
 const UserPermission: string[] = [
   "COMMENT",
   "LIKE",
