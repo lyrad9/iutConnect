@@ -2,15 +2,7 @@ import { cn } from "@/src/lib/utils";
 import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import Link from "next/link";
-import {
-  Search,
-  Home,
-  Compass,
-  Users,
-  Plus,
-  ChevronRight,
-  Shield,
-} from "lucide-react";
+import { Search, Plus, ChevronRight } from "lucide-react";
 
 // Composant d'en-tête avec titre et recherche
 function EventsHeader() {
@@ -45,14 +37,14 @@ function EventsHeader() {
   );
 }
 
-// Composant de navigation principale des groupes
-import NavigationGroup from "@/src/components/navigation/site/groups/navigation-group";
+// Import des composants de navigation et des événements
+import NavigationEvent from "@/src/components/navigation/site/navigation-event";
 import {
-  JoinedGroups,
-  OwnedGroups,
+  OwnedEvents,
+  UpcomingEvents,
 } from "@/src/components/navigation/site/sidebar-navigation-content";
 
-// Contenu à afficher quand on est dans /groups
+// Contenu à afficher quand on est dans /events
 export default function EventsContentSidebar({
   className,
 }: {
@@ -66,16 +58,21 @@ export default function EventsContentSidebar({
       )}
     >
       <EventsHeader />
-      <NavigationGroup />
+      <NavigationEvent />
+
       <div className="px-4 py-2">
         <div className="h-px bg-border" />
       </div>
-      <OwnedGroups />
-      {/*  <ManagedGroups /> */}
+
+      {/* Événements créés par l'utilisateur */}
+      <OwnedEvents />
+
       <div className="px-4 py-2">
         <div className="h-px bg-border" />
       </div>
-      <JoinedGroups />
+
+      {/* Événements à venir */}
+      <UpcomingEvents />
     </aside>
   );
 }

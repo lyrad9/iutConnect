@@ -303,3 +303,31 @@ export const deleteGroupJoinRequestNotification = internalMutation({
     await ctx.db.delete(notification._id);
   },
 });
+
+// Mutation interne pour créer la notification de participation à un évènement
+export const suscribeToEventNotification = internalMutation({
+  args: {
+    eventId: v.id("events"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const event = await ctx.db.get(args.eventId);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+    const author = await ctx.db.get(event.authorId);
+    if (!author) {
+      throw new Error("Author not found");
+    }
+    await ctx.db.insert("notifications", {
+      senderId: args.userId,
+      recipientId: author._id,
+      notificationType: "event",
+      targetType: "event",
+      eventId: event._id as Id<"events">,
+      isRead: false,
+      createdAt: Date.now(),
+      title: `Un utilisateur a rejoint votre évènement ${event.name}`,
+    });
+  },
+});

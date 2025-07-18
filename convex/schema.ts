@@ -275,7 +275,14 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
     moderatedAt: v.optional(v.number()), // Date de modération
+    // Déterminer si l'évènement est annulé
+    isCancelled: v.optional(v.boolean()),
   })
+    .searchIndex("search_events", {
+      searchField: "name",
+      filterFields: ["eventType", "isCancelled", "startDate"],
+    })
+
     .index("by_author", ["authorId"])
     .index("by_creation_date", ["createdAt"])
     .index("by_start_date", ["startDate"])
@@ -288,11 +295,6 @@ export default defineSchema({
   eventParticipants: defineTable({
     eventId: v.id("events"),
     userId: v.id("users"),
-    status: v.union(
-      v.literal("attending"), // particpe
-      v.literal("maybe") // Intérésssé
-      /*   v.literal("declined") */
-    ),
 
     // Métadonnées
     createdAt: v.number(),

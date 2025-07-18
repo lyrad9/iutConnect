@@ -5,8 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useToast } from "@/src/hooks/use-toast";
-import { format, isToday, setHours, setMinutes } from "date-fns";
+import { toast } from "sonner";
+import { format, isToday, parseISO, setHours, setMinutes } from "date-fns";
 import { fr } from "date-fns/locale/fr";
 
 import {
@@ -65,9 +65,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/components/ui/popover";
-import { getInitials } from "@/src/lib/utils";
+import { getInitials, toLocalStartOfDayTimestamp } from "@/src/lib/utils";
 import { EventCollaboratorSelector } from "./event-collaborator-selector";
 import { SmartAvatar } from "../smart-avatar";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface EventModalProps {
   isOpen: boolean;
@@ -95,8 +96,6 @@ export function EventModal({
   // Mutations
   const generateUploadUrl = useMutation(api.events.generateUploadUrl);
   const createEventInHome = useMutation(api.events.createEventInHome);
-
-  const { toast } = useToast();
 
   // Form setup
   const form = useForm<EventFormValues>({
@@ -129,9 +128,10 @@ export function EventModal({
 
   // Handle date selection
   const handleDateSelect = (date: Date | null) => {
+    console.log("daatedebutselect", date);
     setSelectedDate(date);
     if (date) {
-      const formattedDate = date.toISOString().split("T")[0];
+      const formattedDate = format(date, "yyyy-MM-dd");
       form.setValue("startDate", `${formattedDate}T00:00`, {
         shouldValidate: true,
       });
@@ -139,7 +139,7 @@ export function EventModal({
       // Si la date de fin n'est pas définie ou est antérieure à la date de début, on la met à jour
       const endDate = form.getValues("endDate");
       if (endDate && new Date(endDate) < date) {
-        form.setValue("endDate", `${formattedDate}T00:00`, {
+        form.setValue("endDate", `${formattedDate}`, {
           shouldValidate: true,
         });
         setSelectedEndDate(date);
@@ -151,8 +151,9 @@ export function EventModal({
   const handleEndDateSelect = (date: Date | null) => {
     setSelectedEndDate(date);
     if (date) {
-      const formattedDate = date.toISOString().split("T")[0];
-      form.setValue("endDate", `${formattedDate}T00:00`, {
+      const formattedDate = format(date, "yyyy-MM-dd");
+
+      form.setValue("endDate", `${formattedDate}`, {
         shouldValidate: true,
       });
     }
@@ -204,50 +205,40 @@ export function EventModal({
     console.log("dataEvent", data);
     setIsSubmitting(true);
     try {
-      if (!data.photo) {
-        toast({
-          title: "Photo manquante",
-          description: "Veuillez ajouter une photo pour l'événement.",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
       const eventInHomeUrl = await generateUploadUrl();
-      const result = await fetch(eventInHomeUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": data.photo.type,
-        },
-        body: data.photo,
-      }).then((res) => res.json());
+      let storageId: string | undefined;
+      if (data.photo && data.photo !== undefined) {
+        const result = await fetch(eventInHomeUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": data.photo.type,
+          },
+          body: data.photo,
+        }).then((res) => res.json());
 
-      const { storageId } = result;
-      await createEventInHome({
+        storageId = result.storageId;
+      }
+      const event = await createEventInHome({
         event: {
           ...data,
-          photo: storageId,
+          photo: storageId as Id<"_storage"> | undefined,
         },
       });
-
-      toast({
-        title: "Événement créé",
-        description: "Votre événement a été publié avec succès.",
-      });
-      form.reset();
+      /* if (event && event.code === "UNAUTHORIZED") {
+        return toast.error(event.error as string);
+      }
+ */
+      toast.success("Événement créé");
+      /*  form.reset(); */
       setImagePreview(null);
       onSuccess?.();
-      onClose();
+      /* onClose(); */
       setIsPostOrEvent("post");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur lors de la soumission:", error);
-      toast({
-        title: "Erreur",
-        description:
-          "Une erreur est survenue lors de la création de l&apos;événement.",
-        variant: "destructive",
-      });
+      toast.error(
+        "Une erreur est survenue lors de la création de l'événement."
+      );
     } finally {
       setIsSubmitting(false);
     }

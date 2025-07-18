@@ -258,9 +258,11 @@ export const getDiscoverUserGroups = query({
       const searchTerm = args.searchTerm.trim();
       groupsQuery = ctx.db
         .query("forums")
+
         .withSearchIndex("search_name", (q) =>
           q
             .search("name", searchTerm)
+
             .eq("visibility", "visible")
             .eq("status", "active")
         );
@@ -716,7 +718,7 @@ export const joinPublicGroup = mutation({
       joinedAt: Date.now(),
       createdAt: Date.now(),
     });
-    // Appeler le job pour envoyer la notification à l'admin
+    // Appeler le scheduler pour envoyer la notification à l'admin
     await ctx.scheduler.runAfter(
       0,
       internal.notifications.notifyAdminToJoinPublicGroup,

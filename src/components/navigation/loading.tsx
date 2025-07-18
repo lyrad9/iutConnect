@@ -22,3 +22,25 @@ export default function LoadingOwnedGroups() {
     </Button>
   );
 }
+
+export function LoadingEvents() {
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="w-full justify-start text-muted-foreground h-auto py-2"
+      asChild
+    >
+      <div className="flex items-start gap-2">
+        {/* Event Photo Skeleton */}
+        <Skeleton className="h-6 w-6 flex-shrink-0 rounded-full" />
+
+        {/* Event Details Skeleton */}
+        <div className="flex flex-col items-start">
+          <Skeleton className="h-4 w-28 rounded" />
+          <Skeleton className="mt-1 h-3 w-20 rounded" />
+        </div>
+      </div>
+    </Button>
+  );
+}

@@ -6,6 +6,7 @@ import CustomProfile from "./CustomProfile";
 import { ConvexError, v } from "convex/values";
 import { redirect } from "next/navigation";
 import { actionGeneric } from "convex/server";
+import { Id } from "./_generated/dataModel";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
@@ -24,20 +25,36 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   },
 
   callbacks: {
-    async createOrUpdateUser(ctx: MutationCtx, args) {
-      const { existingUserId, type, provider, profile } = args;
-      if (existingUserId) {
-        return existingUserId;
+    async createOrUpdateUser(
+      ctx: MutationCtx,
+      args: {
+        existingUserId?: Id<"users"> | null;
+        type: string;
+        provider: { id: string };
+        profile: Record<string, any>;
       }
+    ): Promise<Id<"users">> {
+      // ① on explicite le type de retour
+      const { existingUserId, provider, profile } = args;
+
+      if (existingUserId) {
+        return existingUserId; // OK
+      }
+
+      // >>> Provider Google
       if (provider.id === "google") {
         const existingUser = await ctx.runQuery(api.users.getUserByEmail, {
-          email: args.profile.email as string,
+          email: profile.email as string,
         });
+
         if (existingUser) {
-          return existingUser._id;
+          return existingUser._id; // ici _id est bien Id<"users">
         }
-        throw new Error("veuiller vous inscrire avec votre email");
+
+        throw new Error("Veuillez vous inscrire d'abord avec votre email");
       }
+
+      // >>> Provider Custom
       if (provider.id === "custom-profile") {
         const {
           registrationNumber,
@@ -50,52 +67,50 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           classroom,
           phoneNumber,
         } = profile;
-        // Vérifier si l'email existe déjà dans la base de données
+
+        // Si l'email existe déjà
         const existingUser = await ctx.runQuery(api.users.getUserByEmail, {
           email: email as string,
         });
         if (existingUser) {
           return existingUser._id;
         }
-        // Créer un nouvel utilisateur
-        // L'utilisateur est un étudiant
-        if (fonction === "Etudiant") {
-          return ctx.db.insert("users", {
-            email: email as string,
-            registrationNumber: registrationNumber as string,
-            password: password as string,
-            lastName: lastName as string,
-            firstName: args.profile.firstName as string,
-            fieldOfStudy: fieldOfStudy as string,
-            classroom: classroom as string,
-            interests: [],
-            socialNetworks: [],
-            phoneNumber: phoneNumber as string,
-            permissions: ["COMMENT", "LIKE", "CREATE_POST_IN_GROUP"],
-            fonction: "Etudiant",
-            role: "USER",
-            isOnline: true,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-          });
-        }
-        return ctx.db.insert("users", {
+
+        // Sinon on crée l'utilisateur
+        const baseData = {
           email: email as string,
           registrationNumber: registrationNumber as string,
           password: password as string,
           lastName: lastName as string,
-          firstName: args.profile.firstName as string,
-          interests: [],
-          socialNetworks: [],
+          firstName: firstName as string,
+          interests: [] as string[],
+          socialNetworks: [] as any[],
           phoneNumber: phoneNumber as string,
-          permissions: ["COMMENT", "LIKE", "CREATE_POST_IN_GROUP"],
-          fonction: fonction as string,
-          role: "USER",
+          permissions: ["COMMENT", "LIKE", "CREATE_POST_IN_GROUP"] as string[],
+          role: "USER" as const,
           isOnline: true,
           createdAt: Date.now(),
           updatedAt: Date.now(),
-        });
+        };
+
+        // Étudiant ou autre fonction
+        if (fonction === "Etudiant") {
+          return ctx.db.insert("users", {
+            ...baseData,
+            fieldOfStudy: fieldOfStudy as string,
+            classroom: classroom as string,
+            fonction: "Etudiant",
+          });
+        } else {
+          return ctx.db.insert("users", {
+            ...baseData,
+            fonction: fonction as string,
+          });
+        }
       }
+
+      // ② on gère le cas "aucun provider connu" pour éviter un `undefined`
+      throw new Error(`Provider non géré : ${provider.id}`);
     },
   },
 });

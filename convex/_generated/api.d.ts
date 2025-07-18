@@ -24,6 +24,7 @@ import type * as http from "../http.js";
 import type * as myAction from "../myAction.js";
 import type * as notifications from "../notifications.js";
 import type * as posts from "../posts.js";
+import type * as scheduledevents from "../scheduledevents.js";
 import type * as users from "../users.js";
 
 /**
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   myAction: typeof myAction;
   notifications: typeof notifications;
   posts: typeof posts;
+  scheduledevents: typeof scheduledevents;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

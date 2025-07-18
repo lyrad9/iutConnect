@@ -245,3 +245,12 @@
   padding: 0.5rem 1rem;
   background-color: ButtonFace;
 } */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
