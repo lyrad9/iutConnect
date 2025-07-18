@@ -43,6 +43,7 @@ export default function NotificationItem({
     createdAt,
     isRead,
     targetType,
+    groupMemberId,
   } = notification;
 
   const { icon, color, borderColor } = notificationTypes[
@@ -108,21 +109,17 @@ export default function NotificationItem({
           <p className="text-xs text-muted-foreground">{formattedTime}</p>
 
           {/* Action buttons for specific notification types */}
-          {(notificationType === "request" ||
-            (notificationType === "group" &&
-              targetType === "contentApproval")) && (
+          {notificationType === "request" && (
             <div className="mt-2 flex gap-2">
               <Button
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (notificationType === "request") {
-                    openApprovalDialog(notification);
-                  } else if (
-                    notificationType === "group" &&
-                    targetType === "contentApproval"
-                  ) {
-                    openContentDialog(notification);
+                  if (targetType === "forum" && groupMemberId) {
+                    return openApprovalDialog(notification);
+                  }
+                  if (targetType === "forum" || targetType === "event") {
+                    return openContentDialog(notification);
                   }
                 }}
               >

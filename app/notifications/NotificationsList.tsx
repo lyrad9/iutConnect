@@ -1,11 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useInView } from "react-intersection-observer";
-import { Skeleton } from "@/src/components/ui/skeleton";
-import { Id } from "@/convex/_generated/dataModel";
-import NotificationItem, { NotificationData } from "./NotificationItem";
-import { notificationTypes } from "@/src/components/utils/const/notifications-type";
+import { useEffect, useRef } from "react";
+import NotificationItem from "./NotificationItem";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Bell, BellOff, Loader2 } from "lucide-react";
