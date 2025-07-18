@@ -223,7 +223,7 @@ export const deleteEvent = mutation({
     const comments = await ctx.db
       .query("comments")
       .withIndex("by_target", (q) =>
-        q.and(q.eq("targetType", "event"), q.eq("targetId", args.eventId))
+        q.eq("targetType", "event").eq("targetId", args.eventId)
       )
       .collect();
 
@@ -234,7 +234,7 @@ export const deleteEvent = mutation({
     // Supprimer les notifications liées à l'événement
     const notifications = await ctx.db
       .query("notifications")
-      .withIndex("by_type_event_sender", (q) => q.eq("eventId", args.eventId))
+      .withIndex("by_eventId", (q) => q.eq("eventId", args.eventId))
       .collect();
 
     for (const notification of notifications) {

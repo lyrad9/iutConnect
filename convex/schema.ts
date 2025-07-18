@@ -374,6 +374,7 @@ export default defineSchema({
   })
     .index("by_recipient", ["recipientId"])
     .index("by_forumId", ["forumId", "discussionRoomId"])
+    .index("by_eventId", ["eventId"])
     .index("by_groupMemberId_groupId_targetType", [
       "groupMemberId",
       "forumId",
