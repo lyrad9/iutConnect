@@ -281,7 +281,11 @@ export function EventCard({ event }: { event: EventType }) {
               {event.name}
             </CardTitle>
           </TooltipTrigger>
-          <TooltipContent arrowColor="accent" className="w-80 p-4 bg-accent">
+          <TooltipContent
+            arrowColor="accent"
+            className="w-80 p-4 bg-accent"
+            side="bottom"
+          >
             <h3 className="text-lg font-bold mb-2">{event.name}</h3>
 
             {/* Groupe si présent */}
