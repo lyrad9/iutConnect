@@ -327,7 +327,7 @@ export function EventsManagement() {
         >
           <SheetContent className="w-[400px] sm:w-[540px]">
             <SheetHeader>
-              <SheetTitle>Détails de l'événement</SheetTitle>
+              <SheetTitle>Détails de l&apos;événement</SheetTitle>
               <SheetDescription>
                 Informations détaillées de {selectedEvent.name}
               </SheetDescription>
@@ -409,7 +409,7 @@ export function EventsManagement() {
               <div className="flex flex-col gap-2">
                 <Button variant="outline" className="w-full">
                   <Eye className="h-4 w-4 mr-2" />
-                  Accéder au détail de l'événement
+                  Accéder au détail de l&apos;événement
                 </Button>
               </div>
             </div>

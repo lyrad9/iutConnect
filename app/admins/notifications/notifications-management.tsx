@@ -86,7 +86,7 @@ const notifications = [
     },
     type: "administratif",
     message:
-      "Sophie vous a envoyé une demande d'inscription dans la plateforme",
+      "Sophie vous a envoyé une demande d&apos;inscription dans la plateforme",
     timestamp: "2024-01-19T14:10:00Z",
     read: false,
   },
@@ -150,7 +150,7 @@ export function NotificationsManagement() {
     );
 
     if (diffInHours < 1) {
-      return "À l'instant";
+      return "À l&apos;instant";
     } else if (diffInHours < 24) {
       return `Il y a ${diffInHours}h`;
     } else {
@@ -233,7 +233,7 @@ export function NotificationsManagement() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  J'aimes
+                  J&apos;aime
                 </p>
                 <p className="text-2xl font-bold">{stats.byType.like}</p>
               </div>
@@ -281,7 +281,7 @@ export function NotificationsManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tous les types</SelectItem>
-                <SelectItem value="like">J'aime</SelectItem>
+                <SelectItem value="like">J&apos;aime</SelectItem>
                 <SelectItem value="comment">Commentaire</SelectItem>
                 <SelectItem value="post">Publication</SelectItem>
                 <SelectItem value="event">Événement</SelectItem>

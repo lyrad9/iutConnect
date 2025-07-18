@@ -70,6 +70,7 @@ import {
   Lock,
   Unlock,
 } from "lucide-react";
+import Image from "next/image";
 
 const salons = [
   {
@@ -476,10 +477,12 @@ export function GroupsManagement() {
             <div className="space-y-6 mt-6">
               {selectedGroup.coverImage && (
                 <div className="aspect-video rounded-lg overflow-hidden">
-                  <img
+                  <Image
                     src={selectedGroup.coverImage || "/placeholder.svg"}
                     alt="Couverture"
                     className="w-full h-full object-cover"
+                    width={400}
+                    height={200}
                   />
                 </div>
               )}

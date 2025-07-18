@@ -328,7 +328,7 @@ export function AdminsManagement() {
                 <div>
                   <h4 className="font-medium">Permissions</h4>
                   <div className="mt-2 space-y-2">
-                    {selectedAdmin.permissions.map((permission) => (
+                    {selectedAdmin.permissions.map((permission: any) => (
                       <div
                         key={permission}
                         className="flex items-center space-x-2"
@@ -387,7 +387,7 @@ export function AdminsManagement() {
                   <DialogTrigger asChild>
                     <Button variant="destructive" className="w-full">
                       <UserMinus className="h-4 w-4 mr-2" />
-                      Révoquer les droits d'admin
+                      Révoquer les droits d&apos;admin
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -395,7 +395,7 @@ export function AdminsManagement() {
                       <DialogTitle>Révoquer les droits</DialogTitle>
                       <DialogDescription>
                         Êtes-vous sûr de vouloir révoquer les droits
-                        d'administrateur de {selectedAdmin.name} ?
+                        d&apos;administrateur de {selectedAdmin.name} ?
                       </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
