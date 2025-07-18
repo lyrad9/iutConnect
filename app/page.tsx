@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { NewsFeed } from "@/app/_components/news-feed";
+
 import { FeedSkeleton } from "@/src/components/feed/feed-skeleton";
 import { SuggestedUsers } from "@/app/_components/suggested-users";
 import { WhatsHappening } from "@/app/_components/whats-happening";
