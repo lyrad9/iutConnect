@@ -24,7 +24,7 @@ export default function UnreadCountNotification() {
       disabled={unreadCount === 0}
     >
       Mark all as read
-      {unreadCount > 0 && (
+      {unreadCount && unreadCount > 0 && (
         <span className="bg-primary text-white text-xs py-0.5 px-2 rounded-full">
           {unreadCount}
         </span>

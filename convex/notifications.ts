@@ -172,7 +172,7 @@ export const getUnreadCount = query({
       )
       .collect();
 
-    return unreadNotifications.length;
+    return unreadNotifications.length ?? 0;
   },
 });
 
