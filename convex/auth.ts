@@ -31,7 +31,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         existingUserId?: Id<"users"> | null;
         type: string;
         provider: { id: string };
-        profile: Record<string, Value | undefined>;
+        profile: Record<string, any>;
       }
     ): Promise<Id<"users">> {
       // ① on explicite le type de retour
