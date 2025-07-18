@@ -3,27 +3,17 @@ import {
   LinkIcon,
   MapPin,
   MailIcon,
-  BadgeCheck,
-  CheckIcon,
-  Loader2,
   AtSign,
   Shield,
 } from "lucide-react";
 import { EditProfileBtn } from "./edit-profile-btn";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
-import Image from "next/image";
-import { AdminBadgeCheck } from "@/src/svg/Icons";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Badge } from "@/src/components/ui/badge";
-import { Button } from "@/src/components/ui/button";
 
 export default function UserInfo() {
   const user = useQuery(api.users.currentUser);

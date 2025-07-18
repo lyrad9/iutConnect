@@ -26,25 +26,25 @@ export const universityAuthAction = action({
 
       const { matricule, password, email } = args;
 
-      const apiUrl = "http://localhost:3000";
+      const apiUrl =
+        process.env.NODE_ENV === "development"
+          ? "http://localhost:3000"
+          : process.env.NEXT_PUBLIC_APP_URL;
 
       // Appel à l'API de vérification des identifiants universitaires
-      const verifyResponse = await fetch(
-        "http://localhost:3000/api/verify-credentials",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST",
-            "Access-Control-Allow-Headers": "Content-Type, Digest",
-          },
-          body: JSON.stringify({
-            registrationNumber: matricule,
-            password,
-          }),
-        }
-      );
+      const verifyResponse = await fetch(`${apiUrl}/api/verify-credentials`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST",
+          "Access-Control-Allow-Headers": "Content-Type, Digest",
+        },
+        body: JSON.stringify({
+          registrationNumber: matricule,
+          password,
+        }),
+      });
       console.log(verifyResponse);
 
       if (!verifyResponse.ok) {
