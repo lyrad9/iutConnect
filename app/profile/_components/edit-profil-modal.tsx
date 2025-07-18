@@ -987,7 +987,8 @@ export default function EditProfilModal() {
                         {form.watch("socialLinks")?.map((link, index) => (
                           <div
                             key={index}
-                            className="flex items-start gap-2 mb-2"
+                            className="flex items-start g
+                            ap-2 mb-2"
                           >
                             <FormField
                               control={form.control}
@@ -1322,18 +1323,19 @@ export default function EditProfilModal() {
                         </div>
 
                         {/*Afficher le bouton uniquement car il y'a déjà trois*/}
-                        {form.watch("education")?.length < 3 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={addEducation}
-                            className="mt-2 flex items-center gap-1"
-                          >
-                            <Plus className="h-4 w-4" />
-                            Ajouter une formation
-                          </Button>
-                        )}
+                        {form.watch("education") &&
+                          form.watch("education")!.length < 3 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={addEducation}
+                              className="mt-2 flex items-center gap-1"
+                            >
+                              <Plus className="h-4 w-4" />
+                              Ajouter une formation
+                            </Button>
+                          )}
                       </div>
                     )}
                     {/* Section 4: Expérience professionnelle*/}
@@ -1551,7 +1553,7 @@ export default function EditProfilModal() {
                           ))}
                         </div>
                         {form.watch("workExperience") &&
-                          form.watch("workExperience")?.length < 3 && (
+                          form.watch("workExperience")!.length < 3 && (
                             <Button
                               type="button"
                               variant="outline"
