@@ -123,7 +123,7 @@ export function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">
-          Vue d'ensemble de votre réseau social universitaire
+          Vue d&apos;ensemble de votre réseau social universitaire
         </p>
       </div>
 
@@ -265,7 +265,7 @@ export function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Demandes d'inscription en attente
+              Demandes d&apos;inscription en attente
               <Badge variant="destructive">{pendingRequests.length}</Badge>
             </CardTitle>
             <CardDescription>Validations requises</CardDescription>
