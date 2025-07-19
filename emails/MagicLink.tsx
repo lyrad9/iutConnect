@@ -19,10 +19,6 @@ interface RaycastMagicLinkEmailProps {
   host: string;
 }
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
-  : "";
-
 export const MagicLinkEmail = ({ url, host }: RaycastMagicLinkEmailProps) => (
   <Tailwind
     config={{
@@ -53,29 +49,30 @@ export const MagicLinkEmail = ({ url, host }: RaycastMagicLinkEmailProps) => (
           <Section className="my-6">
             <Text className="text-base leading-relaxed">
               <Link href={url} className="text-[#FF6363] underline">
-                👉 Click here to sign in 👈
+                {/*   👉 Click here to sign in 👈 */}
+                👉 Clique ici pour te connecter 👈
               </Link>
             </Text>
             <Text className="text-base leading-relaxed">
-              If you didn&apos;t request this, please ignore this email.
+              Si tu n&apos;as pas demandé ce lien, tu peux ignorer cet email.
+              {/*    If you didn&apos;t request this, please ignore this email. */}
             </Text>
           </Section>
           <Text className="text-base leading-relaxed">
-            Best,
-            <br />- Raycast Team
+            Institut Universitaire de Technologie,
+            <br />- L&apos;équipe d&apos;IUT social
           </Text>
+
           <Hr className="border-t border-gray-300 mt-12" />
           <Img
-            src={`${baseUrl}/static/raycast-logo.png`}
+            src={`${url}/static/iut.jpg`}
             width={32}
             height={32}
-            className="grayscale mx-auto my-5"
+            className="grayscale mx-auto my-5 object-cover"
           />
+          <Text className="text-xs text-[#8898aa] ml-1">IUT social Team.</Text>
           <Text className="text-xs text-[#8898aa] ml-1">
-            Raycast Technologies Inc.
-          </Text>
-          <Text className="text-xs text-[#8898aa] ml-1">
-            2093 Philadelphia Pike #3222, Claymont, DE 19703
+            Ndogbong, Douala Cameroun.
           </Text>
         </Container>
       </Body>

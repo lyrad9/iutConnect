@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const baseUrl =
       process.env.NODE_ENV === "development"
         ? "http://localhost:3000"
-        : process.env.NEXT_PUBLIC_BASE_URL;
+        : (process.env.NEXT_PUBLIC_APP_URL as string);
 
     // Extraction du nom d'hôte pour affichage dans l'email
     const host = new URL(url).host;
@@ -31,9 +31,9 @@ export async function POST(req: NextRequest) {
 
     // Envoi de l'email
     await transporter.sendMail({
-      from: `"Réseau Social Universitaire" <mbakopngako@gmail.com>`,
+      from: `"IUT social" <mbakopngako@gmail.com>`,
       to: email,
-      subject: "Lien de connexion - Réseau Social Universitaire",
+      subject: "Lien de connexion - Réseau Social IUT",
       html: await emailHtml,
       text: `Cliquez sur ce lien pour vous connecter: ${customUrl}. Si vous n'avez pas demandé ce lien, vous pouvez l'ignorer.`,
     });

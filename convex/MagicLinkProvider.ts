@@ -9,9 +9,9 @@ export const MagicLinkProvider = Email({
   async sendVerificationRequest({ identifier: email, provider, token, url }) {
     // Définis une API pour le processus d'envoi d'email
     const baseUrl =
-      process.env.NODE_ENV === "development"
+      process.env.CONVEX_ENV === "development"
         ? "http://localhost:3000"
-        : process.env.NEXT_PUBLIC_URL;
+        : (process.env.SITE_URL as string);
     try {
       const response = await fetch(`${baseUrl}/api/send-magic-link`, {
         method: "POST",

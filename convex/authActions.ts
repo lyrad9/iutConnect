@@ -26,13 +26,12 @@ export const universityAuthAction = action({
 
       const { matricule, password, email } = args;
 
-      const apiUrl =
-        process.env.NODE_ENV === "development"
+      const baseUrl =
+        process.env.CONVEX_ENV === "development"
           ? "http://localhost:3000"
-          : process.env.NEXT_PUBLIC_APP_URL;
-
+          : (process.env.SITE_URL as string);
       // Appel à l'API de vérification des identifiants universitaires
-      const verifyResponse = await fetch(`${apiUrl}/api/verify-credentials`, {
+      const verifyResponse = await fetch(`${baseUrl}/api/verify-credentials`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,11 +110,11 @@ export const sendRegistrationConfirmationEmail = internalAction({
   handler: async (ctx, args) => {
     try {
       // Construire l'URL de l'API en utilisant l'URL de déploiement ou localhost en développement
-      const apiUrl =
-        process.env.NODE_ENV === "production"
-          ? process.env.NEXT_PUBLIC_APP_URL
-          : "http://localhost:3000";
-      const response = await fetch(`${apiUrl}/api/send-registration-email`, {
+      const baseUrl =
+        process.env.CONVEX_ENV === "development"
+          ? "http://localhost:3000"
+          : (process.env.SITE_URL as string);
+      const response = await fetch(`${baseUrl}/api/send-registration-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
