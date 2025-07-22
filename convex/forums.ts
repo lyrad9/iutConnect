@@ -1,3 +1,4 @@
+
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
@@ -878,7 +879,7 @@ export const getUserPendingRequests = query({
                   ? await ctx.storage.getUrl(group.coverPhoto as Id<"_storage">)
                   : null, */
             authorName: author
-              ? `${author.firstName} ${author.lastName}`
+              ? ${author.firstName} ${author.lastName}
               : "Inconnu",
           },
         };
@@ -949,5 +950,29 @@ export const paginatedGroupMembers = query({
           user.lastName.toLowerCase().includes(lowerSearch) ||
           user.email.toLowerCase().includes(lowerSearch))
     ).paginate(paginationOpts);
+  },
+});
+
+// Delete post
+export const deletePost = mutation({
+  args: {
+    postId: v.id("posts"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) {
+      throw new ConvexError("User not authentificated");
+    }
+    // Vérifier que l'utilisateur est l'auteur du post
+    const post = await ctx.db.get(args.postId);
+    if (!post) {
+      throw new ConvexError("Post not found");
+    }
+    if (post.authorId !== userId) {
+      throw new ConvexError("You are not the author of this post");
+    }
+    // Supprimer le post
+    await ctx.db.delete(args.postId);
+    return { success: true };
   },
 });

@@ -14,13 +14,12 @@ export default function GroupsDiscoverLayout() {
 
   if (hasGroups === false) {
     return (
-      <div className="flex justify-center items-center">
-        <EmptyState
-          title="Aucun groupe trouvé"
-          icons={[FileQuestion]}
-          description="Il n'y a pas de groupes dans la plateforme"
-        />
-      </div>
+      <EmptyState
+        className="max-w-full h-screen flex flex-col justify-center items-center"
+        title="Aucun groupe trouvé"
+        icons={[FileQuestion]}
+        description="Il n'y a pas de groupes dans la plateforme"
+      />
     );
   }
   return <DiscoverGroupsList />;

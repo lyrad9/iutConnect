@@ -49,13 +49,24 @@ cors.route({
       }
 
       // Sauvegarder le post avec les images
-      const postId = await ctx.runMutation(api.posts.createPostInHome, {
+      const result = await ctx.runMutation(api.posts.createPostInHome, {
         content,
         attachmentIds,
       });
-
+      // Vérifier si le type est un objet
+      if (typeof result === "object") {
+        return new Response(
+          JSON.stringify({ success: false, message: result.error }),
+          {
+            status: 401,
+          }
+        );
+      }
       return new Response(
-        JSON.stringify({ success: true, postId })
+        JSON.stringify({ success: true, postId: result }),
+        {
+          status: 200,
+        }
         /* , {
         headers: new Headers({
           "Access-Control-Allow-Origin": "*",

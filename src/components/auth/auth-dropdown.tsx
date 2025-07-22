@@ -19,6 +19,7 @@ import {
   SettingsIcon,
   LogOutIcon,
   ChevronDownIcon,
+  BookmarkPlus,
 } from "lucide-react";
 import { SmartAvatar } from "../shared/smart-avatar";
 export const AuthDropdown = () => {
@@ -33,7 +34,7 @@ export const AuthDropdown = () => {
             variant="ghost"
             className="w-auto h-auto p-0 hover:bg-transparent"
           > */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer">
             <SmartAvatar
               avatar={user?.profilePicture || ""}
               name={`${user?.firstName} ${user?.lastName}`}
@@ -67,6 +68,16 @@ export const AuthDropdown = () => {
                   aria-hidden="true"
                 />
                 <span>Mon profil</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/bookmarks">
+                <BookmarkPlus
+                  size={16}
+                  className="opacity-60 mr-2"
+                  aria-hidden="true"
+                />
+                <span>Mes favoris</span>
               </Link>
             </DropdownMenuItem>
             {/*   <DropdownMenuItem asChild>

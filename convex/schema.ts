@@ -11,7 +11,7 @@ import {
 // Types d'énumération pour les valeurs prédéfinies
 const UserStatus = ["active", "inactive"] as const;
 export const UserRole = ["USER", "ADMIN", "SUPERADMIN"] as const;
-const UserPermission: string[] = [
+export const UserPermission: string[] = [
   "COMMENT",
   "LIKE",
   "CREATE_GROUP",
@@ -303,6 +303,18 @@ export default defineSchema({
     .index("by_event", ["eventId"])
     .index("by_user", ["userId"])
     .index("by_event_and_user", ["eventId", "userId"]),
+
+  // Favoris
+  favorites: defineTable({
+    userId: v.id("users"),
+    postId: v.id("posts"),
+
+    // Métadonnées
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_post", ["postId"])
+    .index("by_user_and_post", ["userId", "postId"]),
 
   // Commentaires
   comments: defineTable({

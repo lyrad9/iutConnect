@@ -54,12 +54,11 @@ export default function Header() {
         </div>
         <nav className="flex items-center gap-2">
           {/* Menu de navigation contextuel - visible uniquement sur mobile pour la page d'accueil */}
-          <MenuShortcut
+          {/*  <MenuShortcut
             items={NAVIGATION_ITEMS}
-            /*  mobileOnly={true} */
-            /*   visibleOnRoutes={["/"]} */
+         
             animationSpeed={0.2}
-          />
+          /> */}
           <Authenticated>
             <NotificationsDropdown />
             <Button variant="ghost" size="icon" className="relative" asChild>

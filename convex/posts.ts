@@ -1,9 +1,11 @@
+
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "./_generated/server";
+import { api } from "./_generated/api";
 export const createPostInHome = mutation({
   args: {
     content: v.string(),
@@ -19,6 +21,12 @@ export const createPostInHome = mutation({
     const user = await ctx.db.get(userId);
     if (!user) {
       throw new ConvexError("User not found");
+    }
+    if (user.role === "USER" && !user.permissions.includes("CREATE_POST")) {
+      return {
+        error: "Vous n'êtes pas autorisé à créer un post",
+        code: "UNAUTHORIZED",
+      };
     }
     // Insérer le post dans la base de données
     const postId = await ctx.db.insert("posts", {
@@ -36,7 +44,7 @@ export const createPostInHome = mutation({
       await ctx.db.insert("notifications", {
         senderId: userId,
         recipientId: notifiedUser._id,
-        title: `Un nouveau post a été publié par ${user.firstName} ${user.lastName}`,
+        title: Un nouveau post a été publié par ${user.firstName} ${user.lastName},
         isRead: false,
         notificationType: "post",
         postId: postId,
@@ -45,7 +53,7 @@ export const createPostInHome = mutation({
       });
     }
 
-    /* return postId; */
+    return postId;
   },
 });
 
@@ -77,7 +85,7 @@ export const likePost = mutation({
       await ctx.db.insert("notifications", {
         senderId: userId,
         recipientId: postAuthor._id,
-        title: `a aimé votre post`,
+        title: a aimé votre post,
         isRead: false,
         notificationType: "like",
         postId: postId,
@@ -173,7 +181,7 @@ export const getPosts = query({
               author: commentAuthor
                 ? {
                     id: commentAuthor._id,
-                    name: `${commentAuthor.firstName} ${commentAuthor.lastName}`,
+                    name: ${commentAuthor.firstName} ${commentAuthor.lastName},
                     username: commentAuthor.username,
                     profilePicture: commentAuthor.profilePicture,
                     role: commentAuthor.role,
@@ -192,6 +200,13 @@ export const getPosts = query({
             ctx.storage.getUrl(media as Id<"_storage">)
           )
         );
+        // Check if post is favourite
+        const isFavorite = await ctx.db
+          .query("favorites")
+          .withIndex("by_user_and_post", (q) =>
+            q.eq("userId", userId as Id<"users">).eq("postId", post._id)
+          )
+          .unique();
 
         return {
           id: post._id,
@@ -199,17 +214,16 @@ export const getPosts = query({
           data: {
             ...post,
             medias: medias,
-            author: author
-              ? {
-                  id: author._id,
-                  name: `${author.firstName} ${author.lastName}`,
-                  username: author.username || null,
-                  profilePicture: author.profilePicture,
-                  role: author.role,
-                  isAdmin:
-                    author.role === "ADMIN" || author.role === "SUPERADMIN",
-                }
-              : undefined,
+            author: {
+              id: author?._id,
+              name: ${author?.firstName} ${author?.lastName},
+              username: author?.username || null,
+              profilePicture: author?.profilePicture,
+              role: author?.role,
+              isAdmin:
+                author?.role === "ADMIN" || author?.role === "SUPERADMIN",
+            },
+
             group: group
               ? {
                   id: group._id,
@@ -223,6 +237,7 @@ export const getPosts = query({
           },
           createdAt: post.createdAt,
           isLiked: post.likes.includes(userId as Id<"users">),
+          isFavorite: !!isFavorite,
         };
       })
     );
