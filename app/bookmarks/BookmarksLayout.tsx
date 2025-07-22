@@ -4,7 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BookmarkPlus, BookmarkX } from "lucide-react";
 import { EmptyState } from "@/src/components/ui/empty-state";
-import { BookMarksList } from "./BookMarksList";
+import { BookMarksList } from "./BookmarksList";
 
 export function BookmarksLayout() {
   // Vérifier si l'utilisateur a des favoris

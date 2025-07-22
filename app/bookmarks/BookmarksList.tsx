@@ -11,7 +11,7 @@ import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { useRouter } from "next/navigation";
 import { PostCommentType } from "@/src/components/shared/post/post-card";
-import { BookMarksLoadingSkeletons } from "./BookMarksLoadingSkeletons";
+import { BookmarksLoadingSkeletons } from "./BookmarksLoadingSkeletons";
 
 /**
  * Liste des favoris avec pagination infinie et filtrage
@@ -97,11 +97,11 @@ export function BookMarksList() {
             ref={loadMoreRef}
             className="h-10 flex justify-center items-center mt-6"
           >
-            {status === "LoadingMore" && <BookMarksLoadingSkeletons />}
+            {status === "LoadingMore" && <BookmarksLoadingSkeletons />}
           </div>
         </>
       ) : isLoading ? (
-        <BookMarksLoadingSkeletons />
+        <BookmarksLoadingSkeletons />
       ) : (
         <EmptyState
           title="Aucun favori"
