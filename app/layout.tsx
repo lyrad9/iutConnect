@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -12,6 +13,14 @@ import { cn } from "@/src/lib/utils";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { CircleCheckIcon, CircleX } from "lucide-react";
 import { Toaster as Sonner } from "sonner";
+=======
+import './globals.css';
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/toaster';
+import { NavigationWrapper } from '@/components/layout/navigation-wrapper';
+>>>>>>> 647d777 (Revert "Refactorisation de la gestion des groupes et des publications, ajout de la fonctionnalité de favoris pour les publications, et amélioration de la validation des formulaires d'événements. Mise à jour des composants pour une meilleure expérience utilisateur et nettoyage du code.")
 
 import { NotificationProvider } from "@/src/components/contexts/notification-context";
 import { GroupModalProvider } from "@/src/components/contexts/group-modal-context";
@@ -56,6 +65,7 @@ export default function RootLayout({
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+<<<<<<< HEAD
           <NuqsAdapter>
             <ConvexAuthNextjsServerProvider>
               <ConvexClientProvider>
@@ -91,6 +101,11 @@ export default function RootLayout({
               </ConvexClientProvider>
             </ConvexAuthNextjsServerProvider>
           </NuqsAdapter>
+=======
+          <NavigationWrapper>
+            {children}
+          </NavigationWrapper>
+>>>>>>> 647d777 (Revert "Refactorisation de la gestion des groupes et des publications, ajout de la fonctionnalité de favoris pour les publications, et amélioration de la validation des formulaires d'événements. Mise à jour des composants pour une meilleure expérience utilisateur et nettoyage du code.")
           <Toaster />
         </ThemeProvider>
       </body>
