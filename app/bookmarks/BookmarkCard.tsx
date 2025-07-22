@@ -56,7 +56,7 @@ export function BookmarkCard({ favoritePost }: BookmarkCardProps) {
   // Titre de la carte: première ligne du contenu ou valeur par défaut
   const title =
     favoritePost.content.split("\n")[0] ||
-    Publication de ${favoritePost.author.name};
+    `Publication de ${favoritePost.author.name}`;
 
   // Choisir l'image à afficher
   const mainImage =

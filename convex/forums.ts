@@ -1,4 +1,3 @@
-
 import { query, mutation } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
@@ -879,7 +878,7 @@ export const getUserPendingRequests = query({
                   ? await ctx.storage.getUrl(group.coverPhoto as Id<"_storage">)
                   : null, */
             authorName: author
-              ? ${author.firstName} ${author.lastName}
+              ? `${author.firstName} ${author.lastName}`
               : "Inconnu",
           },
         };

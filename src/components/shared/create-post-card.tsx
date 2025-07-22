@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useRef, useCallback } from "react";
 import { Image as Photo, Calendar } from "lucide-react";
@@ -107,7 +106,7 @@ export function CreatePostCard() {
           <div className="flex gap-3">
             <SmartAvatar
               avatar={currentUser?.profilePicture as string | undefined}
-              name={${currentUser?.firstName} ${currentUser?.lastName}}
+              name={`${currentUser?.firstName} ${currentUser?.lastName}`}
               size="md"
             />
 
@@ -131,7 +130,7 @@ export function CreatePostCard() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className={${isPostOrEvent === "post" ? "bg-accent text-primary-foreground" : ""}}
+                  className={`${isPostOrEvent === "post" ? "bg-accent text-primary-foreground" : ""}`}
                   variant="ghost"
                   size="sm"
                   type="button"
@@ -143,7 +142,7 @@ export function CreatePostCard() {
                   Photo
                 </Button>
                 <Button
-                  className={${isPostOrEvent === "event" ? "bg-accent text-primary-foreground" : ""}}
+                  className={`${isPostOrEvent === "event" ? "bg-accent text-primary-foreground" : ""}`}
                   onClick={handleEventButtonClick}
                   variant="ghost"
                   size="sm"

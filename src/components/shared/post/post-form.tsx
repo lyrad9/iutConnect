@@ -1,4 +1,3 @@
-
 "use client";
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -152,11 +151,11 @@ export function PostForm({
       for (const file of data.attachments as File[]) {
         formData.append("attachments", file);
       }
-      const response = await fetch(${url}/uploadPostImagesInHome, {
+      const response = await fetch(`${url}/uploadPostImagesInHome`, {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: Bearer ${token},
+          Authorization: `Bearer ${token}`,
           /* "Content-Type": "multipart/form-data", */
         },
       });

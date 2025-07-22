@@ -1,4 +1,3 @@
-
 import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
@@ -44,7 +43,7 @@ export const createPostInHome = mutation({
       await ctx.db.insert("notifications", {
         senderId: userId,
         recipientId: notifiedUser._id,
-        title: Un nouveau post a été publié par ${user.firstName} ${user.lastName},
+        title: `Un nouveau post a été publié par ${user.firstName} ${user.lastName}`,
         isRead: false,
         notificationType: "post",
         postId: postId,
@@ -85,7 +84,7 @@ export const likePost = mutation({
       await ctx.db.insert("notifications", {
         senderId: userId,
         recipientId: postAuthor._id,
-        title: a aimé votre post,
+        title: "a aimé votre post",
         isRead: false,
         notificationType: "like",
         postId: postId,
@@ -181,7 +180,7 @@ export const getPosts = query({
               author: commentAuthor
                 ? {
                     id: commentAuthor._id,
-                    name: ${commentAuthor.firstName} ${commentAuthor.lastName},
+                    name: `${commentAuthor.firstName} ${commentAuthor.lastName}`,
                     username: commentAuthor.username,
                     profilePicture: commentAuthor.profilePicture,
                     role: commentAuthor.role,
@@ -216,7 +215,7 @@ export const getPosts = query({
             medias: medias,
             author: {
               id: author?._id,
-              name: ${author?.firstName} ${author?.lastName},
+              name: `${author?.firstName} ${author?.lastName}`,
               username: author?.username || null,
               profilePicture: author?.profilePicture,
               role: author?.role,

@@ -1,6 +1,4 @@
-
 "use client";
-
 
 import React, { useState, useRef, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -129,14 +127,14 @@ export function EventModal({
     setSelectedDate(date);
     if (date) {
       const formattedDate = format(date, "yyyy-MM-dd");
-      form.setValue("startDate", ${formattedDate}T00:00, {
+      form.setValue("startDate", `${formattedDate}T00:00`, {
         shouldValidate: true,
       });
 
       // Si la date de fin n'est pas définie ou est antérieure à la date de début, on la met à jour
       const endDate = form.getValues("endDate");
       if (endDate && new Date(endDate) < date) {
-        form.setValue("endDate", ${formattedDate}, {
+        form.setValue("endDate", `${formattedDate}`, {
           shouldValidate: true,
         });
         setSelectedEndDate(date);
@@ -150,7 +148,7 @@ export function EventModal({
     if (date) {
       const formattedDate = format(date, "yyyy-MM-dd");
 
-      form.setValue("endDate", ${formattedDate}, {
+      form.setValue("endDate", `${formattedDate}`, {
         shouldValidate: true,
       });
     }
@@ -407,7 +405,7 @@ export function EventModal({
                     onChange={field.onChange}
                     minTime={
                       isToday(selectedDate || new Date())
-                        ? ${currentHour}:${roundedMinute}
+                        ? `${currentHour}:${roundedMinute}`
                         : undefined
                     }
                     className="w-full"
@@ -491,7 +489,7 @@ export function EventModal({
                               minTime={
                                 isToday(selectedEndDate || new Date())
                                   ? form.watch("startTime") ||
-                                    ${currentHour}:${roundedMinute}
+                                    `${currentHour}:${roundedMinute}`
                                   : form.watch("startTime")
                               }
                               className="w-full"
@@ -533,7 +531,7 @@ export function EventModal({
                 {/* Organisateur */}
                 <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-md">
                   <SmartAvatar
-                    name={${user?.firstName} ${user?.lastName}}
+                    name={`${user?.firstName} ${user?.lastName}`}
                     avatar={user?.profilePicture as string}
                     size="sm"
                   />

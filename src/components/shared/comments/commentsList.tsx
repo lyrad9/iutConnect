@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { Send, BadgeCheck } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
@@ -92,7 +91,7 @@ export function CommentsList({
           <div className="mb-4 flex gap-2">
             <SmartAvatar
               avatar={currentUser?.profilePicture as string | undefined}
-              name={${currentUser?.firstName} ${currentUser?.lastName}}
+              name={`${currentUser?.firstName} ${currentUser?.lastName}`}
               size="sm"
             />
             <div className="flex-1 space-y-2">
