@@ -19,6 +19,7 @@ import type * as auth from "../auth.js";
 import type * as authActions from "../authActions.js";
 import type * as comments from "../comments.js";
 import type * as events from "../events.js";
+import type * as favorites from "../favorites.js";
 import type * as forums from "../forums.js";
 import type * as http from "../http.js";
 import type * as notifications from "../notifications.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   authActions: typeof authActions;
   comments: typeof comments;
   events: typeof events;
+  favorites: typeof favorites;
   forums: typeof forums;
   http: typeof http;
   notifications: typeof notifications;

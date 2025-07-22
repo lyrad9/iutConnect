@@ -1,4 +1,6 @@
+
 "use client";
+
 
 import React, { useState, useRef, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,11 +31,6 @@ import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Textarea } from "@/src/components/ui/textarea";
 import { Checkbox } from "@/src/components/ui/checkbox";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
 import { EventTypeSelector } from "./event-type-selector";
 import { EventLocationSelector } from "./event-location-selector";
 import AccordionPlusMinus from "@/src/components/ui/accordion-plus-minus";
@@ -68,6 +65,7 @@ import {
 import { EventCollaboratorSelector } from "./event-collaborator-selector";
 import { SmartAvatar } from "../smart-avatar";
 import { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/src/lib/utils";
 
 interface EventModalProps {
   isOpen: boolean;
@@ -131,14 +129,14 @@ export function EventModal({
     setSelectedDate(date);
     if (date) {
       const formattedDate = format(date, "yyyy-MM-dd");
-      form.setValue("startDate", `${formattedDate}T00:00`, {
+      form.setValue("startDate", ${formattedDate}T00:00, {
         shouldValidate: true,
       });
 
       // Si la date de fin n'est pas définie ou est antérieure à la date de début, on la met à jour
       const endDate = form.getValues("endDate");
       if (endDate && new Date(endDate) < date) {
-        form.setValue("endDate", `${formattedDate}`, {
+        form.setValue("endDate", ${formattedDate}, {
           shouldValidate: true,
         });
         setSelectedEndDate(date);
@@ -152,7 +150,7 @@ export function EventModal({
     if (date) {
       const formattedDate = format(date, "yyyy-MM-dd");
 
-      form.setValue("endDate", `${formattedDate}`, {
+      form.setValue("endDate", ${formattedDate}, {
         shouldValidate: true,
       });
     }
@@ -223,10 +221,10 @@ export function EventModal({
           photo: storageId as Id<"_storage"> | undefined,
         },
       });
-      /* if (event && event.code === "UNAUTHORIZED") {
+      if (event && event.code === "UNAUTHORIZED") {
         return toast.error(event.error as string);
       }
- */
+
       toast.success("Événement créé");
       /*  form.reset(); */
       setImagePreview(null);
@@ -255,7 +253,7 @@ export function EventModal({
       id: "collaborators",
       icon: Users,
       title: "Coorganisateurs",
-      sub: "Ajouter d'autres personnes pour organiser cet événement",
+      sub: "Ajouter d'autres personnes pour organiser cet événement (optionnel)",
       content: <EventCollaboratorSelector control={form.control} />,
     },
     {
@@ -409,7 +407,7 @@ export function EventModal({
                     onChange={field.onChange}
                     minTime={
                       isToday(selectedDate || new Date())
-                        ? `${currentHour}:${roundedMinute}`
+                        ? ${currentHour}:${roundedMinute}
                         : undefined
                     }
                     className="w-full"
@@ -493,7 +491,7 @@ export function EventModal({
                               minTime={
                                 isToday(selectedEndDate || new Date())
                                   ? form.watch("startTime") ||
-                                    `${currentHour}:${roundedMinute}`
+                                    ${currentHour}:${roundedMinute}
                                   : form.watch("startTime")
                               }
                               className="w-full"
@@ -535,7 +533,7 @@ export function EventModal({
                 {/* Organisateur */}
                 <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-md">
                   <SmartAvatar
-                    name={`${user?.firstName} ${user?.lastName}`}
+                    name={${user?.firstName} ${user?.lastName}}
                     avatar={user?.profilePicture as string}
                     size="sm"
                   />
@@ -590,7 +588,12 @@ export function EventModal({
                   name="target"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Public cible</FormLabel>
+                      <FormLabel>
+                        Public cible{" "}
+                        <span className="text-muted-foreground">
+                          (optionnel)
+                        </span>
+                      </FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <Target className="h-4 w-4 opacity-70" />
@@ -685,7 +688,16 @@ export function EventModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting ||
+                  !form.formState.isValid ||
+                  !form.getValues("name") ||
+                  !form.getValues("startDate") ||
+                  !form.getValues("startTime") ||
+                  !form.getValues("eventType") ||
+                  !form.getValues("location.value") ||
+                  !form.getValues("description")
+                }
                 className="bg-primary text-white hover:bg-primary/90"
               >
                 {isSubmitting ? (
@@ -703,9 +715,4 @@ export function EventModal({
       </DialogContent>
     </Dialog>
   );
-}
-
-// Fonction utilitaire pour les classes conditionnelles
-function cn(...classes: (string | boolean | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
 }

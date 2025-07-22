@@ -9,13 +9,14 @@ import {
   Settings,
   User,
   Search,
+  BookmarkPlus,
 } from "lucide-react";
 
 export const NavigationItems = [
   {
     href: "/",
     icon: <Home className="size-5" />,
-    label: "Fil d\\'actualité",
+    label: "Fil d'actualité",
   },
   {
     href: "/groups",
@@ -33,17 +34,22 @@ export const NavigationItems = [
     label: "Courses",
     notifications: 3,
   }, */
-  {
+  /*  {
     href: "/messages",
     icon: <MessageSquare className="size-5" />,
     label: "Messages",
     hasMessages: true,
-  },
+  }, */
   {
     href: "/notifications",
     icon: <Bell className="size-5" />,
     label: "Notifications",
     hasNotifications: true,
+  },
+  {
+    href: "/bookmarks",
+    icon: <BookmarkPlus className="size-5" />,
+    label: "Favoris",
   },
   {
     href: "/profile",

@@ -89,6 +89,7 @@ export function NewsPost() {
                 commentsCount: item.data.commentsCount,
                 comments: item.data.comments,
                 isLiked: item.isLiked,
+                isFavorite: item.isFavorite,
               }}
             />
           ))}

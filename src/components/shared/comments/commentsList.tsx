@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { Send, BadgeCheck } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
@@ -10,6 +11,7 @@ import { LoadingComment } from "./LoadingCommment";
 import { ScrollArea } from "@/src/components/ui/scroll-area";
 import { Comment } from "./comment";
 import { SmartAvatar } from "../smart-avatar";
+import { useRouter } from "next/navigation";
 export function CommentsList({
   postId,
   showComments,
@@ -19,6 +21,7 @@ export function CommentsList({
   showComments: boolean;
   setCommentsCount: React.Dispatch<React.SetStateAction<number>>;
 }) {
+  const router = useRouter();
   const currentUser = useQuery(api.users.currentUser);
   console.log("currentUser", currentUser);
   // État pour le texte du commentaire
@@ -48,6 +51,7 @@ export function CommentsList({
           content: commentText,
         });
         setCommentText("");
+        router.refresh();
       }
     } catch (error) {
       console.error("Erreur lors de l'envoi du commentaire:", error);
@@ -57,7 +61,7 @@ export function CommentsList({
   };
   useEffect(() => {
     if (status !== "CanLoadMore" || isLoading) return;
-
+    const observed = loaderRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
@@ -66,14 +70,12 @@ export function CommentsList({
       },
       { rootMargin: "200px" }
     );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
+    if (observed) {
+      observer.observe(observed);
     }
-
     return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
+      if (observed) {
+        observer.unobserve(observed);
       }
     };
   }, [status, isLoading, loadMore]);
@@ -90,14 +92,16 @@ export function CommentsList({
           <div className="mb-4 flex gap-2">
             <SmartAvatar
               avatar={currentUser?.profilePicture as string | undefined}
-              name={`${currentUser?.firstName} ${currentUser?.lastName}`}
+              name={${currentUser?.firstName} ${currentUser?.lastName}}
               size="sm"
             />
             <div className="flex-1 space-y-2">
               <div className="flex flex-col items-start gap-1">
-                <p className="text-xs font-medium text-muted-foreground">
-                  @{currentUser?.username}
-                </p>
+                {currentUser?.username && (
+                  <p className="text-xs font-medium text-muted-foreground">
+                    @{currentUser?.username}
+                  </p>
+                )}
                 <p className="text-sm">
                   {currentUser?.firstName} {currentUser?.lastName}
                 </p>
@@ -107,7 +111,7 @@ export function CommentsList({
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Écrire un commentaire..."
-                  className="min-h-[60px] resize-none flex-1"
+                  className="min-h-[30px] resize-none flex-1"
                 />
                 <Button
                   size="icon"
@@ -126,19 +130,35 @@ export function CommentsList({
           {/* Liste des commentaires */}
           {results && results.length > 0 ? (
             <>
-              <ScrollArea className="space-y-4 h-[300px] py-5 pr-5">
-                <div className="space-y-4">
-                  {results.map((comment) => (
-                    <Comment
-                      key={comment?.id}
-                      comment={comment as PostCommentType}
-                    />
-                  ))}
-                </div>
+              {results.length > 2 ? (
+                <ScrollArea className="space-y-4 h-[300px] py-5 pr-5">
+                  <div className="space-y-4">
+                    {results.map((comment) => (
+                      <Comment
+                        key={comment?.id}
+                        comment={comment as PostCommentType}
+                      />
+                    ))}
+                  </div>
 
-                <div ref={loaderRef} className="h-10" />
-                {isLoading && <LoadingComment />}
-              </ScrollArea>
+                  {/*   <div ref={loaderRef} className="h-10" /> */}
+                  {isLoading && <LoadingComment />}
+                </ScrollArea>
+              ) : (
+                <div className="space-y-4 pt-5 pr-5">
+                  <div className="space-y-4">
+                    {results.map((comment) => (
+                      <Comment
+                        key={comment?.id}
+                        comment={comment as PostCommentType}
+                      />
+                    ))}
+                  </div>
+
+                  {/*    <div ref={loaderRef} className="h-10" /> */}
+                  {isLoading && <LoadingComment />}
+                </div>
+              )}
             </>
           ) : isLoading ? (
             <LoadingComment />

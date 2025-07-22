@@ -1,9 +1,9 @@
+
 "use client";
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { set, useForm, UseFormReset } from "react-hook-form";
+import { useForm, UseFormReset } from "react-hook-form";
 import { EmojiClickData } from "emoji-picker-react";
-import { useToast } from "@/src/hooks/use-toast";
 import { Form } from "@/src/components/ui/form";
 import { PostFormValues, postFormSchema } from "./post-form-schema";
 import { Smile, ImagePlus, X } from "lucide-react";
@@ -17,9 +17,9 @@ import {
 import { cn } from "@/src/lib/utils";
 import EmojiPicker from "emoji-picker-react";
 import { BaseSyntheticEvent } from "react";
-import { error } from "console";
 import { useAuthToken } from "@convex-dev/auth/react";
-
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 export type PostFormRef = {
   submit: (e?: BaseSyntheticEvent | undefined) => Promise<void>;
   reset: UseFormReset<PostFormValues>;
@@ -27,10 +27,8 @@ export type PostFormRef = {
 };
 
 export type PostFormProps = {
-  /* onCancel: () => void; */
   onSubmitSuccess: () => void;
   isExpanded: boolean;
-  /* isSubmitting: boolean; */
   handleFocus: () => void;
   formRef: React.RefObject<PostFormRef | null>;
   onFormChange?: () => void;
@@ -40,14 +38,14 @@ export type PostFormProps = {
 export function PostForm({
   onSubmitSuccess,
   isExpanded,
-  /* isSubmitting, */
   handleFocus,
   formRef,
   onFormChange,
   setIsSubmitting,
 }: PostFormProps) {
+  const router = useRouter();
   const url = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
-  /*   console.log("url", url); */
+
   const token = useAuthToken();
   const [previewAttachments, setPreviewAttachments] = React.useState<string[]>(
     []
@@ -56,7 +54,6 @@ export function PostForm({
   const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   const form = useForm<PostFormValues>({
     resolver: zodResolver(postFormSchema),
@@ -155,11 +152,11 @@ export function PostForm({
       for (const file of data.attachments as File[]) {
         formData.append("attachments", file);
       }
-      const response = await fetch(`${url}/uploadPostImagesInHome`, {
+      const response = await fetch(${url}/uploadPostImagesInHome, {
         method: "POST",
         body: formData,
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: Bearer ${token},
           /* "Content-Type": "multipart/form-data", */
         },
       });
@@ -171,24 +168,21 @@ export function PostForm({
 
       const result = await response.json();
       console.log("result", result);
-      if (result.success) {
-        toast({
-          title: "Publication créée",
-          description: "Votre publication a été publiée avec succès.",
-        });
+      if (result.success === false) {
+        toast.error(result.message);
+        return;
       }
-
-      form.reset();
-      setPreviewAttachments([]);
-      onSubmitSuccess();
+      if (result.success) {
+        toast.success("Publication créée avec succès");
+        form.reset();
+        setPreviewAttachments([]);
+        onSubmitSuccess();
+        router.refresh();
+      }
     } catch (error: any) {
       console.error("Erreur lors de la soumission:", error);
       if (error.message) {
-        toast({
-          title: "Erreur",
-          description: error.message,
-          variant: "destructive",
-        });
+        toast.error(error.message);
       }
     } finally {
       setIsSubmitting(false);
@@ -220,7 +214,7 @@ export function PostForm({
               form.setValue("content", e.target.value, { shouldValidate: true })
             }
             onFocus={handleFocus}
-            placeholder="Qu'est-ce que tu as en tête?"
+            placeholder="Ajouter un post ou un évènement"
             className={cn(
               "min-h-[60px] w-full resize-none border-0 bg-transparent p-2 focus-visible:ring-0",
               isExpanded ? "min-h-[120px]" : ""

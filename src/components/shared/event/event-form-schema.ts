@@ -16,17 +16,44 @@ export const eventFormSchema = z.object({
   startTime: z.string().min(1, "L'heure de début est requise"),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
-  location: z.object({
-    type: z.enum(["on-site", "online"]),
-    //url
-    value: z
-      .string({ required_error: "L'adresse ou le lien est requis" })
-      .min(1, "L'adresse ou le lien est requis")
-      .url({ message: "L'adresse ou le lien est invalide" })
-      .refine((url) => url.includes("https://"), {
+  location: z
+    .object({
+      type: z.enum(["on-site", "online"]),
+      value: z
+        .string({ required_error: "L'adresse ou le lien est requis" })
+        .min(1, "L'adresse ou le lien est requis"),
+    })
+    .refine(
+      (data) => {
+        // Si type n'est pas "online", la validation passe toujours
+        if (data.type !== "online") return true;
+
+        // Si type est "online", vérifier que c'est une URL valide
+        try {
+          new URL(data.value);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      {
+        message: "L'adresse ou le lien est invalide",
+        path: ["value"],
+      }
+    )
+    .refine(
+      (data) => {
+        // Si type n'est pas "online", la validation passe toujours
+        if (data.type !== "online") return true;
+
+        // Si type est "online", vérifier que l'URL commence par https://
+        return data.value.includes("https://");
+      },
+      {
         message: "L'adresse ou le lien doit commencer par https://",
-      }),
-  }),
+        path: ["value"],
+      }
+    ),
   eventType: z.string().min(1, "Le type d'événement est requis"),
   collaborators: z.array(z.string()),
   photo: z.instanceof(File).optional(),

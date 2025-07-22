@@ -15,8 +15,10 @@ import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Button } from "../../ui/button";
 import { Heart } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function Comment({ comment }: { comment: PostCommentType }) {
+  const router = useRouter();
   const [isLiked, setIsLiked] = useState(comment.isLiked);
   // Mutation pour aimer un commentaire
   const likeCommentMutation = useMutation(api.comments.likeComment);
@@ -31,8 +33,10 @@ export function Comment({ comment }: { comment: PostCommentType }) {
         await unlikeCommentMutation({
           commentId: commentId as Id<"comments">,
         });
+        router.refresh();
       } else {
         await likeCommentMutation({ commentId: commentId as Id<"comments"> });
+        router.refresh();
       }
     } catch (error) {
       console.error("Erreur lors de l'aimation du commentaire:", error);

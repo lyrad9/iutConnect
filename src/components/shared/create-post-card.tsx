@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useRef, useCallback } from "react";
 import { Image as Photo, Calendar } from "lucide-react";
@@ -9,8 +10,14 @@ import {
 import { Button } from "@/src/components/ui/button";
 import { PostForm, PostFormRef } from "./post/post-form";
 import { EventModal } from "./event/event-modal";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { UserPermission } from "@/convex/schema";
+import { SmartAvatar } from "./smart-avatar";
 
 export function CreatePostCard() {
+  // Récupérer l'utilisateur connecté pour vérifier s'il a le droit de créer un post
+  const currentUser = useQuery(api.users?.currentUser);
   // États généraux
   const [isPostOrEvent, setIsPostOrEvent] = useState<"post" | "event">("post");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -85,19 +92,24 @@ export function CreatePostCard() {
     setIsPostOrEvent("event");
     openEventModal();
   };
-
+  if (
+    currentUser?.role === "USER" &&
+    // creer post et creer event
+    !currentUser.permissions.includes("CREATE_POST") &&
+    !currentUser.permissions.includes("CREATE_EVENT")
+  ) {
+    return null;
+  }
   return (
     <>
       <div className="mb-6 overflow-hidden rounded-xl border bg-card shadow-sm transition-all">
         <div className="p-4">
           <div className="flex gap-3">
-            <Avatar className="size-10">
-              <AvatarImage
-                src="https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                alt="User"
-              />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
+            <SmartAvatar
+              avatar={currentUser?.profilePicture as string | undefined}
+              name={${currentUser?.firstName} ${currentUser?.lastName}}
+              size="md"
+            />
 
             {/* Zone de contenu qui change en fonction de post/event */}
             <div className="flex-1">
@@ -119,7 +131,7 @@ export function CreatePostCard() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex flex-wrap gap-2">
                 <Button
-                  className={`${isPostOrEvent === "post" ? "bg-accent text-primary-foreground" : ""}`}
+                  className={${isPostOrEvent === "post" ? "bg-accent text-primary-foreground" : ""}}
                   variant="ghost"
                   size="sm"
                   type="button"
@@ -131,7 +143,7 @@ export function CreatePostCard() {
                   Photo
                 </Button>
                 <Button
-                  className={`${isPostOrEvent === "event" ? "bg-accent text-primary-foreground" : ""}`}
+                  className={${isPostOrEvent === "event" ? "bg-accent text-primary-foreground" : ""}}
                   onClick={handleEventButtonClick}
                   variant="ghost"
                   size="sm"
@@ -141,7 +153,7 @@ export function CreatePostCard() {
                   Événement
                 </Button>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 ml-auto">
                 <Button
                   variant="outline"
                   size="sm"
