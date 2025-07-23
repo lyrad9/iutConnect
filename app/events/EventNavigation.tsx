@@ -32,7 +32,7 @@ export function EventNavigation({ currentPage }: { currentPage: string }) {
       ], */
     },
     {
-      label: "Catégories",
+      label: "Catégorieees",
       items: [
         {
           label: "à découvrir",
