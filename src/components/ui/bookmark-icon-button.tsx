@@ -35,18 +35,34 @@ const animations = {
   },
 };
 
-export function BookmarkIconButton() {
-  const [isSaved, setIsSaved] = React.useState(false);
+interface BookmarkIconButtonProps {
+  isSaved: boolean;
+  onClick: () => void;
+  className?: string;
+  size?: number;
+}
 
-  const handleClick = () => setIsSaved((prev) => !prev);
-
+/**
+ * Bouton favori animé
+ * @param isSaved - État actuel du favori (enregistré ou non)
+ * @param onClick - Fonction appelée lors du clic sur le bouton
+ * @param className - Classes CSS additionnelles
+ * @param size - Taille de l'icône
+ */
+export function BookmarkIconButton({
+  isSaved,
+  onClick,
+  className,
+  size = 16,
+}: BookmarkIconButtonProps) {
   return (
     <div className="relative flex items-center justify-center">
       <Button
         variant="ghost"
         size="icon"
-        onClick={handleClick}
+        onClick={onClick}
         aria-pressed={isSaved}
+        className={className}
       >
         <motion.div
           initial={{ scale: 1 }}
@@ -57,11 +73,11 @@ export function BookmarkIconButton() {
           transition={{ type: "spring", stiffness: 300, damping: 15 }}
           className="relative flex items-center justify-center"
         >
-          <Bookmark className="opacity-60" size={16} aria-hidden="true" />
+          <Bookmark className="opacity-60" size={size} aria-hidden="true" />
 
           <Bookmark
-            className="absolute inset-0 text-blue-500 fill-blue-500 transition-all duration-300"
-            size={16}
+            className="absolute inset-0 text-primary fill-primary transition-all duration-300"
+            size={size}
             aria-hidden="true"
             style={{ opacity: isSaved ? 1 : 0 }}
           />
@@ -87,7 +103,7 @@ export function BookmarkIconButton() {
             {[...Array(5)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute rounded-full bg-blue-500"
+                className="absolute rounded-full bg-primary"
                 style={{
                   width: `${4 + Math.random() * 2}px`,
                   height: `${4 + Math.random() * 2}px`,

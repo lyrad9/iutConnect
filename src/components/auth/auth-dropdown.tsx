@@ -22,10 +22,13 @@ import {
   BookmarkPlus,
 } from "lucide-react";
 import { SmartAvatar } from "../shared/smart-avatar";
+import { useState } from "react";
+import { LogoutConfirmationModal } from "./logout-confirmation-modal";
+
 export const AuthDropdown = () => {
-  const { signOut } = useAuthActions();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const user = useQuery(api.users.currentUser);
-  const router = useRouter();
+
   return (
     <>
       <DropdownMenu>
@@ -93,20 +96,24 @@ export const AuthDropdown = () => {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={async () => {
-              await signOut();
-              redirect("/sign-up");
-            }}
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="text-red-500"
           >
             <LogOutIcon
               size={16}
               className="opacity-60 mr-2"
               aria-hidden="true"
             />
-            <span className="text-red-500">Déconnexion</span>
+            <span>Déconnexion</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Modal de confirmation de déconnexion */}
+      <LogoutConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+      />
     </>
   );
 };

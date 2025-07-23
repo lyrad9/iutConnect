@@ -1,11 +1,20 @@
+import React from "react";
 import { getRequiredUser } from "@/src/lib/auth-server";
-import UpcomingEventLayout from "./UpcomingEventsLayout";
+import { EventNavigation } from "../EventNavigation";
+import UpcomingEventsLayout from "./UpcomingEventsLayout";
 
-export default async function UpcommingEventPage() {
+export const metadata = {
+  title: "Événements à venir",
+  description: "Découvrez les événements à venir prochainement",
+};
+
+export default async function UpcomingEventsPage() {
   await getRequiredUser();
+
   return (
     <div className="px-4 py-6 md:py-8">
-      <UpcomingEventLayout />
+      <EventNavigation currentPage="upcoming" />
+      <UpcomingEventsLayout />
     </div>
   );
 }

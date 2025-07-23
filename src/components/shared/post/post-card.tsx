@@ -46,6 +46,7 @@ import { AdminBadgeCheck } from "@/src/svg/Icons";
 import { DeletePostModal } from "../post/delete-post-modal";
 import { CommentsModal } from "../comments/comments-modal";
 import { toast } from "sonner";
+import { BookmarkIconButton } from "@/src/components/ui/bookmark-icon-button";
 
 // Types pour les composants
 export interface PostAuthorType {
@@ -428,22 +429,12 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
         </div>
 
         {/* Bouton favoris */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 rounded-full p-0"
+        <BookmarkIconButton
+          isSaved={isFavorite}
           onClick={handleFavorite}
-        >
-          <BookmarkPlus
-            className={cn(
-              "size-4",
-              isFavorite ? "fill-primary text-primary" : ""
-            )}
-          />
-          <span className="sr-only">
-            {isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-          </span>
-        </Button>
+          className="h-8 w-8 rounded-full p-0"
+          size={20}
+        />
       </CardFooter>
 
       {/* Modal de commentaires */}

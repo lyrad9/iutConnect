@@ -11,7 +11,6 @@ import {
   Calendar,
 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
 import { ModeToggle } from "@/src/components/mode-toggle";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 
@@ -20,47 +19,42 @@ import { NotificationsDropdown } from "../notifications/notifictions-dropdown";
 
 import { AuthDropdown } from "../auth/auth-dropdown";
 import AuthBtn from "../auth/auth-btn";
-import { MenuShortcut, MenuItem } from "../ui/menu-shortcut";
 import MenuBtn from "../navigation/menu-btn";
 
-// Configuration des menus selon la page
-const NAVIGATION_ITEMS: MenuItem[] = [
-  { icon: Home, label: "Accueil", href: "/" },
-  { icon: Users, label: "Groupes", href: "/groups" },
-  { icon: Calendar, label: "Événements", href: "/events" },
-  { icon: User, label: "Profil", href: "/profile" },
-];
+import { CreateGroupButton } from "../shared/create-group-button";
+import { CreateEventButton } from "../shared/create-event-button";
+import { SearchBar } from "../search/SearchBar";
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="flex px-8 h-16 items-center justify-between">
-        <div className="flex items-center gap-2 md:gap-4">
-          {/*  <SiteSheet /> */}
-          <Link href="/" className=" items-center space-x-2 ">
-            <span className="font-bold">iutSocial</span>
-          </Link>
-          <div className="hidden md:flex md:flex-1">
-            <form className="w-full max-w-[400px]">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="w-full rounded-full bg-muted pl-8 md:w-[300px] lg:w-[400px]"
-                />
-              </div>
-            </form>
-          </div>
-        </div>
-        <nav className="flex items-center gap-2">
+      <div className="px-2 flex h-16 items-center justify-between">
+        {/* Partie gauche: Logo et menu mobile */}
+        <div className="flex items-center gap-2">
           <MenuBtn />
-          {/* Menu de navigation contextuel - visible uniquement sur mobile pour la page d'accueil */}
-          {/*  <MenuShortcut
-            items={NAVIGATION_ITEMS}
-         
-            animationSpeed={0.2}
-          /> */}
+          <Link href="/" className="flex items-center space-x-2">
+            <span className="font-bold text-lg">iutSocial</span>
+          </Link>
+        </div>
+
+        {/* Partie centrale: Barre de recherche */}
+        <div className="hidden md:flex flex-1 max-w-md">
+          <SearchBar />
+        </div>
+
+        {/* Partie droite: Actions et profil */}
+        <div className="flex items-center gap-2">
+          <div className="md:hidden block">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="flex items-center justify-center"
+            >
+              <Search className=" size-4" />
+            </Button>
+          </div>
+
+          {/* Notifications (utilisateur authentifié) */}
           <Authenticated>
             <NotificationsDropdown />
             {/* <Button variant="ghost" size="icon" className="relative" asChild>
@@ -73,16 +67,16 @@ export default function Header() {
               </Link>
             </Button> */}
           </Authenticated>
-
+          {/* Switch thème */}
           <ModeToggle />
+          {/* Profil utilisateur ou bouton de connexion */}
           <Authenticated>
             <AuthDropdown />
           </Authenticated>
-        </nav>
-
-        <Unauthenticated>
-          <AuthBtn />
-        </Unauthenticated>
+          <Unauthenticated>
+            <AuthBtn />
+          </Unauthenticated>
+        </div>
       </div>
     </header>
   );

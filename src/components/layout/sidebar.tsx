@@ -10,6 +10,9 @@ import { useQuery } from "convex/react";
 import GroupesContentSidebar from "./groups-content-sidebar";
 import SidebarNavigationContent from "../navigation/site/sidebar-navigation-content";
 import EventsContentSidebar from "./events-content-sidebar";
+import { SmartAvatar } from "../shared/smart-avatar";
+import { CalendarCheck, Compass, Home, Layers } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface SidebarProps {
   className?: string;
@@ -17,6 +20,8 @@ interface SidebarProps {
 
 export default function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
+  const currentUser = useQuery(api.users.currentUser);
+
   // Exclure le chemin /groups/create
   const isValidGroupsPage =
     pathname.startsWith("/groups") && pathname !== "/groups/create";
@@ -33,6 +38,25 @@ export default function Sidebar({ className }: SidebarProps) {
     return;
   }
 
+  // Raccourcis pour l'utilisateur
+  const shortcuts = [
+    {
+      label: "Fil d'actualité groupes",
+      href: "/groups",
+      icon: <Layers className="h-4 w-4 mr-2" />,
+    },
+    {
+      label: "Découvrir des groupes",
+      href: "/groups/discover",
+      icon: <Compass className="h-4 w-4 mr-2" />,
+    },
+    {
+      label: "Événements à venir",
+      href: "/events/upcoming",
+      icon: <CalendarCheck className="h-4 w-4 mr-2" />,
+    },
+  ];
+
   return (
     <aside
       className={cn(
@@ -40,6 +64,32 @@ export default function Sidebar({ className }: SidebarProps) {
         className
       )}
     >
+      {/* Profil utilisateur */}
+      {currentUser && (
+        <div className="px-4 mb-6">
+          <div className="flex flex-col items-center p-4 rounded-lg bg-muted/30 border border-border/50">
+            <SmartAvatar
+              avatar={currentUser?.profilePicture || undefined}
+              name={`${currentUser?.firstName} ${currentUser?.lastName}`}
+              size="lg"
+              className="mb-3"
+            />
+            <h3 className="font-medium text-base">
+              {currentUser?.firstName} {currentUser?.lastName}
+            </h3>
+            {currentUser?.username && (
+              <p className="text-sm text-muted-foreground">
+                @{currentUser.username}
+              </p>
+            )}
+            <Button asChild variant="outline" size="sm" className="w-full mt-3">
+              <Link href="/profile">Voir mon profil</Link>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Navigation principale */}
       <div className="flex flex-col gap-2 px-2">
         {NavigationItems.map((item) => {
           if (item.hasNotifications)
@@ -79,7 +129,28 @@ export default function Sidebar({ className }: SidebarProps) {
           );
         })}
       </div>
+
+      {/* Contenu de la navigation latérale */}
       <SidebarNavigationContent />
+
+      {/* Mes raccourcis */}
+      <div className="mt-6 px-4">
+        <h3 className="px-2 mb-2 text-xs font-medium uppercase text-muted-foreground">
+          Mes raccourcis
+        </h3>
+        <div className="flex flex-col gap-1">
+          {shortcuts.map((shortcut) => (
+            <Link
+              key={shortcut.href}
+              href={shortcut.href}
+              className="flex items-center text-sm py-1.5 px-2 rounded-md hover:bg-muted"
+            >
+              {shortcut.icon}
+              <span>{shortcut.label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
     </aside>
   );
 }

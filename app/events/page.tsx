@@ -2,6 +2,7 @@ import React from "react";
 
 import { getRequiredUser } from "@/src/lib/auth-server";
 import DiscoverEventLayout from "./DiscoverEventLayout";
+import { EventNavigation } from "./EventNavigation";
 
 export const metadata = {
   title: "Découvrir des Événements",
@@ -13,6 +14,7 @@ export default async function DiscoverEventsPage() {
   await getRequiredUser();
   return (
     <div className="px-4 py-6 md:py-8">
+      <EventNavigation currentPage="all" />
       <DiscoverEventLayout />
     </div>
   );

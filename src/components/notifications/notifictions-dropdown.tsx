@@ -48,7 +48,7 @@ export function NotificationsDropdown() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="size-5" />
+          <Bell className="size-4" />
           {unreadCount > 0 && (
             <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
               {unreadCount > 40 ? "40+" : unreadCount}

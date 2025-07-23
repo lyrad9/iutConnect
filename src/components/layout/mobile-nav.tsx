@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/src/lib/utils";
@@ -9,13 +9,10 @@ import {
   Users,
   Calendar,
   Search,
-  PlusSquare,
   User,
   BookmarkPlus,
 } from "lucide-react";
-import { CreateContentModal } from "../shared/create-content-modal";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { CreateContentButton } from "../shared/create-content-button";
 
 interface MobileNavProps {
   className?: string;
@@ -23,16 +20,6 @@ interface MobileNavProps {
 
 export default function MobileNav({ className }: MobileNavProps) {
   const pathname = usePathname();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const currentUser = useQuery(api.users.currentUser);
-
-  // Vérifier si l'utilisateur a les permissions nécessaires
-  const canCreateContent =
-    currentUser?.permissions.some((p) =>
-      ["CREATE_POST", "CREATE_EVENT", "ALL"].includes(p)
-    ) ||
-    currentUser?.role === "ADMIN" ||
-    currentUser?.role === "SUPERADMIN";
 
   const navItems = [
     {
@@ -44,19 +31,16 @@ export default function MobileNav({ className }: MobileNavProps) {
       icon: <User className="size-5" />,
     },
     {
-      type: "button",
-      icon: <PlusSquare className="h-6 w-6" />,
-      action: () => setIsCreateModalOpen(true),
-      disabled: !canCreateContent,
+      type: "create",
+      component: <CreateContentButton variant="primary" iconSize={24} />,
     },
     {
       href: "/groups",
       icon: <Users className="size-5" />,
     },
     {
-      href: "/events",
-      icon: <Calendar className="size-5" />,
-      label: "Events",
+      href: "/bookmarks",
+      icon: <BookmarkPlus className="size-5" />,
     },
   ];
 
@@ -69,20 +53,10 @@ export default function MobileNav({ className }: MobileNavProps) {
         )}
       >
         {navItems.map((item, index) =>
-          item.type === "button" ? (
-            <button
-              key={`button-${index}`}
-              onClick={item.action}
-              disabled={item.disabled}
-              className={cn(
-                "flex items-center justify-center",
-                item.disabled && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                {item.icon}
-              </div>
-            </button>
+          item.type === "create" ? (
+            <React.Fragment key={`button-${index}`}>
+              {item.component}
+            </React.Fragment>
           ) : (
             <Link
               key={item.href}
@@ -99,11 +73,6 @@ export default function MobileNav({ className }: MobileNavProps) {
           )
         )}
       </nav>
-
-      <CreateContentModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
     </>
   );
 }
