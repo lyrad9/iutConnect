@@ -14,13 +14,13 @@ export default function NavigationEvent() {
   const navItems = [
     {
       href: "/events",
-      icon: <Calendar className="h-4 w-4" />,
-      label: "Tous les événements",
-    },
-    {
-      href: "/events/discover",
       icon: <Compass className="h-4 w-4" />,
       label: "Explorer",
+    },
+    {
+      href: "/events/owned",
+      icon: <Calendar className="h-4 w-4" />,
+      label: "Mes événements",
     },
     {
       href: "/events/upcoming",

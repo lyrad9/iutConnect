@@ -21,6 +21,7 @@ import { NotificationsDropdown } from "../notifications/notifictions-dropdown";
 import { AuthDropdown } from "../auth/auth-dropdown";
 import AuthBtn from "../auth/auth-btn";
 import { MenuShortcut, MenuItem } from "../ui/menu-shortcut";
+import MenuBtn from "../navigation/menu-btn";
 
 // Configuration des menus selon la page
 const NAVIGATION_ITEMS: MenuItem[] = [
@@ -36,8 +37,8 @@ export default function Header() {
       <div className="flex px-8 h-16 items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
           {/*  <SiteSheet /> */}
-          <Link href="/" className="hidden items-center space-x-2 md:flex">
-            <span className="hidden font-bold sm:inline-block">UniConnect</span>
+          <Link href="/" className=" items-center space-x-2 ">
+            <span className="font-bold">iutSocial</span>
           </Link>
           <div className="hidden md:flex md:flex-1">
             <form className="w-full max-w-[400px]">
@@ -53,6 +54,7 @@ export default function Header() {
           </div>
         </div>
         <nav className="flex items-center gap-2">
+          <MenuBtn />
           {/* Menu de navigation contextuel - visible uniquement sur mobile pour la page d'accueil */}
           {/*  <MenuShortcut
             items={NAVIGATION_ITEMS}
@@ -61,7 +63,7 @@ export default function Header() {
           /> */}
           <Authenticated>
             <NotificationsDropdown />
-            <Button variant="ghost" size="icon" className="relative" asChild>
+            {/* <Button variant="ghost" size="icon" className="relative" asChild>
               <Link href="/messages">
                 <MessageSquare className="size-5" />
                 <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
@@ -69,8 +71,9 @@ export default function Header() {
                 </span>
                 <span className="sr-only">Messages</span>
               </Link>
-            </Button>
+            </Button> */}
           </Authenticated>
+
           <ModeToggle />
           <Authenticated>
             <AuthDropdown />

@@ -39,7 +39,6 @@ import {
   Earth,
   Lock,
 } from "lucide-react";
-import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import Link from "next/link";

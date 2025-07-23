@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function PastEventsPage() {
   return (
-    <div className="container px-4 py-6 md:py-8 mx-auto">
+    <div className="px-4 py-6 md:py-8 mx-auto">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight">Événements passés</h1>
         <p className="mt-2 text-muted-foreground">

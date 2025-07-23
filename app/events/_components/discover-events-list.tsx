@@ -28,13 +28,13 @@ function LoadingState() {
 
 export default function DiscoverEventsList() {
   /* console.log(new Date(Date.now())); */
-  console.log(
+  /* console.log(
     new Date(1752706800000).toDateString(),
     new Date(Date.now()).toDateString()
   );
   console.log(
     new Date(1752706800000).toDateString() > new Date(Date.now()).toDateString()
-  );
+  ); */
   // États pour les filtres de recherche
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -126,7 +126,7 @@ export default function DiscoverEventsList() {
   const eventTypeOptions = Object.keys(eventTypes).map((key) => key);
 
   return (
-    <div className="container px-4 py-6 md:py-8 mx-auto" ref={containerRef}>
+    <div className="" ref={containerRef}>
       {/* En-tête avec titre */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold tracking-tight">

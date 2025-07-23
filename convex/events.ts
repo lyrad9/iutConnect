@@ -533,14 +533,19 @@ export const getUpcomingEvents = query({
   handler: async (ctx, args) => {
     const now = Date.now();
 
-    const events = await ctx.db
-      .query("events")
-      .withIndex("by_start_date", (q) => q.gt("startDate", now))
-      .order("asc") // Du plus proche au plus lointain
-      .paginate(args.paginationOpts);
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventEndTimestamp({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
 
+      return startTimestamp > now && !event.isCancelled;
+    });
+    const eventsPage = await q.paginate(args.paginationOpts);
     const enrichedEvents = await Promise.all(
-      events.page.map(async (event) => {
+      eventsPage.page.map(async (event) => {
         // Formatage de la date pour l'affichage
         const eventDate = new Date(event.startDate);
         const formattedDate = new Intl.DateTimeFormat("fr-FR", {
@@ -561,8 +566,80 @@ export const getUpcomingEvents = query({
     );
 
     return {
-      ...events,
+      ...eventsPage,
       page: enrichedEvents,
     };
+  },
+});
+
+export const hasDiscoverEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventEndTimestamp({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+      const canParticipate = event.allowsParticipants
+        ? !event.participants?.includes(userId)
+        : event.authorId !== userId && !event.collaborators?.includes(userId);
+      return canParticipate && startTimestamp > now && !event.isCancelled;
+    });
+
+    return (await q.collect()).length > 0;
+  },
+});
+
+export const hasOwnedEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+    const q = filter(ctx.db.query("events"), async (event) => {
+      return event.authorId === userId;
+    });
+    return (await q.collect()).length > 0;
+  },
+});
+
+export const hasUpcomingEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventEndTimestamp({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+
+      return startTimestamp > now && !event.isCancelled;
+    });
+
+    return (await q.collect()).length > 0;
+  },
+});
+
+export const hasPastEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventEndTimestamp({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+
+      return startTimestamp < now && !event.isCancelled;
+    });
+
+    return (await q.collect()).length > 0;
   },
 });
