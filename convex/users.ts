@@ -300,6 +300,7 @@ export const updateUserPersonalInfo = mutation({
   args: {
     username: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
+    isPhoneNumberHidden: v.optional(v.boolean()),
     town: v.optional(v.string()),
     address: v.optional(v.string()),
     bio: v.optional(v.string()),
@@ -355,6 +356,8 @@ export const updateUserPersonalInfo = mutation({
     // Vérifier chaque champ et l'ajouter à l'objet de mise à jour s'il est défini
     if (args.username !== undefined) update.username = args.username;
     if (args.phoneNumber !== undefined) update.phoneNumber = args.phoneNumber;
+    if (args.isPhoneNumberHidden !== undefined)
+      update.isPhoneNumberHidden = args.isPhoneNumberHidden;
     if (args.town !== undefined) update.town = args.town;
     if (args.address !== undefined) update.address = args.address;
     if (args.bio !== undefined) update.bio = args.bio;

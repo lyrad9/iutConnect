@@ -79,13 +79,16 @@ export function getInitials(name: string): string {
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
-function getEventTimeTimestamp(dateTs: number, time?: string | null): number {
+export function getEventTimeTimestamp(
+  dateTs: number,
+  time?: string | null
+): number {
   const dt = new Date(dateTs);
   if (time) {
     const [h, m] = time.split(":").map(Number);
     dt.setHours(h, m, 0, 0); // règle heures/minutes localement :contentReference[oaicite:1]{index=1}
   } else {
-    dt.setHours(0, 0, 0, 0); // par défaut : minuit local
+    dt.setHours(24, 0, 0, 0); // par défaut : minuit local
   }
   return dt.getTime();
 }
@@ -99,7 +102,11 @@ export function getEventEndTimestamp(event: {
   if (event.endDate != null) {
     return getEventTimeTimestamp(event.endDate, event.endTime ?? null);
   }
-  return getEventTimeTimestamp(event.startDate, event.startTime ?? null);
+  if (event.endTime) {
+    return getEventTimeTimestamp(event.startDate, event.endTime);
+  } else {
+    return getEventTimeTimestamp(event.startDate, event.startTime ?? null);
+  }
 }
 /**
  * Formate une date d'événement en fonction de critères spécifiques
@@ -114,50 +121,20 @@ export function formatEventDate(
   endDate?: number | Date | null,
   endTime?: string | null
 ): { text: string; isLive: boolean } {
-  // Créer les objets Date pour le début et la fin
-  const startDateObj = new Date(startDate);
-  const endDateObj = endDate != null ? new Date(endDate) : startDateObj;
-
-  const now = new Date();
-
-  // Créer les DateTime complets (date + heure)
-  const startDateTime = createDateWithTime(startDateObj, startTime);
-
-  // Déterminer la Date de fin + heure
-  let endDateTime: Date;
-
-  if (endDate != null) {
-    // Fin sur un autre jour (ou le même)
-    if (endTime) {
-      // Heure de fin définie
-      endDateTime = createDateWithTime(endDateObj, endTime);
-    } else {
-      // Pas d'heure de fin : se termine à minuit du jour de fin
-      const midnightEnd = new Date(endDateObj);
-      midnightEnd.setHours(24, 0, 0, 0);
-      endDateTime = midnightEnd;
-    }
-  } else if (endTime) {
-    // Même jour, heure de fin fournie
-    endDateTime = createDateWithTime(startDateObj, endTime);
-  } else {
-    // Pas de date/heure de fin : se termine à minuit du jour de début
-    const midnightStart = new Date(startDateObj);
-    midnightStart.setHours(24, 0, 0, 0);
-    endDateTime = midnightStart;
-  }
-
   // Déterminer si l'événement est en cours
-  const isLive = isWithinInterval(now, {
-    start: startDateTime,
-    end: endDateTime,
+  const isLive = isCurrentEvent({
+    startDate,
+    startTime,
+    endDate,
+    endTime,
   });
 
   // Si en cours, priorité à l'affichage "En cours"
   if (isLive) {
     return { text: "En cours", isLive: true };
   }
-
+  const startDateObj = new Date(startDate);
+  const endDateObj = endDate != null ? new Date(endDate) : startDateObj;
   // Gestion des cas où début et fin sont le même jour
   const sameDay =
     startDateObj.getFullYear() === endDateObj.getFullYear() &&
@@ -173,7 +150,7 @@ export function formatEventDate(
         : format(startDateObj, "dd MMMM yyyy", { locale: fr });
 
     return {
-      text: formatTimeRangeText(formattedDate, startTime, endTime),
+      text: formattedDate,
       isLive: false,
     };
   }
@@ -220,21 +197,6 @@ function addHours(date: Date, hours: number): Date {
 }
 
 /**
- * Formate le texte avec la plage horaire
- */
-function formatTimeRangeText(
-  prefix: string,
-  startTime: string,
-  endTime?: string | null
-): string {
-  if (endTime) {
-    return `${prefix}`;
-  } else {
-    return `${prefix}`;
-  }
-}
-
-/**
  * Vérifie si un événement est passé
  * @param startDate Date de début de l'événement
  * @param startTime Heure de début (obligatoire)
@@ -257,3 +219,54 @@ export function isEventPast(
 export function formatDate(date: Date | number): string {
   return format(new Date(date), "dd MMM yyyy", { locale: fr });
 }
+
+export const isCurrentEvent = (event: {
+  startDate: number | Date;
+  startTime?: string | null;
+  endDate?: number | Date | null;
+  endTime?: string | null;
+}) => {
+  // Créer les objets Date pour le début et la fin
+  const startDateObj = new Date(event.startDate);
+  const endDateObj =
+    event.endDate != null ? new Date(event.endDate) : startDateObj;
+
+  const now = new Date();
+
+  // Créer les DateTime complets (date + heure)
+  const startDateTime = createDateWithTime(
+    startDateObj,
+    event.startTime ?? "00:00"
+  );
+
+  // Déterminer la Date de fin + heure
+  let endDateTime: Date;
+
+  if (event.endDate != null) {
+    // Fin sur un autre jour (ou le même)
+    if (event.endTime) {
+      // Heure de fin définie
+      endDateTime = createDateWithTime(endDateObj, event.endTime);
+    } else {
+      // Pas d'heure de fin : se termine à minuit du jour de fin
+      const midnightEnd = new Date(endDateObj);
+      midnightEnd.setHours(24, 0, 0, 0);
+      endDateTime = midnightEnd;
+    }
+  } else if (event.endTime) {
+    // Même jour, heure de fin fournie
+    endDateTime = createDateWithTime(startDateObj, event.endTime);
+  } else {
+    // Pas de date/heure de fin : se termine à minuit du jour de début
+    const midnightStart = new Date(startDateObj);
+    midnightStart.setHours(24, 0, 0, 0);
+    endDateTime = midnightStart;
+  }
+
+  // Déterminer si l'événement est en cours
+  const isLive = isWithinInterval(now, {
+    start: startDateTime,
+    end: endDateTime,
+  });
+  return isLive;
+};

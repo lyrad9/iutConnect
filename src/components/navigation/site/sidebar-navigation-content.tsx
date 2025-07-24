@@ -1,10 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
-
-import Link from "next/link";
-import { eventTypes } from "../../utils/const/event-type";
-
-import { ChevronRight } from "lucide-react";
+import React, { useRef, useEffect } from "react";
 import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
@@ -12,6 +7,10 @@ import LoadingOwnedGroups from "../loading";
 import { LoadingEvents } from "../loading";
 import { GroupLink } from "./item-group-link";
 import { EventLink } from "./item-event-link";
+import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { eventTypes } from "../../utils/const/event-type";
 
 export default function SidebarNavigationContent() {
   const isAdmin = useQuery(api.forums.isUserAdminOfGroup);
@@ -26,7 +25,7 @@ export default function SidebarNavigationContent() {
 }
 
 /**
- * Composant pour afficher les groupes gérés par l'utilisateur dans la barre laterale
+ * Composant pour afficher les groupes gérés par l'utilisateur dans la sidebar
  */
 export function OwnedGroups() {
   // Récupérer les groupes gérés par l'utilisateur avec pagination
@@ -35,43 +34,30 @@ export function OwnedGroups() {
     {},
     { initialNumItems: 5 }
   );
-  const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour gérer le chargement progressif
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "100px",
+  });
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 px-4">
       <div className="flex mb-2 px-2 items-center justify-between">
-        <h3 className="text-xs uppercase font-bold">Groupes que vous gérez</h3>
+        <h3 className="text-xs uppercase font-medium">
+          Groupes que vous gérez
+        </h3>
         <Link
-          href="/groups/managed"
+          href="/groups/joins"
           className="text-xs text-muted-foreground hover:text-primary flex items-center"
         >
           voir tout
           <ChevronRight className="h-3 w-3 ml-1" />
         </Link>
       </div>
+
       <div className="flex flex-col gap-1 px-2">
         {results && results.length > 0 ? (
           <>
@@ -84,7 +70,9 @@ export function OwnedGroups() {
                 memberCount={group.membersCount}
               />
             ))}
-            <div ref={loaderRef} className="h-10" />
+            {status === "CanLoadMore" && (
+              <div ref={loaderRef} className="h-4" />
+            )}
             {isLoading && <LoadingOwnedGroups />}
           </>
         ) : isLoading ? (
@@ -100,53 +88,37 @@ export function OwnedGroups() {
 }
 
 /**
- * Composant pour afficher les groupes dont l'utilisateur est membre dans la barre laterale
+ * Composant pour afficher les groupes auxquels l'utilisateur appartient
  */
 export function JoinedGroups() {
-  // Récupérer les groupes dont l'utilisateur est membre avec pagination
+  // Récupérer les groupes rejoins par l'utilisateur avec pagination
   const { results, loadMore, status, isLoading } = usePaginatedQuery(
     api.forums.sidebarGetUserGroups,
     {},
     { initialNumItems: 5 }
   );
-  console.log("joinedGroupes", results);
-  const loaderRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour gérer le chargement progressif
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "100px",
+  });
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 px-4">
       <div className="flex mb-2 px-2 items-center justify-between">
-        <h3 className="text-xs uppercase font-bold">Groupes que vous suivez</h3>
+        <h3 className="text-xs uppercase font-medium">Vos groupes rejoins</h3>
         <Link
-          href="/groups/joins"
+          href="/groups/joined"
           className="text-xs text-muted-foreground hover:text-primary flex items-center"
         >
           voir tout
           <ChevronRight className="h-3 w-3 ml-1" />
         </Link>
       </div>
+
       <div className="flex flex-col gap-1 px-2">
         {results && results.length > 0 ? (
           <>
@@ -159,14 +131,18 @@ export function JoinedGroups() {
                 memberCount={group.membersCount}
               />
             ))}
-            <div ref={loaderRef} className="h-10" />
+            {status === "CanLoadMore" && (
+              <div ref={loaderRef} className="h-4" />
+            )}
             {isLoading && <LoadingOwnedGroups />}
           </>
         ) : isLoading ? (
           <LoadingOwnedGroups />
         ) : (
           <div className="flex flex-col items-center gap-2">
-            <p className="text-sm text-muted-foreground">Aucun groupe</p>
+            <p className="text-sm text-muted-foreground">
+              Aucun groupe rejoint
+            </p>
           </div>
         )}
       </div>
@@ -180,38 +156,21 @@ export function JoinedGroups() {
 export function OwnedEvents() {
   // Récupérer les événements créés par l'utilisateur avec pagination
   const { results, loadMore, status, isLoading } = usePaginatedQuery(
-    api.events.getUserEvents,
+    api.events.getUserEventsSidebar,
     {},
     { initialNumItems: 5 }
   );
 
-  const loaderRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour gérer le chargement progressif
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "100px",
+  });
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 px-4">
       <div className="flex mb-2 px-2 items-center justify-between">
         <h3 className="text-xs uppercase font-medium">Vos évènements crées</h3>
 
@@ -236,9 +195,12 @@ export function OwnedEvents() {
                 location={event.location}
                 type={event.type as keyof typeof eventTypes}
                 photo={event.photo}
+                locationType={event.locationType}
               />
             ))}
-            <div ref={loaderRef} className="h-10" />
+            {status === "CanLoadMore" && (
+              <div ref={loaderRef} className="h-4" />
+            )}
             {isLoading && <LoadingEvents />}
           </>
         ) : isLoading ? (
@@ -261,41 +223,25 @@ export function OwnedEvents() {
 export function UpcomingEvents() {
   // Récupérer les événements à venir avec pagination
   const { results, loadMore, status, isLoading } = usePaginatedQuery(
-    api.events.getUpcomingEvents,
+    api.events.getUpcomingEventsSidebar,
     {},
     { initialNumItems: 5 }
   );
 
-  const loaderRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour gérer le chargement progressif
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "100px",
+  });
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 px-4">
       <div className="flex mb-2 px-2 items-center justify-between">
         <h3 className="text-xs uppercase font-medium">Evènements à venir</h3>
         <Link
-          href="/events/upcoming"
+          href="/events"
           className="text-xs text-muted-foreground hover:text-primary flex items-center"
         >
           voir tout
@@ -314,10 +260,13 @@ export function UpcomingEvents() {
                 location={event.location}
                 type={event.type as keyof typeof eventTypes}
                 photo={event.photo}
+                locationType={event.locationType}
               />
             ))}
-            <div ref={loaderRef} className="h-10" />
-            {isLoading && <LoadingOwnedGroups />}
+            {status === "CanLoadMore" && (
+              <div ref={loaderRef} className="h-4" />
+            )}
+            {isLoading && <LoadingEvents />}
           </>
         ) : isLoading ? (
           <LoadingEvents />

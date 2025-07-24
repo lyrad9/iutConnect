@@ -11,7 +11,7 @@ import GroupesContentSidebar from "./groups-content-sidebar";
 import SidebarNavigationContent from "../navigation/site/sidebar-navigation-content";
 import EventsContentSidebar from "./events-content-sidebar";
 import { SmartAvatar } from "../shared/smart-avatar";
-import { CalendarCheck, Compass, Home, Layers } from "lucide-react";
+import { CalendarCheck, Compass, Layers, Calendar } from "lucide-react";
 import { Button } from "../ui/button";
 
 interface SidebarProps {
@@ -51,9 +51,9 @@ export default function Sidebar({ className }: SidebarProps) {
       icon: <Compass className="h-4 w-4 mr-2" />,
     },
     {
-      label: "Événements à venir",
-      href: "/events/upcoming",
-      icon: <CalendarCheck className="h-4 w-4 mr-2" />,
+      label: "Mes événements",
+      href: "/events/owned",
+      icon: <Calendar className="h-4 w-4 mr-2" />,
     },
   ];
 

@@ -1,9 +1,7 @@
 "use client";
 import React, { useRef, useEffect, useState } from "react";
-import { Search, ArrowUp, FileQuestion } from "lucide-react";
-import { Input } from "@/src/components/ui/input";
+import { ArrowUp, FileQuestion } from "lucide-react";
 import { GroupCard } from "@/app/groups/discover/_components/group-card";
-import { SelectorChips } from "@/src/components/ui/selector-chips";
 import { usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/src/components/ui/button";
@@ -12,6 +10,8 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 import { motion, AnimatePresence } from "motion/react";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { Id } from "@/convex/_generated/dataModel";
+import { SearchFilterSection } from "@/src/components/ui/search-filter-section";
+import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
 
 /**
  * État d'affichage lors du chargement
@@ -31,14 +31,14 @@ function LoadingState() {
 export default function DiscoverGroupsList() {
   // Récupérer l'utilisateur connecté
   const currentUser = useQuery(api.users.currentUser);
+
   // États pour les filtres de recherche
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // Référence pour l'élément d'intersection observer
-  const loaderRef = useRef<HTMLDivElement | null>(null);
+  // Référence pour le conteneur
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Requête paginée pour les groupes
@@ -50,7 +50,7 @@ export default function DiscoverGroupsList() {
     },
     { initialNumItems: 12 }
   );
-  console.log("results", results);
+
   // Debouncer pour la recherche
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,29 +60,13 @@ export default function DiscoverGroupsList() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Gérer le défilement pour l'intersection observer
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour la pagination infinie
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "200px",
+  });
 
   // Gérer l'affichage du bouton de retour en haut
   useEffect(() => {
@@ -111,15 +95,21 @@ export default function DiscoverGroupsList() {
   const handleCategoriesChange = (selected: string[]) => {
     setSelectedCategories(selected);
   };
-  /* if(results) */
+
+  // Gérer le changement du terme de recherche
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
+
   // Déterminer si des filtres sont appliqués
   const isFiltering =
     debouncedSearchTerm !== "" || selectedCategories.length > 0;
-  // A partir du tableau results, extraire un tableau qui contient seulement les groupes dont l'utilisateur n'est pas dans la liste des membres
+
+  // Filtrer les groupes dont l'utilisateur n'est pas membre
   const groupsWithoutCurrentUser = results.filter(
     (group) => !group.members.includes(currentUser?._id as Id<"users">)
   );
-  console.log("groupsWithoutCurrentUser", groupsWithoutCurrentUser);
+
   return (
     <div className="container px-4 py-6 md:py-8 mx-auto" ref={containerRef}>
       {/* En-tête avec titre */}
@@ -132,29 +122,16 @@ export default function DiscoverGroupsList() {
         </p>
       </div>
 
-      {/* Section de recherche */}
-      <div className="mx-auto mb-8 flex max-w-3xl flex-col gap-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Rechercher un groupe par nom..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        {/* Filtres par catégories */}
-        <div className="mx-auto w-full">
-          <p className="mb-2 text-sm font-medium">Filtrer par catégorie:</p>
-          <SelectorChips
-            options={GROUP_MAIN_CATEGORIES}
-            onChange={handleCategoriesChange}
-            className="rounded-xl border-muted/60"
-          />
-        </div>
-      </div>
+      {/* Section de recherche et filtrage avec le composant SearchFilterSection */}
+      <SearchFilterSection
+        searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
+        filterOptions={GROUP_MAIN_CATEGORIES}
+        selectedFilters={selectedCategories}
+        onFiltersChange={handleCategoriesChange}
+        searchPlaceholder="Rechercher un groupe par nom..."
+        filterLabel="Filtrer par catégorie:"
+      />
 
       {/* Liste des groupes */}
       <div className="space-y-8">

@@ -11,7 +11,11 @@ import {
   Clock,
   CalendarCheck,
   CalendarDays,
+  Plus,
 } from "lucide-react";
+import { Button } from "@/src/components/ui/button";
+import Link from "next/link";
+import { EventCreateBtn } from "@/src/components/shared/event/event-create-btn";
 
 /**
  * Composant de navigation pour les pages d'événements
@@ -22,17 +26,17 @@ export function EventNavigation({ currentPage }: { currentPage: string }) {
   const eventSections: NavigationSection[] = [
     {
       label: "Événements",
-      /*  items: [
+      items: [
         {
           label: "à découvrir",
           value: "discover",
           href: "/events",
           icon: <Compass className="h-4 w-4" />,
         },
-      ], */
+      ],
     },
     {
-      label: "Catégorieees",
+      label: "Catégories",
       items: [
         {
           label: "à découvrir",
@@ -41,9 +45,9 @@ export function EventNavigation({ currentPage }: { currentPage: string }) {
           icon: <Compass className="h-4 w-4" />,
         },
         {
-          label: "à venir",
-          value: "upcoming",
-          href: "/events/upcoming",
+          label: "en cours",
+          value: "current",
+          href: "/events/ongoing",
           icon: <CalendarCheck className="h-4 w-4" />,
         },
         {
@@ -69,12 +73,15 @@ export function EventNavigation({ currentPage }: { currentPage: string }) {
   ];
 
   return (
-    <NavigationBreadcrumb
-      sections={eventSections}
-      currentSection="Catégories"
-      currentItem={currentPage}
-      className="mb-6"
-      icon={<Calendar className="h-4 w-4" />}
-    />
+    <div className="lg:hidden  mb-6 flex flex-row justify-between items-center">
+      <NavigationBreadcrumb
+        sections={eventSections}
+        currentSection="Catégories"
+        currentItem={currentPage}
+        className=""
+        icon={<Calendar className="h-4 w-4" />}
+      />
+      <EventCreateBtn />
+    </div>
   );
 }

@@ -15,7 +15,7 @@ export default function OwnedEventLayout() {
         className="max-w-full h-screen flex justify-center items-center flex-col"
         title="Aucun évènement trouvé"
         icons={[CalendarX]}
-        description="Vous n'avez pas d'évènements créés"
+        description="Vous n'avez pas d'évènements qui vous appartiennent ou où vous participez"
       />
     );
   }

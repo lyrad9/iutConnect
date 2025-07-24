@@ -1,18 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import {
-  Calendar,
-  MapPin,
-  MailIcon,
-  LinkIcon,
-  PenSquare,
-  User2,
-  BookOpen,
-  Users,
-  CalendarDays,
-} from "lucide-react";
+import { Calendar, User2, BookOpen, Users, CalendarDays } from "lucide-react";
 import { About } from "./_components/about";
 import EditProfilModal from "./_components/edit-profil-modal";
 import UserInfo from "./_components/UserInfo";
@@ -74,7 +63,7 @@ export function ProfileLayout() {
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-8">
+    <div className=" mx-auto px-4 py-6 md:py-8">
       <div className="space-y-6">
         <UserInfo />
 
@@ -84,6 +73,7 @@ export function ProfileLayout() {
           defaultTab="posts"
           fullWidth={true}
           className="mt-8"
+          showIconsOnlyOnMobile={true}
         />
       </div>
       <EditProfilModal />

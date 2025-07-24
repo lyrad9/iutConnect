@@ -106,7 +106,7 @@ export function NavigationBreadcrumb({
         </Select>
       </div> */}
 
-      <div className="lg:hidden block">
+      <div className="">
         <Breadcrumb>
           <BreadcrumbList>
             {sections.map((section, index) => {

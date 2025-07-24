@@ -12,7 +12,7 @@ export default async function GroupsDiscoverPage() {
   await getRequiredUser();
 
   return (
-    <div className="px-4 py-6 md:py-8">
+    <div className="px-4 py-6 md:py-8 space-y-4">
       <GroupNavigation currentPage="discover" />
       <GroupsDiscoverLayout />
     </div>

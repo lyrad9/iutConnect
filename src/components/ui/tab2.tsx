@@ -53,16 +53,19 @@ export default function TabsUnderline({
       )}
       onValueChange={setActiveTab}
     >
-      <div className="border-b">
+      <div className="border-b overflow-x-auto">
         <ScrollArea className="w-full">
-          <TabsList className="h-auto bg-transparent p-0 rounded">
+          <TabsList className="h-auto bg-transparent p-0 rounded flex w-full">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
                 className={cn(
-                  " rounded relative h-10 border-b-2  px-4 pb-3 pt-2 font-medium text-muted-foreground transition-all hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:border-b-primary",
-                  "flex items-center gap-2"
+                  "rounded relative h-10 border-b-2 px-2 md:px-4 pb-3 pt-2 font-medium text-muted-foreground transition-all hover:text-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:border-b-primary",
+                  "flex items-center gap-1 md:gap-2 flex-shrink-0",
+                  showIconsOnlyOnMobile
+                    ? "flex-1 sm:flex-initial justify-center sm:justify-start"
+                    : "flex-1 md:flex-initial"
                 )}
               >
                 {tab.icon && (
@@ -73,8 +76,8 @@ export default function TabsUnderline({
                 )}
                 <span
                   className={cn(
-                    "transition-all duration-200",
-                    showIconsOnlyOnMobile && "max-sm:hidden"
+                    "transition-all duration-200 whitespace-nowrap",
+                    showIconsOnlyOnMobile && "max-sm:sr-only"
                   )}
                 >
                   {tab.label}
@@ -83,8 +86,8 @@ export default function TabsUnderline({
                   <Badge
                     className={
                       tab.badge.variant === "secondary"
-                        ? "bg-primary/15 ms-1 min-w-4 px-1 h-5"
-                        : "ms-1 h-5"
+                        ? "bg-primary/15 ms-1 min-w-4 px-1 h-5 flex-shrink-0"
+                        : "ms-1 h-5 flex-shrink-0"
                     }
                     variant={tab.badge.variant || "default"}
                   >

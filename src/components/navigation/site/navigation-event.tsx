@@ -23,12 +23,12 @@ export default function NavigationEvent() {
       label: "Mes événements",
     },
     {
-      href: "/events/upcoming",
+      href: "/events/ongoing",
       icon: <Clock className="h-4 w-4" />,
-      label: "À venir",
+      label: "En cours",
     },
     {
-      href: "/events/attended",
+      href: "/events/attented",
       icon: <Layers className="h-4 w-4" />,
       label: "Participés",
     },

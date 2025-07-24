@@ -6,8 +6,8 @@ import { paginationOptsValidator } from "convex/server";
 import { query } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { filter } from "convex-helpers/server/filter";
-import { getEventEndTimestamp } from "@/src/lib/utils";
-
+import { getEventEndTimestamp, getEventTimeTimestamp } from "@/src/lib/utils";
+import { isCurrentEvent } from "@/src/lib/utils";
 export const generateUploadUrl = mutation({
   handler: async (ctx) => {
     return await ctx.storage.generateUploadUrl();
@@ -481,7 +481,7 @@ export const getDiscoverEvents = query({
  * Récupère les événements créés par l'utilisateur connecté
  * @param paginationOpts - Options de pagination
  */
-export const getUserEvents = query({
+export const getUserEventsSidebar = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
@@ -511,13 +511,14 @@ export const getUserEvents = query({
           location: event.locationDetails,
           type: event.eventType,
           photo: event.photo,
+          locationType: event.locationType,
         };
       })
     );
 
     return {
       ...events,
-      page: enrichedEvents,
+      page: enrichedEvents.sort((a, b) => b.date.localeCompare(a.date)),
     };
   },
 });
@@ -526,24 +527,22 @@ export const getUserEvents = query({
  * Récupère les événements à venir (date de début > date actuelle)
  * @param paginationOpts - Options de pagination
  */
-export const getUpcomingEvents = query({
+export const getUpcomingEventsSidebar = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     const now = Date.now();
 
-    const q = filter(ctx.db.query("events"), async (event) => {
-      const startTimestamp = getEventEndTimestamp({
-        startDate: event.startDate,
-        startTime: event.startTime,
-        endDate: event.endDate,
-        endTime: event.endTime,
-      });
-
+    const eventsQuery = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventTimeTimestamp(
+        event.startDate,
+        event.startTime
+      );
       return startTimestamp > now && !event.isCancelled;
     });
-    const eventsPage = await q.paginate(args.paginationOpts);
+    // Pagination et tri
+    const eventsPage = await eventsQuery.paginate(args.paginationOpts);
     const enrichedEvents = await Promise.all(
       eventsPage.page.map(async (event) => {
         // Formatage de la date pour l'affichage
@@ -561,13 +560,14 @@ export const getUpcomingEvents = query({
           location: event.locationDetails,
           type: event.eventType,
           photo: event.photo,
+          locationType: event.locationType,
         };
       })
     );
 
     return {
       ...eventsPage,
-      page: enrichedEvents,
+      page: enrichedEvents.sort((a, b) => a.date.localeCompare(b.date)),
     };
   },
 });
@@ -600,7 +600,10 @@ export const hasOwnedEventsPage = query({
   handler: async (ctx) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users">;
     const q = filter(ctx.db.query("events"), async (event) => {
-      return event.authorId === userId;
+      return (
+        event.authorId === userId ||
+        (event.collaborators?.includes(userId) as boolean)
+      );
     });
     return (await q.collect()).length > 0;
   },
@@ -609,19 +612,54 @@ export const hasOwnedEventsPage = query({
 export const hasUpcomingEventsPage = query({
   args: {},
   handler: async (ctx) => {
+    //Date de début inférieur à la date en cours simplement
+    const now = Date.now();
+
+    const events = await ctx.db
+      .query("events")
+      .withIndex("by_start_date", (q) => q.gt("startDate", now))
+      .filter((q) => q.eq(q.field("isCancelled"), false))
+      .collect();
+
+    return events.length > 0;
+  },
+});
+export const hasCurrentEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
     const now = Date.now();
     const q = filter(ctx.db.query("events"), async (event) => {
-      const startTimestamp = getEventEndTimestamp({
+      const isLive = isCurrentEvent({
         startDate: event.startDate,
         startTime: event.startTime,
         endDate: event.endDate,
         endTime: event.endTime,
       });
 
-      return startTimestamp > now && !event.isCancelled;
+      // Un événement est en cours si l'heure actuelle est entre le début et la fin
+      return isLive && !event.isCancelled;
     });
 
     return (await q.collect()).length > 0;
+  },
+});
+export const getLastCurrentEvents = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const isLive = isCurrentEvent({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+
+      return isLive && !event.isCancelled;
+    });
+    // ordonner  du plus récent
+
+    return (await q.collect()).toSorted((a, b) => b.startDate - a.startDate);
   },
 });
 
@@ -640,6 +678,17 @@ export const hasPastEventsPage = query({
       return startTimestamp < now && !event.isCancelled;
     });
 
+    return (await q.collect()).length > 0;
+  },
+});
+
+export const hasAttentedEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+    const q = filter(ctx.db.query("events"), async (event) => {
+      return event.participants?.includes(userId) as boolean;
+    });
     return (await q.collect()).length > 0;
   },
 });

@@ -7,20 +7,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuGroup,
 } from "@/src/components/ui/dropdown-menu";
-import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { redirect, useRouter } from "next/navigation";
-import {
-  UserIcon,
-  SettingsIcon,
-  LogOutIcon,
-  ChevronDownIcon,
-  BookmarkPlus,
-} from "lucide-react";
+import { UserIcon, LogOutIcon, ChevronDownIcon, Bookmark } from "lucide-react";
 import { SmartAvatar } from "../shared/smart-avatar";
 import { useState } from "react";
 import { LogoutConfirmationModal } from "./logout-confirmation-modal";
@@ -37,12 +27,12 @@ export const AuthDropdown = () => {
             variant="ghost"
             className="w-auto h-auto p-0 hover:bg-transparent"
           > */}
-          <div className="flex items-center gap-2 cursor-pointer">
+          <div className="rounded-full flex items-center gap-2 cursor-pointer">
             <SmartAvatar
               avatar={user?.profilePicture || ""}
               name={`${user?.firstName} ${user?.lastName}`}
               size="sm"
-              className="rounded"
+              className="rounded-full"
             />
             <ChevronDownIcon
               size={16}
@@ -75,7 +65,7 @@ export const AuthDropdown = () => {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/bookmarks">
-                <BookmarkPlus
+                <Bookmark
                   size={16}
                   className="opacity-60 mr-2"
                   aria-hidden="true"

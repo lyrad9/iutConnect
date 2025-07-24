@@ -13,7 +13,7 @@ export const eventFormSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   description: z.string().min(1, "La description est requise"),
   startDate: z.string().min(1, "La date de début est requise"),
-  startTime: z.string().min(1, "L'heure de début est requise"),
+  startTime: z.string(),
   endDate: z.string().optional(),
   endTime: z.string().optional(),
   location: z

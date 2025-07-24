@@ -4,14 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/src/lib/utils";
-import {
-  Home,
-  Users,
-  Calendar,
-  Search,
-  User,
-  BookmarkPlus,
-} from "lucide-react";
+import { Home, Users, Calendar, User } from "lucide-react";
 import { CreateContentButton } from "../shared/create-content-button";
 
 interface MobileNavProps {
@@ -39,8 +32,8 @@ export default function MobileNav({ className }: MobileNavProps) {
       icon: <Users className="size-5" />,
     },
     {
-      href: "/bookmarks",
-      icon: <BookmarkPlus className="size-5" />,
+      href: "/events",
+      icon: <Calendar className="size-5" />,
     },
   ];
 

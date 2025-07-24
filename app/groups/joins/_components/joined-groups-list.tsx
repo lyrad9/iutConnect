@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
+import React, { useState, useEffect, useRef } from "react";
+import { useQuery, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
@@ -27,17 +28,16 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import {
-  Loader2,
-  Search,
-  Users,
-  MoreVertical,
-  LogOut,
-  Eye,
+  Earth,
   Globe,
   LockKeyhole,
-  Trash2,
-  Earth,
+  Search,
+  Users,
   Lock,
+  MoreVertical,
+  Eye,
+  LogOut,
+  Trash2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -49,6 +49,8 @@ import { Badge } from "@/src/components/ui/badge";
 import LoadingPendingRequests from "./Loading";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
 import { useGroupModal } from "@/src/components/contexts/group-modal-context";
+import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
+import { Id } from "@/convex/_generated/dataModel";
 
 export default function JoinedGroupsList() {
   // États pour la recherche et le filtre
@@ -57,8 +59,7 @@ export default function JoinedGroupsList() {
   const [filterType, setFilterType] = useState<"all" | "admin" | "member">(
     "all"
   );
-  // Référence pour l'élément d'intersection observer
-  const loaderRef = useRef<HTMLDivElement | null>(null);
+
   // Récupérer l'utilisateur connecté
   const currentUser = useQuery(api.users.currentUser);
   // Utiliser le contexte des modales
@@ -81,30 +82,13 @@ export default function JoinedGroupsList() {
     }
   );
 
-  // Configurer l'intersection observer pour charger plus de groupes
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour gérer le chargement progressif
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "200px",
+  });
 
   return (
     <Card>
@@ -313,9 +297,22 @@ export default function JoinedGroupsList() {
                   </div>
                 </Card>
               ))}
-              <div ref={loaderRef} className="h-10" />
-              {isLoading && (
-                <Loader2 className="animate-spin size-7 mx-auto " />
+
+              {/* Référence pour l'infinite scroll */}
+              {status === "CanLoadMore" && (
+                <div
+                  ref={loaderRef}
+                  className="py-4 flex justify-center items-center text-muted-foreground text-sm"
+                >
+                  {isLoading && (
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
+                  )}
+                  <span>
+                    {isLoading
+                      ? "Chargement..."
+                      : "Faire défiler pour voir plus"}
+                  </span>
+                </div>
               )}
             </>
           ) : isLoading ? (
@@ -326,14 +323,14 @@ export default function JoinedGroupsList() {
             </>
           ) : (
             <EmptyState
-              title={rawTerm ? "Aucun résultat" : "Aucun groupe"}
+              title="Aucun groupe trouvé"
               description={
-                rawTerm
-                  ? "Aucun groupe ne correspond à votre recherche"
-                  : "Vous n'avez rejoint aucun groupe"
+                searchQuery || filterType !== "all"
+                  ? "Essayez de modifier vos critères de recherche"
+                  : "Vous n'avez pas encore rejoint de groupes"
               }
               icons={[Users]}
-              className="py-8"
+              className="py-16"
             />
           )}
         </div>

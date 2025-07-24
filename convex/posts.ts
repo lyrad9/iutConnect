@@ -182,7 +182,11 @@ export const getPosts = query({
                     id: commentAuthor._id,
                     name: `${commentAuthor.firstName} ${commentAuthor.lastName}`,
                     username: commentAuthor.username,
-                    profilePicture: commentAuthor.profilePicture,
+                    profilePicture: commentAuthor.profilePicture
+                      ? ((await ctx.storage.getUrl(
+                          commentAuthor.profilePicture as Id<"_storage">
+                        )) as string)
+                      : undefined,
                     role: commentAuthor.role,
                     isAdmin:
                       commentAuthor.role === "ADMIN" ||
@@ -214,10 +218,14 @@ export const getPosts = query({
             ...post,
             medias: medias,
             author: {
-              id: author?._id,
+              id: author?._id as Id<"users">,
               name: `${author?.firstName} ${author?.lastName}`,
               username: author?.username || null,
-              profilePicture: author?.profilePicture,
+              profilePicture: author?.profilePicture
+                ? ((await ctx.storage.getUrl(
+                    author.profilePicture as Id<"_storage">
+                  )) as string)
+                : undefined,
               role: author?.role,
               isAdmin:
                 author?.role === "ADMIN" || author?.role === "SUPERADMIN",
@@ -227,7 +235,11 @@ export const getPosts = query({
               ? {
                   id: group._id,
                   name: group.name,
-                  profilePicture: group.profilePicture,
+                  profilePicture: group.profilePicture
+                    ? ((await ctx.storage.getUrl(
+                        group.profilePicture as Id<"_storage">
+                      )) as string)
+                    : undefined,
                   creator: group.authorId,
                 }
               : undefined,

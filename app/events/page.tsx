@@ -13,7 +13,7 @@ export const metadata = {
 export default async function DiscoverEventsPage() {
   await getRequiredUser();
   return (
-    <div className="px-4 py-6 md:py-8">
+    <div className="px-4 py-6 md:py-8 space-y-4">
       <EventNavigation currentPage="all" />
       <DiscoverEventLayout />
     </div>

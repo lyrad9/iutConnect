@@ -65,6 +65,7 @@ export default defineSchema({
     registrationNumber: v.string(),
 
     phoneNumber: v.optional(v.string()),
+    isPhoneNumberHidden: v.optional(v.boolean()), // Indique si le numéro de téléphone est masqué ou non
     /* fonction: v.union(
       ...Object.values(USER_FUNCTIONS).map((f) => v.literal(f))
     ), */

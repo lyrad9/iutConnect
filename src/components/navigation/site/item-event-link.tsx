@@ -19,10 +19,14 @@ export function EventLink({
   location,
   type,
   photo,
+  locationType,
 }: SideEventLinkProps) {
   // Récupérer les styles et l'icône en fonction du type d'événement
   const { color, textColor, icon } =
     eventTypes[type as keyof typeof eventTypes] || eventTypes.social;
+  console.log(new Date(1753225200000));
+  console.log(new Date(Date.now()));
+  console.log(new Date(1753225200000) > new Date(Date.now()));
 
   return (
     <Button
@@ -51,11 +55,18 @@ export function EventLink({
           <div className="flex items-center gap-1">
             <span>{name}</span>
             {/* Afficher l'icône du type d'événement à côté du nom */}
-            <span className={`text-xs ${textColor}`}>{icon}</span>
+            {/*  <span className={`text-xs ${textColor}`}>{icon}</span> */}
           </div>
-          <span className="text-xs text-muted-foreground">
-            {date} • {location}
-          </span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-muted-foreground">{date} •</span>
+            {locationType === "on-site" ? (
+              <span className="text-xs text-muted-foreground">{location}</span>
+            ) : (
+              <span className="underline text-xs text-muted-foreground">
+                {location}
+              </span>
+            )}
+          </div>
         </div>
       </Link>
     </Button>

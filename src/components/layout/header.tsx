@@ -21,21 +21,20 @@ import { AuthDropdown } from "../auth/auth-dropdown";
 import AuthBtn from "../auth/auth-btn";
 import MenuBtn from "../navigation/menu-btn";
 
-import { CreateGroupButton } from "../shared/create-group-button";
-import { CreateEventButton } from "../shared/create-event-button";
 import { SearchBar } from "../search/SearchBar";
+import { Skeleton } from "../ui/skeleton";
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="px-2 flex h-16 items-center justify-between">
+      <div className="px-4 flex h-16 items-center justify-between gap-2">
         {/* Partie gauche: Logo et menu mobile */}
-        <div className="flex items-center gap-2">
-          <MenuBtn />
-          <Link href="/" className="flex items-center space-x-2">
-            <span className="font-bold text-lg">iutSocial</span>
-          </Link>
-        </div>
+        {/*   <div className="flex items-center gap-2"> */}
+
+        <Link href="/" className="shrink-0 flex items-center space-x-2">
+          <span className="font-bold text-lg">iutSocial</span>
+        </Link>
+        {/*   </div> */}
 
         {/* Partie centrale: Barre de recherche */}
         <div className="hidden md:flex flex-1 max-w-md">
@@ -43,7 +42,8 @@ export default function Header() {
         </div>
 
         {/* Partie droite: Actions et profil */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          <MenuBtn />
           <div className="md:hidden block">
             <Button
               variant="ghost"
@@ -67,6 +67,9 @@ export default function Header() {
               </Link>
             </Button> */}
           </Authenticated>
+          <AuthLoading>
+            <Skeleton className="w-10 h-10 rounded-full" />
+          </AuthLoading>
           {/* Switch thème */}
           <ModeToggle />
           {/* Profil utilisateur ou bouton de connexion */}
@@ -76,6 +79,9 @@ export default function Header() {
           <Unauthenticated>
             <AuthBtn />
           </Unauthenticated>
+          <AuthLoading>
+            <Skeleton className="w-10 h-10 rounded-full" />
+          </AuthLoading>
         </div>
       </div>
     </header>

@@ -4,12 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import {
-  MoreHorizontal,
-  Eye,
-  BookmarkMinus,
-  Image as ImageIcon,
-} from "lucide-react";
+import { MoreHorizontal, Eye, BookmarkMinus } from "lucide-react";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -40,6 +35,7 @@ type BookmarkCardProps = {
 };
 export function BookmarkCard({ favoritePost }: BookmarkCardProps) {
   console.log("favoriteMedia", favoritePost.medias.length);
+  console.log("favoritePost", favoritePost);
   const router = useRouter();
   // États
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -116,11 +112,16 @@ export function BookmarkCard({ favoritePost }: BookmarkCardProps) {
             <Image
               src={mainImage ?? "/placeholder.svg"}
               alt={title}
-              /*  width={64}
-            height={32} */
               fill
               className="object-cover rounded-lg"
             />
+            {/*   <img
+              src={mainImage ?? "/placeholder.svg"}
+              alt={title}
+              width={64}
+              height={32}
+              className="object-cover rounded-lg"
+            /> */}
           </div>
 
           <div className="flex-1 sm:flex-2 flex flex-col">

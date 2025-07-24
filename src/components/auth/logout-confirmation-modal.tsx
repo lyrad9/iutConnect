@@ -46,7 +46,6 @@ export function LogoutConfirmationModal({
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <LogOut className="h-5 w-5 text-destructive" />
             Confirmation de déconnexion
           </DialogTitle>
           <DialogDescription>

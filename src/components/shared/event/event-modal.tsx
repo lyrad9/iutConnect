@@ -691,7 +691,7 @@ export function EventModal({
                   !form.formState.isValid ||
                   !form.getValues("name") ||
                   !form.getValues("startDate") ||
-                  !form.getValues("startTime") ||
+                  /*  !form.getValues("startTime") || */
                   !form.getValues("eventType") ||
                   !form.getValues("location.value") ||
                   !form.getValues("description")
