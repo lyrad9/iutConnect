@@ -19,6 +19,7 @@ import { EmptyState } from "@/src/components/ui/empty-state";
 import { Badge } from "@/src/components/ui/badge";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
 import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
+import { useState } from "react";
 export default function PendingRequestsList() {
   const [, setTick] = useState(0);
   // Récupérer les demandes en attente
