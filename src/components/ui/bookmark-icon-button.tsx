@@ -90,7 +90,12 @@ export function BookmarkIconButton({
                   background:
                     "radial-gradient(circle, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 80%)",
                 }}
-                {...animations.burst}
+                initial={animations.burst.initial}
+                animate={animations.burst.animate}
+                transition={{
+                  duration: animations.burst.transition.duration,
+                  ease: "easeOut",
+                }}
               />
             )}
           </AnimatePresence>
@@ -112,7 +117,11 @@ export function BookmarkIconButton({
                 }}
                 initial={animations.particles(i).initial}
                 animate={animations.particles(i).animate}
-                transition={animations.particles(i).transition}
+                transition={{
+                  duration: animations.particles(i).transition.duration,
+                  delay: animations.particles(i).transition.delay,
+                  ease: "easeOut",
+                }}
               />
             ))}
           </motion.div>
