@@ -117,37 +117,49 @@ export default function GroupCreateLayout() {
         profilePicture: null as Id<"_storage"> | null,
         coverPhoto: null as Id<"_storage"> | null,
       };
-      // Créer des formdata pour les images
+
+      // Créer des formdata pour les images seulement si elles sont définies
       const formData = new FormData();
+      let hasImagesToUpload = false;
+
       if (data.profilePicture) {
         formData.append("profilePicture", data.profilePicture);
+        hasImagesToUpload = true;
       }
 
       if (data.coverPhoto) {
         formData.append("coverPhoto", data.coverPhoto);
+        hasImagesToUpload = true;
       }
-      // Uploader les images via HTTP actions
-      const response = await fetch(`${apiUrl}/uploadGroupImages`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'upload des images");
-      }
-      const result = await response.json();
-      if (result.success) {
-        // Ajouter les IDs des images aux données à mettre à jour
-        if (result.profilePictureId) {
-          updateData.profilePicture = result.profilePictureId as Id<"_storage">;
+
+      // Uploader les images via HTTP actions seulement si nécessaire
+      if (hasImagesToUpload) {
+        const response = await fetch(`${apiUrl}/uploadGroupImages`, {
+          method: "POST",
+          body: formData,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Erreur lors de l'upload des images");
         }
 
-        if (result.coverPhotoId) {
-          updateData.coverPhoto = result.coverPhotoId as Id<"_storage">;
+        const result = await response.json();
+        if (result.success) {
+          // Ajouter les IDs des images aux données à mettre à jour
+          if (result.profilePictureId) {
+            updateData.profilePicture =
+              result.profilePictureId as Id<"_storage">;
+          }
+
+          if (result.coverPhotoId) {
+            updateData.coverPhoto = result.coverPhotoId as Id<"_storage">;
+          }
         }
       }
+
       // Extraire uniquement les IDs des membres sélectionnés
       const memberIds = data.members.map((member) => member.value);
 

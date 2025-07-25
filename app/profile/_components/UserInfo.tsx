@@ -42,13 +42,13 @@ export default function UserInfo() {
 
           <div className="p-4 md:p-6">
             <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-              <div className="flex items-end">
+              <div className="flex flex-col items-start">
                 <div className="relative -mt-20 mr-4">
                   <SmartAvatar
                     avatar={user?.profilePicture as string}
                     name={user?.firstName + " " + user?.lastName}
                     size="xl"
-                    className="size-32 border-4 border-background object-cover aspect-square shadow-md"
+                    className="size-32 border-4 border-background shadow-md"
                     fallbackClassName="text-4xl"
                   />
                 </div>

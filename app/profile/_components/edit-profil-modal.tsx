@@ -230,6 +230,7 @@ const contentVariants = {
 };
 
 export default function EditProfilModal() {
+  const apiUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
   const router = useRouter();
   const url = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
   console.log(url);
@@ -413,22 +414,14 @@ export default function EditProfilModal() {
 
         if (profileImageFile) {
           formData.append("profilePicture", profileImageFile);
-          // Ajouter l'ancien ID s'il existe
-          /*  if (userImages?.profilePicture) {
-            formData.append("oldProfileId", userImages.profilePicture);
-          } */
         }
 
         if (coverImageFile) {
           formData.append("coverPhoto", coverImageFile);
-          // Ajouter l'ancien ID s'il existe
-          /*    if (userImages?.coverPhoto) {
-            formData.append("oldCoverId", userImages.coverPhoto);
-          } */
         }
 
         // Uploader les images
-        const response = await fetch("http://127.0.0.1:3211/uploadUserImages", {
+        const response = await fetch(`${apiUrl}/uploadUserImages`, {
           method: "POST",
           body: formData,
           headers: {
