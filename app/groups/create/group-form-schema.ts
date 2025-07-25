@@ -93,6 +93,10 @@ export type GroupFormValues = z.infer<typeof groupFormSchema>;
 
 // Valeurs par défaut pour le formulaire
 export const defaultGroupFormValues: Partial<GroupFormValues> = {
+  name: undefined,
+  description: undefined,
+  about: undefined,
+  mainCategory: undefined,
   confidentiality: "public",
   visibility: "visible",
   requiresPostApproval: true,

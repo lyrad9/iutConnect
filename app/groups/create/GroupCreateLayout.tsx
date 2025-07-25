@@ -143,10 +143,13 @@ export default function GroupCreateLayout() {
         });
 
         if (!response.ok) {
-          throw new Error("Erreur lors de l'upload des images");
+          return toast.error("Erreur lors de l'upload des images");
         }
 
         const result = await response.json();
+        if (!result.success) {
+          return toast.error(result.message);
+        }
         if (result.success) {
           // Ajouter les IDs des images aux données à mettre à jour
           if (result.profilePictureId) {

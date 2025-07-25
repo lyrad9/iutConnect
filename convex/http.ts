@@ -202,13 +202,6 @@ cors.route({
     const profilePicture = (formData.get("profilePicture") as File) || null;
     const coverPhoto = (formData.get("coverPhoto") as File) || null;
 
-    if (!profilePicture && !coverPhoto) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Aucune image fournie" }),
-        { status: 400 }
-      );
-    }
-
     const result: {
       success: boolean;
       profilePictureId?: string;
