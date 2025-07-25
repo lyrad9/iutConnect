@@ -29,15 +29,14 @@ export default function UserInfo() {
     <>
       <Authenticated>
         <div className="relative rounded-xl bg-muted overflow-hidden">
-          <div className="h-48 overflow-hidden md:h-72">
+          <div className="w-full relative aspect-square h-48 overflow-hidden md:h-72">
             <Image
               src={
                 (user?.coverPhoto as string | undefined) ?? "/placeholder.svg"
               }
               alt="Cover"
-              className="size-full object-cover aspect-square"
-              width={100}
-              height={100}
+              className="object-cover"
+              fill
               priority
             />
           </div>

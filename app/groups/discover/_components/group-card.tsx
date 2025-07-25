@@ -120,15 +120,13 @@ export function GroupCard({ group }: GroupCardProps) {
           <h3 className="text-xl font-semibold line-clamp-1">{group.name}</h3>
 
           <p className="mt-1 text-muted-foreground text-sm flex items-center gap-1 flex-wrap">
-            <Users className="size-3" />
-            <span>{group.membersCount} membres</span>
             {group.author && (
               <>
-                <span className="mx-1">•</span>
                 <span>Créé par {group.author.name}</span>
+                <span className="mx-1">•</span>
               </>
             )}
-            <span className="mx-1">•</span>
+
             {/*Afficher la confidentialité du groupe avec icône */}
             {group.confidentiality === "public" && (
               <>

@@ -6,6 +6,7 @@ import DiscoverGroupsList from "./_components/discover-groups-list";
 import { api } from "@/convex/_generated/api";
 import { useGroupFilters } from "@/src/hooks/useGroupFilters";
 import { SearchFilterSection } from "@/src/components/shared/search-filter-section";
+import { HeaderGroupsEvents } from "@/src/components/layout/header-groups-events";
 
 /**
  * Composant principal pour découvrir les groupes
@@ -33,14 +34,10 @@ export default function GroupsDiscoverLayout() {
   return (
     <div className="container px-4 py-6 md:py-8 mx-auto">
       {/* En-tête avec titre */}
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Découvrir des Groupes
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Rejoignez des communautés d&apos;intérêt à l&apos;université
-        </p>
-      </div>
+      <HeaderGroupsEvents
+        title="Découvrir des Groupes"
+        description="Rejoignez des communautés d'intérêt à l'université"
+      />
 
       {/* Section de recherche et filtrage */}
       <SearchFilterSection

@@ -4,12 +4,11 @@ import { ArrowUp, FileQuestion } from "lucide-react";
 import { EventCard } from "@/src/components/shared/event/event-card";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Button } from "@/src/components/ui/button";
-import { eventTypes } from "@/src/components/utils/const/event-type";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { motion, AnimatePresence } from "motion/react";
 import { EmptyState } from "@/src/components/ui/empty-state";
-import { SearchFilterSection } from "@/src/components/shared/search-filter-section";
+import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
+import { Button } from "@/src/components/ui/button";
 
 /**
  * État d'affichage lors du chargement
@@ -26,7 +25,13 @@ function LoadingState() {
   );
 }
 
-export default function DiscoverEventsList() {
+export default function DiscoverEventsList({
+  searchTerm,
+  selectedCategories,
+}: {
+  searchTerm: string;
+  selectedCategories: string[];
+}) {
   /* console.log(new Date(Date.now())); */
   /* console.log(
     new Date(1752706800000).toDateString(),
@@ -35,60 +40,26 @@ export default function DiscoverEventsList() {
   console.log(
     new Date(1752706800000).toDateString() > new Date(Date.now()).toDateString()
   ); */
-  // États pour les filtres de recherche
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // Référence pour l'élément d'intersection observer
-  const loaderRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Requête paginée pour les événements
   const { results, status, loadMore, isLoading } = usePaginatedQuery(
     api.events.getDiscoverEvents,
     {
-      searchTerm: debouncedSearchTerm,
+      searchTerm: searchTerm,
       eventTypes: selectedCategories,
     },
     { initialNumItems: 12 }
   );
-  // Trier les évènements par date de début
-  const sortedResults = results?.sort((a, b) => a.startDate - b.startDate);
 
-  // Debouncer pour la recherche
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
-
-  // Gérer le défilement pour l'intersection observer
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "200px",
+  });
 
   // Gérer l'affichage du bouton de retour en haut
   useEffect(() => {
@@ -113,47 +84,17 @@ export default function DiscoverEventsList() {
     });
   };
 
-  // Gérer le changement des catégories sélectionnées
-  const handleCategoriesChange = (selected: string[]) => {
-    setSelectedCategories(selected);
-  };
-
   // Déterminer si des filtres sont appliqués
-  const isFiltering =
-    debouncedSearchTerm !== "" || selectedCategories.length > 0;
-
-  // Obtenir les types d'événements pour le filtre
-  const eventTypeOptions = Object.keys(eventTypes).map((key) => key);
+  const isFiltering = searchTerm !== "" || selectedCategories.length > 0;
 
   return (
-    <div className="" ref={containerRef}>
-      {/* En-tête avec titre */}
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Découvrir des Événements
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Trouvez des événements qui pourraient vous intéresser
-        </p>
-      </div>
-
-      {/* Section de recherche et filtre */}
-      <SearchFilterSection
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        filterOptions={eventTypeOptions}
-        selectedFilters={selectedCategories}
-        onFiltersChange={handleCategoriesChange}
-        searchPlaceholder="Rechercher un événement par nom..."
-        filterLabel="Filtrer par type d'événement:"
-      />
-
+    <div ref={containerRef}>
       {/* Liste des événements */}
       <div className="space-y-8">
-        {sortedResults && sortedResults.length > 0 ? (
+        {results && results.length > 0 ? (
           <>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {sortedResults.map((event) => (
+              {results.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>

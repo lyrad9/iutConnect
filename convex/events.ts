@@ -472,7 +472,7 @@ export const getDiscoverEvents = query({
 
     return {
       ...eventsPage,
-      page: enrichedEvents,
+      page: enrichedEvents.sort((a, b) => a.startDate - b.startDate),
     };
   },
 });

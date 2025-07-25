@@ -387,7 +387,11 @@ export const hasGroups = query({
         q.eq("visibility", "visible").eq("status", "active")
       )
       .collect();
-    return groups.filter((group) => group.authorId !== userId).length > 0;
+    return (
+      groups.filter((group) => group.authorId !== userId).length > 0 ||
+      groups.filter((group) => !group.members?.includes(userId as Id<"users">))
+        .length > 0
+    );
   },
 });
 

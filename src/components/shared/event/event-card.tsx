@@ -113,10 +113,11 @@ export function EventCard({ event }: { event: EventType }) {
 
   // Récupérer le chemin actuel pour déterminer si on affiche les actions admin
   const pathname = usePathname();
-  const showAdminActions =
-    pathname?.includes("/events/past") ||
+  const showAdminActions = pathname !== "/events";
+  /*  pathname?.includes("/events/past") ||
+    pathname?.includes("/events/owned") ||
     pathname?.includes("/events/attended") ||
-    pathname?.includes("/events/upcoming");
+    pathname?.includes("/events/ongoing"); */
 
   // Récupérer l'utilisateur courant
   const currentUser = useQuery(api.users.currentUser);
@@ -209,14 +210,14 @@ export function EventCard({ event }: { event: EventType }) {
 
   return (
     <Card className="pt-0 relative overflow-x-hidden">
-      {/*   {!isEventCancelled && (
+      {isEventCancelled && (
         <div className="z-50 absolute inset-0 flex items-center justify-center bg-muted-foreground/40">
           <Badge className="absolute left-2 top-2 bg-destructive text-white">
             <AlertCircle className="mr-1 h-4 w-4" />
             Annulé
           </Badge>
         </div>
-      )} */}
+      )}
       <div className="relative h-48 overflow-hidden">
         {/* Image de couverture de l'événement */}
 
@@ -232,43 +233,52 @@ export function EventCard({ event }: { event: EventType }) {
 
         <div className="flex absolute top-2 right-2 z-50">
           {/* Menu d'actions */}
-          {/*  {(isEventOwner || showAdminActions) && ( */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 rounded-full bg-black/80 p-0"
-              >
-                <MoreHorizontal className="size-4" />
-                <span className="sr-only">Plus d&apos;options</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {event.allowsParticipants && (
-                <DropdownMenuItem onClick={handleExportParticipants}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Exporter la liste des participants
+          {showAdminActions && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 rounded-full bg-black/80 p-0"
+                >
+                  <MoreHorizontal className="size-4" />
+                  <span className="sr-only">Plus d&apos;options</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/events/${event.id}`}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Voir l&apos;évènement
+                  </Link>
                 </DropdownMenuItem>
-              )}
 
-              {!isEventCancelled && (
-                <DropdownMenuItem onClick={handleCancelEvent}>
-                  <X className="mr-2 h-4 w-4" />
-                  Annuler l&apos;événement
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleDeleteEvent}
-                className="text-destructive"
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {/* )} */}
+                {isEventOwner && event.allowsParticipants && (
+                  <DropdownMenuItem onClick={handleExportParticipants}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Exporter la liste des participants
+                  </DropdownMenuItem>
+                )}
+
+                {isEventOwner && !isEventCancelled && (
+                  <DropdownMenuItem onClick={handleCancelEvent}>
+                    <X className="mr-2 h-4 w-4" />
+                    Annuler l&apos;événement
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                {isEventOwner && (
+                  <DropdownMenuItem
+                    onClick={handleDeleteEvent}
+                    className="text-destructive"
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Supprimer
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
@@ -282,7 +292,7 @@ export function EventCard({ event }: { event: EventType }) {
             </CardTitle>
           </TooltipTrigger>
           <TooltipContent
-            arrowColor="accent"
+            /*     arrowColor="accent" */
             className="w-80 p-4 bg-accent"
             side="bottom"
           >

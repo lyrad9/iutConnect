@@ -97,7 +97,7 @@ export default function GroupCreateLayout() {
   const form = useForm<GroupFormValues>({
     resolver: zodResolver(groupFormSchema),
     defaultValues: defaultGroupFormValues,
-    mode: "onChange",
+    /*   mode: "onChange", */
   });
 
   // Gérer la recherche de membres pour le multiselect
@@ -185,10 +185,10 @@ export default function GroupCreateLayout() {
       // Réinitialiser l'état du formulaire
       form.reset({
         ...defaultGroupFormValues,
-        profilePicture: undefined,
         coverPhoto: undefined,
+        interests: [],
       });
-
+      router.refresh();
       // Rediriger vers la page des groupes
       /*     router.push("/groups"); */
     } catch (error: any) {

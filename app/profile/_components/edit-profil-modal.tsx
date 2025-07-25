@@ -1075,7 +1075,7 @@ export default function EditProfilModal() {
                         ))}
 
                         {(form.watch("socialLinks")?.length || 0) < 4 && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center max-[500px]:flex-col gap-2">
                             <Button
                               type="button"
                               variant="outline"
