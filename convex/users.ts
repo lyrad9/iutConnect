@@ -236,6 +236,7 @@ export const getUserPersonalInformation = query({
       lastName: user.lastName,
       username: user.username || null,
       phoneNumber: user.phoneNumber || null,
+      isPhoneNumberHidden: user.isPhoneNumberHidden || false,
       bio: user.bio || null,
       town: user.town || null,
       address: user.address || null,
