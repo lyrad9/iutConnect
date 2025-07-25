@@ -196,10 +196,10 @@ export const currentUser = query({
     // recuperer les images du storage convex
     const profilePicture = user.profilePicture
       ? await ctx.storage.getUrl(user.profilePicture as Id<"_storage">)
-      : null;
+      : undefined;
     const coverPhoto = user.coverPhoto
       ? await ctx.storage.getUrl(user.coverPhoto as Id<"_storage">)
-      : null;
+      : undefined;
     // Exclure le password et le matricule
     const { password, registrationNumber, ...userWithoutSensitiveData } = user;
     return {

@@ -21,7 +21,7 @@ import Link from "next/link";
 
 export default function UserInfo() {
   const user = useQuery(api.users.currentUser);
-
+  console.log("userInfoCoverPhoto", user?.coverPhoto);
   // Déterminer si on doit afficher le numéro de téléphone
   const showPhoneNumber = user?.phoneNumber && !user?.isPhoneNumberHidden;
 
@@ -31,7 +31,9 @@ export default function UserInfo() {
         <div className="relative rounded-xl bg-muted overflow-hidden">
           <div className="h-48 overflow-hidden md:h-72">
             <Image
-              src={user?.coverPhoto || "/placeholder.svg"}
+              src={
+                (user?.coverPhoto as string | undefined) ?? "/placeholder.svg"
+              }
               alt="Cover"
               className="size-full object-cover aspect-square"
               width={100}
