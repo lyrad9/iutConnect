@@ -57,6 +57,7 @@ export const getGroupById = query({
           )) as string)
         : undefined,
       eventsCount: events.length,
+      postsCount: posts.length,
       requestStatus: !!membership && membership.status === "pending",
       /*   members: members.length, */
     };

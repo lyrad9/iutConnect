@@ -9,13 +9,8 @@ import {
 } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
 import { Search, Globe, Lock, Shield, Users } from "lucide-react";
 import { usePaginatedQuery, useQuery } from "convex/react";
