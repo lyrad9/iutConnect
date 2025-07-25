@@ -52,7 +52,7 @@ import { useIsDirty } from "@/src/hooks/use-is-dirty";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar as CalendarComponent } from "@/src/components/ui/calendar";
+
 import {
   Popover,
   PopoverContent,
