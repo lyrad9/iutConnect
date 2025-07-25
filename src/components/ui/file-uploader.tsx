@@ -98,7 +98,7 @@ export default function FileUploader({
             <div className="absolute inset-0">
               <img
                 src={previewUrl}
-                alt="Image téléchargée"
+                alt="image"
                 className="size-full object-cover"
               />
             </div>

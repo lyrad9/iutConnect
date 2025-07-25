@@ -9,7 +9,7 @@ import { eventTypes } from "@/src/components/utils/const/event-type";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { motion, AnimatePresence } from "motion/react";
 import { EmptyState } from "@/src/components/ui/empty-state";
-import { SearchFilterSection } from "@/src/components/ui/search-filter-section";
+import { SearchFilterSection } from "@/src/components/shared/search-filter-section";
 
 /**
  * État d'affichage lors du chargement

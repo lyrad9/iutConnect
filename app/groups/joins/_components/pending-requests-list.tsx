@@ -1,6 +1,4 @@
 "use client";
-
-import { useEffect, useRef, useState } from "react";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -20,6 +18,7 @@ import Link from "next/link";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { Badge } from "@/src/components/ui/badge";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
+import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
 export default function PendingRequestsList() {
   const [, setTick] = useState(0);
   // Récupérer les demandes en attente
@@ -32,30 +31,14 @@ export default function PendingRequestsList() {
   );
   // Mutation pour annuler une demande d'adhésion
   const cancelRequest = useMutation(api.forums.cancelGroupJoinRequest);
-  // Référence pour l'élément d'intersection observer
-  const loaderRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
 
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour gérer le chargement progressif
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "200px",
+  });
 
   // Update time display every minute
   useEffect(() => {
@@ -176,7 +159,7 @@ export default function PendingRequestsList() {
                 title="Aucune demande en attente"
                 description="Vous n'avez pas de demandes d'adhésion en attente"
                 icons={[Clock]}
-                className="py-8"
+                className="py-8 max-w-full"
               />
             )}
           </div>

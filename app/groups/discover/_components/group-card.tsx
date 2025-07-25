@@ -20,8 +20,8 @@ interface GroupCardProps {
     id: string;
     name: string;
     description: string;
-    coverImage: string | null;
-    logoImage: string | null;
+    coverImage?: string;
+    logoImage?: string;
     membersCount: number;
     type: string;
     confidentiality: "public" | "private";
@@ -89,7 +89,7 @@ export function GroupCard({ group }: GroupCardProps) {
       href={`/groups/${group.id}`}
       className="block transition-transform duration-200 hover:scale-[1.02]"
     >
-      <Card className="overflow-hidden h-full border border-muted/40 shadow-md hover:shadow-lg transition-all py-0">
+      <Card className="overflow-hidden h-full border border-muted/40 shadow-md hover:shadow-lg transition-all py-0 ">
         <div className="relative h-[170px] w-full bg-gradient-to-br from-muted/30 to-muted/10">
           <img
             src={group.coverImage ?? "/placeholder.svg"}

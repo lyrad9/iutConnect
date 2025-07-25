@@ -1,13 +1,6 @@
 import { z } from "zod";
-// Validateur personnalisé pour les fichiers
-const fileValidator = z
-  .any()
-  /*   .refine((file) => file, {
-    message: "L'image est requise",
-  }) */
-  .refine((file) => file instanceof File, {
-    message: "Le fichier doit être valide",
-  });
+import { imageFileValidator } from "@/src/lib/image-file-validator";
+
 // Schéma de validation pour un événement
 export const eventFormSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
@@ -56,7 +49,7 @@ export const eventFormSchema = z.object({
     ),
   eventType: z.string().min(1, "Le type d'événement est requis"),
   collaborators: z.array(z.string()),
-  photo: z.instanceof(File).optional(),
+  photo: imageFileValidator.optional(),
   allowsParticipants: z.boolean().default(true),
   target: z.string().optional(),
 });

@@ -1,7 +1,6 @@
-import { Suspense } from "react";
+"use client";
 import PendingRequestsList from "./_components/pending-requests-list";
 import JoinedGroupsList from "./_components/joined-groups-list";
-import { Skeleton } from "@/src/components/ui/skeleton";
 
 export default function JoinsGroupsLayout() {
   return (

@@ -68,13 +68,13 @@ function GroupAdminHeader() {
         />
       </div>
       <div>
-        <p className="font-medium">
+        <p className="font-medium flex items-center space-x-1">
           <span className="flex items-center gap-2">
             {`${user?.firstName} ${user?.lastName}`}
           </span>
           <span className="flex items-center gap-2">
             {(user?.role === "ADMIN" || user?.role === "SUPERADMIN") && (
-              <AdminBadgeCheck className="size-6 text-blue-500 stroke-2" />
+              <AdminBadgeCheck className="size-4 text-blue-500 stroke-2" />
             )}
           </span>
         </p>
@@ -175,7 +175,7 @@ export default function GroupCreateLayout() {
       });
 
       // Rediriger vers la page des groupes
-      router.push("/groups");
+      /*     router.push("/groups"); */
     } catch (error: any) {
       console.error("Erreur lors de la création du groupe:", error);
       toast.error("Erreur lors de la création du groupe");
@@ -183,7 +183,7 @@ export default function GroupCreateLayout() {
       setIsSubmitting(false);
     }
   };
-  if (!user) redirect("/groups");
+  if (!user) redirect("/groups/discover");
   return (
     <div className="max-w-7xl py-8 mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8 flex items-center justify-between">
@@ -192,7 +192,7 @@ export default function GroupCreateLayout() {
             variant="ghost"
             size="sm"
             className="mb-2 gap-1"
-            onClick={() => router.push("/groups")}
+            onClick={() => router.push("/groups/discover")}
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Retour aux groupes</span>
@@ -584,24 +584,23 @@ export default function GroupCreateLayout() {
                   />
                 </CardContent>
               </Card>
+              <Card className="px-0 py-0">
+                <CardFooter className="flex justify-end gap-4 p-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => router.push("/groups/discover")}
+                    disabled={isSubmitting}
+                  >
+                    Annuler
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Création en cours..." : "Créer le groupe"}
+                  </Button>
+                </CardFooter>
+              </Card>
             </div>
           </div>
-
-          <Card>
-            <CardFooter className="flex justify-end gap-4 p-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push("/groups")}
-                disabled={isSubmitting}
-              >
-                Annuler
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Création en cours..." : "Créer le groupe"}
-              </Button>
-            </CardFooter>
-          </Card>
         </form>
       </Form>
     </div>

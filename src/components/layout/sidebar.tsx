@@ -34,7 +34,12 @@ export default function Sidebar({ className }: SidebarProps) {
   if (isValidEventsPage) {
     return <EventsContentSidebar className={className} />;
   }
-  if (pathname === "/profile" || pathname === "/groups/create") {
+  if (
+    pathname === "/profile" ||
+    pathname === "/groups/create" ||
+    pathname === "/events/create" ||
+    pathname === "/notifications"
+  ) {
     return;
   }
 
