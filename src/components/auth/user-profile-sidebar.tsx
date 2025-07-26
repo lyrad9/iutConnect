@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { SmartAvatar } from "../shared/smart-avatar";
 import { Button } from "../ui/button";
-import { AuthLoading, Authenticated } from "convex/react";
+import { AuthLoading, Authenticated, Unauthenticated } from "convex/react";
 import { Skeleton } from "../ui/skeleton";
 
 export default function UserProfileSIdebar({
@@ -33,9 +33,11 @@ export default function UserProfileSIdebar({
             <p className="text-sm text-muted-foreground">@{username}</p>
           )}
         </Authenticated>
-        <Button asChild variant="outline" size="sm" className="w-full mt-3">
-          <Link href="/profile">Voir mon profil</Link>
-        </Button>
+        <Unauthenticated>
+          <Button asChild variant="outline" size="sm" className="w-full mt-3">
+            <Link href="/profile">Voir mon profil</Link>
+          </Button>
+        </Unauthenticated>
         <AuthLoading>
           <div className="flex flex-col items-center p-4 rounded-lg bg-muted/30 border border-border/50">
             <Skeleton className="w-10 h-10 rounded-full" />
