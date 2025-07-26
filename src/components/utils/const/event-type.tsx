@@ -4,6 +4,7 @@ import {
   Trophy,
   PartyPopper,
   Briefcase,
+  Users,
 } from "lucide-react";
 
 // Types d'événements avec leurs couleurs et icônes associées
@@ -30,7 +31,7 @@ export const eventTypes = {
     content: "Social",
     color: "bg-amber-100 dark:bg-amber-900",
     textColor: "text-amber-600 dark:text-amber-300",
-    icon: <PartyPopper className="h-3 w-3" />,
+    icon: <Users className="h-3 w-3" />,
   },
   professional: {
     content: "Professionnel",

@@ -131,12 +131,7 @@ const EventTooltipContent = ({ event }: { event: EventType }) => (
       {/* Auteur */}
       <div className="flex items-center gap-2 text-sm">
         <UserIcon className="size-4 text-muted-foreground" />
-        <span>
-          Crée par {event.author.name}
-          {event.userRole &&
-            event.userRole === "coorganizer" &&
-            " (Co-organisateur)"}
-        </span>
+        <span>Crée par {event.author.name}</span>
       </div>
 
       {/* Lieu */}
@@ -221,10 +216,12 @@ export function EventCard({ event }: { event: EventType }) {
         setParticipantsCount((prevCount) => Math.max(prevCount - 1, 0));
         setIsParticipating(false);
         await unsubscribeFromEvent({ eventId: event.id as Id<"events"> });
+        toast.success("Vous avez été retiré de l'événement");
       } else {
         setParticipantsCount((prevCount) => prevCount + 1);
         setIsParticipating(true);
         await subscribeToEvent({ eventId: event.id as Id<"events"> });
+        toast.success("Vous avez rejoint l'événement");
       }
     } catch (error) {
       // En cas d'erreur, restaurer l'état précédent
@@ -264,9 +261,11 @@ export function EventCard({ event }: { event: EventType }) {
     console.log("Exporter les participants de l'événement:", event.id);
   };
 
-  // Obtenir le type d'événement
-  const eventTypeInfo =
-    eventTypes[event.eventType as keyof typeof eventTypes] || eventTypes.social;
+  // Obtenir le type d'événement sachant que le type de l'évènement correspond à la propriété content de eventTypes
+
+  const eventTypeInfo = Object.values(eventTypes).find(
+    (type) => type.content === event.eventType
+  );
 
   // Vérifier si l'événement est créé par un administrateur de groupe
   const isGroupAdminEvent = event.group;
@@ -295,12 +294,12 @@ export function EventCard({ event }: { event: EventType }) {
         <Badge
           className="absolute bottom-3 left-3"
           style={{
-            backgroundColor: eventTypeInfo.color,
-            color: eventTypeInfo.textColor,
+            backgroundColor: eventTypeInfo?.color,
+            color: eventTypeInfo?.textColor,
           }}
         >
-          {eventTypeInfo.icon}
-          <span className="ml-1">{eventTypeInfo.content}</span>
+          {eventTypeInfo?.icon}
+          <span className="ml-1">{eventTypeInfo?.content}</span>
         </Badge>
 
         <div className="flex absolute top-2 right-2 z-50">
@@ -338,15 +337,18 @@ export function EventCard({ event }: { event: EventType }) {
                     Annuler l&apos;événement
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
+
                 {isEventOwner && (
-                  <DropdownMenuItem
-                    onClick={handleDeleteEvent}
-                    className="text-destructive"
-                  >
-                    <Trash className="mr-2 h-4 w-4" />
-                    Supprimer
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDeleteEvent}
+                      className="text-destructive"
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Supprimer
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -454,7 +456,7 @@ export function EventCard({ event }: { event: EventType }) {
       </CardContent>
 
       {/* Pied de carte avec actions */}
-      {isParticipating !== undefined && (
+      {pathname === "/events" && (
         <CardFooter className="">
           {/* Bouton de participation si l'événement accepte les participants */}
           {event.allowsParticipants && (

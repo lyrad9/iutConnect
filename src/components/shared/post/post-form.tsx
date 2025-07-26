@@ -213,7 +213,7 @@ export function PostForm({
               form.setValue("content", e.target.value, { shouldValidate: true })
             }
             onFocus={handleFocus}
-            placeholder="Ajouter un post ou un évènement"
+            placeholder="Créer une publication"
             className={cn(
               "min-h-[60px] w-full resize-none border-0 bg-transparent p-2 focus-visible:ring-0",
               isExpanded ? "min-h-[120px]" : ""
