@@ -263,7 +263,9 @@ export default defineSchema({
     endDate: v.optional(v.number()), // timestamp
     locationType: v.union(...EventLocationType.map((l) => v.literal(l))),
     locationDetails: v.string(), // lieu physique ou lien en ligne
-    eventType: v.union(...Object.keys(eventTypes).map((t) => v.literal(t))),
+    eventType: v.union(
+      ...Object.values(eventTypes).map((t) => v.literal(t.content))
+    ),
     groupId: v.optional(v.id("forums")),
     status: v.optional(v.union(...PostStatus.map((s) => v.literal(s)))), // État de l'événement : en attente, approuvé, rejeté
     likes: v.array(v.id("users")),

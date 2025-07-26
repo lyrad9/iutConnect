@@ -51,7 +51,7 @@ export function EventNavigation({ currentPage }: { currentPage: string }) {
           icon: <CalendarCheck className="h-4 w-4" />,
         },
         {
-          label: "créés",
+          label: "créés ou participés",
           value: "owned",
           href: "/events/owned",
           icon: <CalendarCheck className="h-4 w-4" />,

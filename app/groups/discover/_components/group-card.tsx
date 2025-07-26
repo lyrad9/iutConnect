@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Earth, Loader2, Users, Lock } from "lucide-react";
+import { Earth, Loader2, Users, Lock, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
@@ -14,6 +14,16 @@ import { cn } from "@/src/lib/utils";
 import { motion } from "motion/react";
 import { MultiAvatar } from "@/src/components/ui/multi-avatar";
 import { GroupMembersAvatars } from "@/src/components/groups/group-members-avatars";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/src/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/src/components/ui/popover";
 
 interface GroupCardProps {
   group: {
@@ -33,6 +43,54 @@ interface GroupCardProps {
     } | null;
   };
 }
+
+// Composant pour le contenu du tooltip/popover
+const GroupTooltipContent = ({ group }: { group: GroupCardProps["group"] }) => (
+  <div className="w-full">
+    <h3 className="text-lg font-bold mb-2">{group.name}</h3>
+
+    {/* Description courte */}
+    <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
+      {group.description}
+    </p>
+
+    <div className="space-y-2 mb-3">
+      {/* Auteur si présent */}
+      {group.author && (
+        <div className="flex items-center gap-2 text-sm">
+          <Users className="size-4 text-muted-foreground" />
+          <span>Créé par {group.author.name}</span>
+        </div>
+      )}
+
+      {/* Confidentialité du groupe */}
+      <div className="flex items-center gap-2 text-sm">
+        {group.confidentiality === "public" ? (
+          <Earth className="size-4 text-muted-foreground" />
+        ) : (
+          <Lock className="size-4 text-muted-foreground" />
+        )}
+        <span>
+          Groupe {group.confidentiality === "public" ? "public" : "privé"}
+        </span>
+      </div>
+
+      {/* Type de groupe */}
+      <div className="flex items-center gap-2 text-sm">
+        <Badge variant="secondary" className="h-5">
+          {group.type}
+        </Badge>
+      </div>
+    </div>
+
+    <Button asChild size="sm" className="w-full">
+      <Link href={`/groups/${group.id}`}>
+        Voir le groupe
+        <ChevronRight className="ml-1 h-4 w-4" />
+      </Link>
+    </Button>
+  </div>
+);
 
 export function GroupCard({ group }: GroupCardProps) {
   const [isLoadingPublicGroup, setIsLoadingPublicGroup] = React.useState(false);
@@ -117,7 +175,37 @@ export function GroupCard({ group }: GroupCardProps) {
         </div>
 
         <CardContent className="pt-10 px-4">
-          <h3 className="text-xl font-semibold line-clamp-1">{group.name}</h3>
+          {/* Titre avec tooltip pour desktop */}
+          <div className="lg:block hidden">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h3 className="text-xl font-semibold line-clamp-1 hover:underline cursor-pointer">
+                  {group.name}
+                </h3>
+              </TooltipTrigger>
+              <TooltipContent
+                arrowColor="accent"
+                className="w-80 p-4 bg-accent"
+                side="bottom"
+              >
+                <GroupTooltipContent group={group} />
+              </TooltipContent>
+            </Tooltip>
+          </div>
+
+          {/* Version mobile avec popover */}
+          <div className="lg:hidden block">
+            <Popover>
+              <PopoverTrigger asChild>
+                <h3 className="text-xl font-semibold line-clamp-1 hover:underline cursor-pointer">
+                  {group.name}
+                </h3>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-4">
+                <GroupTooltipContent group={group} />
+              </PopoverContent>
+            </Popover>
+          </div>
 
           <p className="mt-1 text-muted-foreground text-sm flex items-center gap-1 flex-wrap">
             {group.author && (

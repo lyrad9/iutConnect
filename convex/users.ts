@@ -55,14 +55,14 @@ export const selectCollaborators = query({
           avatar: user.profilePicture,
           email: user.email,
         })) || []
-      );
+      ).filter((user) => user.id !== userId);
     }
 
     // Recherche sur le champ email
     const emailResults = await ctx.db
       .query("users")
       .withSearchIndex("search_email", (q) => q.search("email", searchTerm))
-      .take(limit);
+      .collect();
     // Recherche sur le prénom
     const firstNameResults = await ctx.db
       .query("users")
@@ -118,7 +118,7 @@ export const getUserById = query({
   },
 });
 /**
- * Récpérer un utilisateur à partir de son matricule
+ * Récupérer un utilisateur à partir de son matricule
  */
 export const getUserByRegistrationNumber = internalQuery({
   args: { registrationNumber: v.string() },

@@ -692,3 +692,151 @@ export const hasAttentedEventsPage = query({
     return (await q.collect()).length > 0;
   },
 });
+
+/**
+ * Récupère les événements de l'utilisateur (créés ou auxquels il participe)
+ * avec filtres et recherche, classés par date de participation ou création selon le rôle
+ */
+export const getOwnedEvents = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    searchTerm: v.string(),
+    eventTypes: v.array(v.string()),
+    role: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+
+    // Construction de la requête de base
+    let baseQuery;
+    if (args.searchTerm) {
+      baseQuery = ctx.db
+        .query("events")
+        .withSearchIndex("search_events", (q) =>
+          q.search("name", args.searchTerm)
+        );
+    } else {
+      baseQuery = ctx.db.query("events");
+    }
+
+    // Filtrage selon le rôle et les types d'événements
+    const eventsQuery = filter(baseQuery, (event) => {
+      const matchesType =
+        args.eventTypes.length === 0 ||
+        args.eventTypes.includes(event.eventType);
+
+      if (args.role === "organizer") {
+        return event.authorId === userId && matchesType;
+      } else if (args.role === "coorganizer") {
+        return (event.collaborators?.includes(userId) ?? false) && matchesType;
+      } else if (args.role === "participant") {
+        return (event.participants?.includes(userId) ?? false) && matchesType;
+      } else {
+        return (
+          (event.authorId === userId ||
+            (event.collaborators?.includes(userId) ?? false) ||
+            (event.participants?.includes(userId) ?? false)) &&
+          matchesType
+        );
+      }
+
+      // "all" - tous les événements où l'utilisateur a un rôle
+    });
+
+    // Pagination et tri
+    const eventsPage = await eventsQuery.paginate(args.paginationOpts);
+
+    const enrichedEvents = await Promise.all(
+      eventsPage.page.map(async (event) => {
+        const author = await ctx.db.get(event.authorId);
+        let group = undefined;
+        if (event.groupId) {
+          group = await ctx.db.get(event.groupId);
+        }
+        const participantsCount = event.participants?.length ?? 0;
+
+        // Déterminer le rôle de l'utilisateur dans cet événement
+        let userRole = "none";
+        if (event.authorId === userId) {
+          userRole = "organizer";
+        } else if (event.collaborators?.includes(userId)) {
+          userRole = "coorganizer";
+        } else if (event.participants?.includes(userId)) {
+          userRole = "participant";
+        }
+
+        // Déterminer la date de référence pour le tri selon le rôle
+        let sortDate = event.createdAt;
+        if (userRole === "participant") {
+          // Pour les participants, utiliser la date d'inscription
+          const participation = await ctx.db
+            .query("eventParticipants")
+            .withIndex("by_event_and_user", (q) =>
+              q.eq("eventId", event._id).eq("userId", userId)
+            )
+            .first();
+          if (participation) {
+            sortDate = participation.createdAt;
+          }
+        }
+
+        return {
+          id: event._id,
+          name: event.name,
+          description: event.description,
+          photo: event.photo
+            ? ((await ctx.storage.getUrl(
+                event.photo as Id<"_storage">
+              )) as string)
+            : undefined,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          createdAt: event.createdAt,
+          sortDate: sortDate, // Date pour le tri
+          location: {
+            type: event.locationType,
+            value: event.locationDetails,
+          },
+          eventType: event.eventType,
+          target: event.target,
+          author: {
+            id: author?._id as Id<"users">,
+            name: `${author?.firstName} ${author?.lastName}`,
+            username: author?.username,
+            profilePicture: author?.profilePicture
+              ? ((await ctx.storage.getUrl(
+                  author?.profilePicture as Id<"_storage">
+                )) as string)
+              : undefined,
+            isAdmin: author?.role === "ADMIN" || author?.role === "SUPERADMIN",
+          },
+          group: group
+            ? {
+                id: group._id as Id<"forums">,
+                name: group.name,
+                profilePicture: group.profilePicture
+                  ? ((await ctx.storage.getUrl(
+                      group.profilePicture as Id<"_storage">
+                    )) as string)
+                  : undefined,
+              }
+            : undefined,
+          participantsCount,
+          allowsParticipants: event.allowsParticipants ?? false,
+          userRole: userRole,
+          isCancelled: event.isCancelled as boolean,
+        };
+      })
+    );
+
+    // Tri par date de référence (participation ou création)
+    const sortedEvents = enrichedEvents.sort((a, b) => b.sortDate - a.sortDate);
+
+    return {
+      ...eventsPage,
+      page: sortedEvents,
+    };
+  },
+});

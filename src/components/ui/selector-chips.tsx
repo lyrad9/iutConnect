@@ -68,8 +68,8 @@ const SelectorChips = React.forwardRef<HTMLDivElement, SelectorChipsProps>(
       onChange,
       defaultSelected = [],
       value,
-      primaryColor = "#FC5212",
-      selectedTextColor = "#ffffff",
+      primaryColor = "var(--primary)",
+      selectedTextColor = "hsl(var(--primary-foreground))",
       size = "md",
       className,
       selectionMode = "multiple",
@@ -92,22 +92,22 @@ const SelectorChips = React.forwardRef<HTMLDivElement, SelectorChipsProps>(
     // Styles en fonction de la taille
     const sizeStyles = {
       sm: {
-        paddingX: "px-3",
-        paddingY: "py-1",
+        paddingX: "px-2.5",
+        paddingY: "py-0.5",
         fontSize: "text-xs",
         minWidth: 80,
         selectedWidth: 95,
       },
       md: {
         paddingX: "px-4",
-        paddingY: "py-2",
+        paddingY: "py-1.5",
         fontSize: "text-sm",
         minWidth: 100,
         selectedWidth: 120,
       },
       lg: {
         paddingX: "px-5",
-        paddingY: "py-3",
+        paddingY: "py-2.5",
         fontSize: "text-base",
         minWidth: 120,
         selectedWidth: 140,
@@ -140,7 +140,7 @@ const SelectorChips = React.forwardRef<HTMLDivElement, SelectorChipsProps>(
       <div
         ref={ref}
         className={cn(
-          "flex flex-wrap gap-2 w-full bg-background border border-primary/10 p-3 rounded-2xl shadow-sm",
+          "flex flex-wrap gap-2 w-full bg-background/60 border border-border/50 p-4 rounded-xl shadow-sm",
           {
             "opacity-60 cursor-not-allowed": disabled,
           },
@@ -156,34 +156,41 @@ const SelectorChips = React.forwardRef<HTMLDivElement, SelectorChipsProps>(
               initial={false}
               disabled={disabled}
               animate={{
-                backgroundColor: isSelectedOption ? primaryColor : "#ffffff",
-                borderColor: isSelectedOption ? primaryColor : "#d1d5db",
-                color: isSelectedOption ? selectedTextColor : "#1f2937",
+                backgroundColor: isSelectedOption
+                  ? primaryColor
+                  : "transparent",
+                color: isSelectedOption
+                  ? selectedTextColor
+                  : "hsl(var(--foreground))",
+                boxShadow: isSelectedOption
+                  ? "0 2px 8px rgba(0, 0, 0, 0.15)"
+                  : "none",
                 width: isSelectedOption
                   ? sizeStyles[size].selectedWidth
-                  : sizeStyles[size].minWidth,
+                  : "auto",
                 transition: {
-                  backgroundColor: { duration: 0.15 },
-                  color: { duration: 0.15 },
-                  borderColor: { duration: 0.15 },
+                  backgroundColor: { duration: 0.2 },
+                  color: { duration: 0.2 },
+                  boxShadow: { duration: 0.2 },
                   width: { type: "spring", stiffness: 400, damping: 20 },
                 },
               }}
               className={cn(
-                "flex items-center justify-center rounded-full font-medium border transition overflow-hidden grow cursor-pointer",
+                "flex items-center justify-center rounded-full font-medium border border-border/50 hover:border-primary/30 hover:bg-muted/50 transition overflow-hidden",
                 sizeStyles[size].paddingX,
                 sizeStyles[size].paddingY,
                 sizeStyles[size].fontSize,
                 { "cursor-not-allowed": disabled }
               )}
-              style={{ minWidth: sizeStyles[size].minWidth }}
+              style={{ minWidth: "auto" }}
             >
               <div className="flex items-center w-full justify-center relative">
-                <span className="mx-auto">{option}</span>
+                <span className="mx-auto whitespace-nowrap">{option}</span>
                 <motion.span
                   animate={{
                     width: isSelectedOption ? 18 : 0,
-                    marginLeft: isSelectedOption ? 8 : 0,
+                    marginLeft: isSelectedOption ? 6 : 0,
+                    opacity: isSelectedOption ? 1 : 0,
                   }}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   style={{
@@ -192,12 +199,12 @@ const SelectorChips = React.forwardRef<HTMLDivElement, SelectorChipsProps>(
                     overflow: "hidden",
                   }}
                 >
-                  <AnimatePresence>
+                  <AnimatePresence mode="wait">
                     {isSelectedOption && (
                       <motion.span
                         key="tick"
                         initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1.2, opacity: 1 }}
+                        animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{
                           type: "spring",
@@ -206,23 +213,18 @@ const SelectorChips = React.forwardRef<HTMLDivElement, SelectorChipsProps>(
                         }}
                         style={{ pointerEvents: "none" }}
                       >
-                        {/* Tickmark SVG */}
+                        {/* Checkmark SVG */}
                         <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 20 20"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
                           fill="none"
+                          stroke={selectedTextColor}
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         >
-                          <motion.path
-                            d="M5 10.5L9 14.5L15 7.5"
-                            stroke={selectedTextColor}
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            initial={{ pathLength: 0 }}
-                            animate={{ pathLength: 1 }}
-                            transition={{ duration: 0.25 }}
-                          />
+                          <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                       </motion.span>
                     )}

@@ -12,6 +12,9 @@ import {
   BookmarkPlus,
   Send,
   BadgeCheck,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Avatar,
@@ -47,6 +50,8 @@ import { DeletePostModal } from "../post/delete-post-modal";
 import { CommentsModal } from "../comments/comments-modal";
 import { toast } from "sonner";
 import { BookmarkIconButton } from "@/src/components/ui/bookmark-icon-button";
+import { Dialog, DialogContent } from "@/src/components/ui/dialog";
+import { motion, AnimatePresence } from "motion/react";
 
 // Types pour les composants
 export interface PostAuthorType {
@@ -103,6 +108,98 @@ interface PostCardProps {
   highlightComments?: boolean;
 }
 
+// Composant pour afficher une image en plein écran avec zoom
+const ImageViewer = ({
+  images,
+  currentIndex,
+  isOpen,
+  onClose,
+  onNext,
+  onPrevious,
+}: {
+  images: string[];
+  currentIndex: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-screen-lg h-[90vh] max-h-[90vh] p-0 bg-black/90 border-none">
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* Image actuelle */}
+          <div className="w-full h-full flex items-center justify-center">
+            <motion.img
+              key={currentIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              src={images[currentIndex]}
+              alt="Image agrandie"
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+
+          {/* Bouton de fermeture */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white z-50 rounded-full"
+            onClick={onClose}
+          >
+            <X size={20} />
+          </Button>
+
+          {/* Navigation entre images */}
+          {images.length > 1 && (
+            <>
+              {currentIndex > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-4 bg-black/40 hover:bg-black/60 text-white z-50 rounded-full"
+                  onClick={onPrevious}
+                >
+                  <ChevronLeft size={24} />
+                </Button>
+              )}
+              {currentIndex < images.length - 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 bg-black/40 hover:bg-black/60 text-white z-50 rounded-full"
+                  onClick={onNext}
+                >
+                  <ChevronRight size={24} />
+                </Button>
+              )}
+
+              {/* Indicateur de position */}
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1">
+                {images.map((_, index) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      "h-2 w-2 rounded-full transition-all",
+                      index === currentIndex
+                        ? "bg-white scale-125"
+                        : "bg-white/50"
+                    )}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export function PostCard({ post, highlightComments = false }: PostCardProps) {
   const [, setTick] = useState(0);
   const router = useRouter();
@@ -125,7 +222,10 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
   const [likesCount, setLikesCount] = useState(post.likes);
   // État pour les favoris
   const [isFavorite, setIsFavorite] = useState(post.isFavorite);
-  // État pour afficher/masquer les commentaires
+
+  // États pour la visionneuse d'images
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Mutation pour aimer un post
   const likePost = useMutation(api.posts?.likePost);
@@ -148,7 +248,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
       setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
 
       // Appeler l'API pour persister l'action
-      if (isLiked) {
+      if (post.isLiked) {
         await unlikePost({ postId: post.id as Id<"posts"> });
       } else {
         await likePost({ postId: post.id as Id<"posts"> });
@@ -183,9 +283,30 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
       toast.error(error.message || "Erreur lors de la gestion des favoris");
     }
   };
+
+  // Gérer le clic sur une image
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsImageViewerOpen(true);
+  };
+
+  // Navigation dans la visionneuse d'images
+  const goToNextImage = () => {
+    if (currentImageIndex < post.medias.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const goToPreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
   // État pour l'ouverture de la modal de suppression
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const currentUser = useQuery(api.users?.currentUser);
+
   return (
     <Card className="overflow-hidden gap-4">
       {/* En-tête de la carte avec les informations de l'auteur */}
@@ -336,7 +457,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
               <div
                 key={index}
                 className={cn(
-                  "overflow-hidden rounded-lg",
+                  "overflow-hidden rounded-lg cursor-pointer relative group",
                   post.medias && post.medias.length === 3 && index === 0
                     ? "col-span-2"
                     : "",
@@ -344,44 +465,48 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                     ? "col-span-2 row-span-2"
                     : ""
                 )}
+                onClick={() => handleImageClick(index)}
               >
                 <img
                   src={media}
                   alt="Media du post"
-                  className="size-full object-cover transition-transform hover:scale-105"
+                  className="size-full object-cover transition-transform group-hover:scale-105 duration-300"
                   loading="lazy" // Chargement paresseux pour les images
                 />
-                {/*  {media.type === "image" ? (
-                  <img
-                    src={media.url}
-                    alt="Media du post"
-                    className="size-full object-cover transition-transform hover:scale-105"
-                    loading="lazy" // Chargement paresseux pour les images
-                  />
-                ) : (
-                  <video
-                    src={media.url}
-                    controls
-                    className="size-full"
-                    preload="metadata" // Précharger uniquement les métadonnées
-                  />
-                )} */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <div className="transform scale-75 group-hover:scale-100 transition-all p-2 rounded-full bg-black/40 text-white">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      <line x1="11" y1="8" x2="11" y2="14"></line>
+                      <line x1="8" y1="11" x2="14" y2="11"></line>
+                    </svg>
+                  </div>
+                </div>
               </div>
             ))}
 
             {/* Indicateur pour médias additionnels */}
             {post.medias && post.medias.length > 4 && (
-              <div className="relative col-span-1 overflow-hidden rounded-lg">
+              <div
+                className="relative col-span-1 overflow-hidden rounded-lg cursor-pointer"
+                onClick={() => handleImageClick(4)}
+              >
                 <img
                   src={post.medias[4]}
                   alt="Media du post"
                   className="size-full object-cover brightness-50"
                 />
-                {/*    <img
-                  src={post.medias[4].url}
-                  alt="Media du post"
-                  className="size-full object-cover brightness-50"
-                /> */}
                 <div className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
                   +{post.medias.length - 4}
                 </div>
@@ -407,7 +532,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                 isLiked ? "fill-destructive text-destructive" : ""
               )}
             />
-            <span className="text-xs">{likesCount}</span>
+            <span className="text-xs">{post.likes}</span>
           </Button>
 
           {/* Bouton commentaires */}
@@ -436,6 +561,16 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
           size={20}
         />
       </CardFooter>
+
+      {/* Visionneuse d'images */}
+      <ImageViewer
+        images={post.medias}
+        currentIndex={currentImageIndex}
+        isOpen={isImageViewerOpen}
+        onClose={() => setIsImageViewerOpen(false)}
+        onNext={goToNextImage}
+        onPrevious={goToPreviousImage}
+      />
 
       {/* Modal de commentaires */}
       <CommentsModal

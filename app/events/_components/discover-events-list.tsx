@@ -1,14 +1,13 @@
 "use client";
 import React, { useRef, useEffect, useState } from "react";
-import { ArrowUp, FileQuestion } from "lucide-react";
+import { FileQuestion } from "lucide-react";
 import { EventCard } from "@/src/components/shared/event/event-card";
 import { usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Skeleton } from "@/src/components/ui/skeleton";
-import { motion, AnimatePresence } from "motion/react";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
-import { Button } from "@/src/components/ui/button";
+import { ScrollToTop } from "@/src/components/ui/scroll-to-top";
 
 /**
  * État d'affichage lors du chargement
@@ -32,17 +31,6 @@ export default function DiscoverEventsList({
   searchTerm: string;
   selectedCategories: string[];
 }) {
-  /* console.log(new Date(Date.now())); */
-  /* console.log(
-    new Date(1752706800000).toDateString(),
-    new Date(Date.now()).toDateString()
-  );
-  console.log(
-    new Date(1752706800000).toDateString() > new Date(Date.now()).toDateString()
-  ); */
-
-  const [showScrollTop, setShowScrollTop] = useState(false);
-
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   const { results, status, loadMore, isLoading } = usePaginatedQuery(
@@ -60,29 +48,6 @@ export default function DiscoverEventsList({
     onLoadMore: () => loadMore(6),
     rootMargin: "200px",
   });
-
-  // Gérer l'affichage du bouton de retour en haut
-  useEffect(() => {
-    const handleScroll = () => {
-      // Afficher le bouton quand on descend de plus de 500px
-      if (window.scrollY > 500) {
-        setShowScrollTop(true);
-      } else {
-        setShowScrollTop(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Fonction pour revenir en haut de la page
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
 
   // Déterminer si des filtres sont appliqués
   const isFiltering = searchTerm !== "" || selectedCategories.length > 0;
@@ -119,26 +84,7 @@ export default function DiscoverEventsList({
       </div>
 
       {/* Bouton de retour en haut de page */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-8 right-8 z-60"
-          >
-            <Button
-              size="icon"
-              className="h-12 w-12 rounded-full shadow-lg"
-              onClick={scrollToTop}
-              aria-label="Retour en haut"
-            >
-              <ArrowUp className="h-5 w-5" />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ScrollToTop />
     </div>
   );
 }

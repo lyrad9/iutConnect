@@ -10,7 +10,15 @@ import {
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { UserIcon, LogOutIcon, ChevronDownIcon, Bookmark } from "lucide-react";
+import {
+  UserIcon,
+  LogOutIcon,
+  ChevronDownIcon,
+  Bookmark,
+  Users,
+  CalendarDays,
+  Shield,
+} from "lucide-react";
 import { SmartAvatar } from "../shared/smart-avatar";
 import { useState } from "react";
 import { LogoutConfirmationModal } from "./logout-confirmation-modal";
@@ -19,14 +27,26 @@ export const AuthDropdown = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const user = useQuery(api.users.currentUser);
 
+  // Vérifier si l'utilisateur est un administrateur
+  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
+  const hasPermissions = user?.permissions?.some((permission) =>
+    ["CREATE_GROUP", "CREATE_EVENT"].includes(permission)
+  );
+
+  // Déterminer les permissions spécifiques
+  const canCreateGroup =
+    isAdmin ||
+    user?.permissions?.includes("CREATE_GROUP") ||
+    user?.permissions?.includes("ALL");
+  const canCreateEvent =
+    isAdmin ||
+    user?.permissions?.includes("CREATE_EVENT") ||
+    user?.permissions?.includes("ALL");
+
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {/*    <Button
-            variant="ghost"
-            className="w-auto h-auto p-0 hover:bg-transparent"
-          > */}
           <div className="rounded-full flex items-center gap-2 cursor-pointer">
             <SmartAvatar
               avatar={user?.profilePicture || ""}
@@ -73,17 +93,41 @@ export const AuthDropdown = () => {
                 <span>Mes favoris</span>
               </Link>
             </DropdownMenuItem>
-            {/*   <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <SettingsIcon
-                  size={16}
-                  className="opacity-60 mr-2"
-                  aria-hidden="true"
-                />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem> */}
           </DropdownMenuGroup>
+
+          {/* Section des actions d'administration */}
+          {(isAdmin || hasPermissions) && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="flex items-center text-xs text-muted-foreground">
+                <Shield size={14} className="mr-1" />
+                Actions administrateur
+              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                {canCreateGroup && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/groups/create" className="">
+                      <Users size={16} className="mr-2" aria-hidden="true" />
+                      <span>Créer un groupe</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {canCreateEvent && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/events/create" className="">
+                      <CalendarDays
+                        size={16}
+                        className="mr-2"
+                        aria-hidden="true"
+                      />
+                      <span>Créer un évènement</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+            </>
+          )}
+
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => setIsLogoutModalOpen(true)}
