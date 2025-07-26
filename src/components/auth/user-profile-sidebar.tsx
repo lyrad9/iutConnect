@@ -33,18 +33,13 @@ export default function UserProfileSIdebar({
             <p className="text-sm text-muted-foreground">@{username}</p>
           )}
         </Authenticated>
-        <Unauthenticated>
-          <Button asChild variant="outline" size="sm" className="w-full mt-3">
-            <Link href="/profile">Voir mon profil</Link>
-          </Button>
-        </Unauthenticated>
         <AuthLoading>
-          <div className="flex flex-col items-center p-4 rounded-lg bg-muted/30 border border-border/50">
-            <Skeleton className="w-10 h-10 rounded-full" />
-            <Skeleton className="w-20 h-4 mt-2" />
-            <Skeleton className="w-20 h-3 mt-1" />
-          </div>
+          <Skeleton className="size-12 rounded-full mb-3" />
+          <Skeleton className="w-20 h-4" />
         </AuthLoading>
+        <Button asChild variant="outline" size="sm" className="w-full mt-3">
+          <Link href="/profile">Voir mon profil</Link>
+        </Button>
       </div>
     </div>
   );
