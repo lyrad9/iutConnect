@@ -292,11 +292,11 @@ export function EventCard({ event }: { event: EventType }) {
           className="size-full object-cover"
         />
         <Badge
-          className="absolute bottom-3 left-3"
-          style={{
+          className={`absolute bottom-3 left-3 ${eventTypeInfo?.color} ${eventTypeInfo?.textColor}`}
+          /*   style={{
             backgroundColor: eventTypeInfo?.color,
             color: eventTypeInfo?.textColor,
-          }}
+          }} */
         >
           {eventTypeInfo?.icon}
           <span className="ml-1">{eventTypeInfo?.content}</span>
