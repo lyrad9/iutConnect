@@ -13,6 +13,7 @@ import EventsContentSidebar from "./events-content-sidebar";
 import { SmartAvatar } from "../shared/smart-avatar";
 import { CalendarCheck, Compass, Layers, Calendar } from "lucide-react";
 import { Button } from "../ui/button";
+import UserProfileSIdebar from "../auth/user-profile-sidebar";
 
 interface SidebarProps {
   className?: string;
@@ -70,29 +71,13 @@ export default function Sidebar({ className }: SidebarProps) {
       )}
     >
       {/* Profil utilisateur */}
-      {currentUser && (
-        <div className="px-4 mb-6">
-          <div className="flex flex-col items-center p-4 rounded-lg bg-muted/30 border border-border/50">
-            <SmartAvatar
-              avatar={currentUser?.profilePicture || undefined}
-              name={`${currentUser?.firstName} ${currentUser?.lastName}`}
-              size="lg"
-              className="mb-3"
-            />
-            <h3 className="font-medium text-base">
-              {currentUser?.firstName} {currentUser?.lastName}
-            </h3>
-            {currentUser?.username && (
-              <p className="text-sm text-muted-foreground">
-                @{currentUser.username}
-              </p>
-            )}
-            <Button asChild variant="outline" size="sm" className="w-full mt-3">
-              <Link href="/profile">Voir mon profil</Link>
-            </Button>
-          </div>
-        </div>
-      )}
+
+      <UserProfileSIdebar
+        firstName={currentUser?.firstName || ""}
+        lastName={currentUser?.lastName || ""}
+        username={currentUser?.username}
+        profilePicture={currentUser?.profilePicture as string | undefined}
+      />
 
       {/* Navigation principale */}
       <div className="flex flex-col gap-2 px-2">
