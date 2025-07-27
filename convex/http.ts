@@ -223,4 +223,100 @@ cors.route({
   }),
 });
 
+cors.route({
+  path: "/uploadGroupPostImages",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    if (request.method !== "POST") {
+      return new Response(
+        JSON.stringify({ success: false, message: "Method not allowed" }),
+        {
+          status: 405,
+        }
+      );
+    }
+
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new ConvexError("Unauthorized");
+    }
+
+    const user = await ctx.runQuery(api.users.getUserById, {
+      userId: userId as Id<"users">,
+    });
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    // Extraire les données du formulaire
+    const formData = await request.formData();
+    const content = formData.get("content") as string;
+    const groupId = formData.get("groupId") as string;
+    const attachments = formData.getAll("attachments") as File[];
+
+    if (!groupId) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Group ID is required" }),
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // Vérifier que le groupe existe
+    const group = await ctx.runQuery(api.forums.getGroupById, {
+      forumId: groupId as Id<"forums">,
+    });
+    if (!group) {
+      return new Response(
+        JSON.stringify({ success: false, message: "Group not found" }),
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const attachmentIds: string[] = [];
+
+    // Stocker chaque image
+    try {
+      for (const attachment of attachments) {
+        const storageId = await ctx.storage.store(attachment);
+        attachmentIds.push(storageId);
+      }
+
+      // Sauvegarder le post avec les images
+      const result = await ctx.runMutation(api.posts.createGroupPost, {
+        content,
+        attachmentIds,
+        groupId: groupId as Id<"forums">,
+      });
+
+      if (typeof result === "object" && "error" in result) {
+        return new Response(
+          JSON.stringify({ success: false, message: result.error }),
+          {
+            status: 401,
+          }
+        );
+      }
+
+      return new Response(JSON.stringify({ success: true, postId: result }), {
+        status: 200,
+      });
+    } catch (error: any) {
+      console.error("Erreur lors de la création du post de groupe:", error);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: error.message,
+        }),
+        {
+          status: 500,
+        }
+      );
+    }
+  }),
+});
+
 export default http;

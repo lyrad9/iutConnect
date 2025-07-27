@@ -25,15 +25,9 @@ interface CommentsModalProps {
   isOpen: boolean;
   onClose: () => void;
   postId: string | Id<"posts">;
-  setCommentsCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export function CommentsModal({
-  isOpen,
-  onClose,
-  postId,
-  setCommentsCount,
-}: CommentsModalProps) {
+export function CommentsModal({ isOpen, onClose, postId }: CommentsModalProps) {
   const router = useRouter();
   const currentUser = useQuery(api.users.currentUser);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
@@ -56,7 +50,6 @@ export function CommentsModal({
     if (!commentText.trim()) return;
 
     try {
-      setCommentsCount((prev: number) => prev + 1);
       // Appeler l'API pour persister le commentaire
       if (commentPost) {
         await commentPost({
@@ -69,7 +62,7 @@ export function CommentsModal({
       }
     } catch (error) {
       console.error("Erreur lors de l'envoi du commentaire:", error);
-      setCommentsCount((prev) => prev - 1);
+
       toast.error("Erreur lors de l'envoi du commentaire");
     }
   };

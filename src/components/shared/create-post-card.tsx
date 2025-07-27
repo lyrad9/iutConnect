@@ -1,11 +1,7 @@
 "use client";
 import React, { useState, useRef, useCallback } from "react";
 import { Image as Photo, Calendar } from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+
 import { Button } from "@/src/components/ui/button";
 import { PostForm, PostFormRef } from "./post/post-form";
 import { EventModal } from "./event/event-modal";
@@ -13,8 +9,25 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { UserPermission } from "@/convex/schema";
 import { SmartAvatar } from "./smart-avatar";
+import { Id } from "@/convex/_generated/dataModel";
+import {
+  hasAdmin,
+  hasCreateEventPermissions,
+  hasCreatePostPermissions,
+} from "@/src/lib/check-permissions";
+import { usePathname } from "next/navigation";
+type CreatePostCardProps = {
+  groupId?: Id<"forums">;
+  placeholder?: string;
+  showEventButton?: boolean;
+};
 
-export function CreatePostCard() {
+export function CreatePostCard({
+  groupId,
+  placeholder = "Créer une publication",
+  showEventButton = true,
+}: CreatePostCardProps) {
+  const pathname = usePathname();
   // Récupérer l'utilisateur connecté pour vérifier s'il a le droit de créer un post
   const currentUser = useQuery(api.users?.currentUser);
   // États généraux
@@ -91,14 +104,18 @@ export function CreatePostCard() {
     setIsPostOrEvent("event");
     openEventModal();
   };
+  if (!currentUser) {
+    return null;
+  }
   if (
-    currentUser?.role === "USER" &&
-    // creer post et creer event
-    !currentUser.permissions.includes("CREATE_POST") &&
-    !currentUser.permissions.includes("CREATE_EVENT")
+    !hasAdmin(currentUser?.role as string) &&
+    !hasCreatePostPermissions(currentUser.permissions) &&
+    !hasCreateEventPermissions(currentUser.permissions) &&
+    pathname === "/"
   ) {
     return null;
   }
+
   return (
     <>
       <div className="mb-6 overflow-hidden rounded-xl border bg-card shadow-sm transition-all">
@@ -119,6 +136,8 @@ export function CreatePostCard() {
                 formRef={postFormRef}
                 onFormChange={handleFormChange}
                 setIsSubmitting={setIsSubmitting}
+                groupId={groupId}
+                placeholder={placeholder}
               />
             </div>
           </div>
@@ -141,16 +160,22 @@ export function CreatePostCard() {
                   <Photo className="mr-1 size-4" />
                   Photo
                 </Button>
-                <Button
-                  className={`${isPostOrEvent === "event" ? "bg-accent text-primary-foreground" : ""}`}
-                  onClick={handleEventButtonClick}
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                >
-                  <Calendar className="mr-1 size-4" />
-                  Événement
-                </Button>
+                {showEventButton && (
+                  <Button
+                    className={`${isPostOrEvent === "event" ? "bg-accent text-primary-foreground" : ""}`}
+                    onClick={handleEventButtonClick}
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    disabled={
+                      !hasAdmin &&
+                      !hasCreateEventPermissions(currentUser.permissions)
+                    }
+                  >
+                    <Calendar className="mr-1 size-4" />
+                    Événement
+                  </Button>
+                )}
               </div>
               <div className="flex gap-2 ml-auto">
                 <Button
@@ -166,7 +191,10 @@ export function CreatePostCard() {
                   size="sm"
                   onClick={handleSubmit}
                   disabled={
-                    !isFormValid() || (isPostOrEvent === "post" && isSubmitting)
+                    !isFormValid() ||
+                    (isPostOrEvent === "post" && isSubmitting) ||
+                    (!hasAdmin &&
+                      !hasCreatePostPermissions(currentUser.permissions))
                   }
                   className="bg-primary text-white hover:bg-primary/90"
                   type="button"
@@ -187,6 +215,7 @@ export function CreatePostCard() {
         isOpen={isEventModalOpen}
         onClose={handleEventModalClose}
         onSuccess={handleEventCreationSuccess}
+        groupId={groupId}
       />
     </>
   );

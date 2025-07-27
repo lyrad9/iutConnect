@@ -8,19 +8,10 @@ import {
   MoreHorizontal,
   MessageSquare,
   Heart,
-  Share,
-  BookmarkPlus,
-  Send,
-  BadgeCheck,
-  X,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import {
@@ -37,8 +28,6 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { cn, getInitials } from "@/src/lib/utils";
-import { Textarea } from "@/src/components/ui/textarea";
-import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { likePost, unlikePost } from "@/convex/posts";
 import { Id } from "@/convex/_generated/dataModel";
@@ -52,6 +41,7 @@ import { toast } from "sonner";
 import { BookmarkIconButton } from "@/src/components/ui/bookmark-icon-button";
 import { Dialog, DialogContent } from "@/src/components/ui/dialog";
 import { motion, AnimatePresence } from "motion/react";
+import { useMutation, useQuery } from "convex/react";
 
 // Types pour les composants
 export interface PostAuthorType {
@@ -211,17 +201,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
   }, []);
   /*   console.log("post", post); */
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
-  // État pour le nombre de commentaires
-  const [commentsCount, setCommentsCount] = useState<number>(
-    post.commentsCount
-  );
-  /*   console.log("commentsCount", commentsCount); */
-  // État pour suivre si le post est aimé
-  const [isLiked, setIsLiked] = useState(post.isLiked);
-  // État pour le nombre de likes
-  const [likesCount, setLikesCount] = useState(post.likes);
-  // État pour les favoris
-  const [isFavorite, setIsFavorite] = useState(post.isFavorite);
 
   // États pour la visionneuse d'images
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
@@ -243,10 +222,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
   // Gérer l'action "j'aime"
   const handleLike = async () => {
     try {
-      // Mettre à jour l'UI immédiatement (optimiste)
-      setIsLiked(!isLiked);
-      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
-
       // Appeler l'API pour persister l'action
       if (post.isLiked) {
         await unlikePost({ postId: post.id as Id<"posts"> });
@@ -257,8 +232,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
     } catch (error) {
       // En cas d'erreur, revenir à l'état précédent
       console.error("Erreur lors du like:", error);
-      setIsLiked(isLiked);
-      setLikesCount((prev) => (isLiked ? prev + 1 : prev - 1));
     }
   };
   // Gérer l'ouverture de la modal de commentaires
@@ -269,13 +242,13 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
   // Gérer l'ajout/suppression des favoris
   const handleFavorite = async () => {
     try {
-      if (isFavorite) {
+      if (post.isFavorite) {
         await removeFromFavorites({ postId: post.id as Id<"posts"> });
-        setIsFavorite(false);
+
         toast.success("Publication retirée des favoris");
       } else {
         await addToFavorites({ postId: post.id as Id<"posts"> });
-        setIsFavorite(true);
+
         toast.success("Publication ajoutée aux favoris");
       }
       router.refresh();
@@ -326,31 +299,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                 size="md"
               />
             )}
-
-            {/* 
-            <Avatar className="size-10">
-              {isGroupAdminPost ? (
-                // Pour les posts de groupe par le créateur du groupe, on affiche l'avatar du groupe
-                <AvatarImage
-                  src={post.group?.profilePicture || "/placeholder.svg"}
-                  alt={post.group?.name}
-                />
-              ) : (
-                // Pour les posts normaux, on affiche l'avatar de l'utilisateur
-                <AvatarImage
-                  src={post.author.profilePicture || undefined}
-                  alt={post.author.name}
-                />
-              )}
-               Fallback en cas d'absence d'image chez le user 
-              {!isGroupAdminPost && (
-                <AvatarFallback className="bg-primary dark:bg-white text-white dark:text-primary font-bold">
-                  {getInitials(post.author.name)}
-                </AvatarFallback>
-              )}
-            </Avatar> 
-            
-            */}
 
             <div>
               {/* Affichage du nom d'utilisateur si disponible (pour Strategy A) */}
@@ -529,7 +477,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
             <Heart
               className={cn(
                 "size-4",
-                isLiked ? "fill-destructive text-destructive" : ""
+                post.isLiked ? "fill-destructive text-destructive" : ""
               )}
             />
             <span className="text-xs">{post.likes}</span>
@@ -543,7 +491,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
             onClick={handleOpenCommentsModal}
           >
             <MessageSquare className="size-4" />
-            <span className="text-xs">{commentsCount}</span>
+            <span className="text-xs">{post.commentsCount}</span>
           </Button>
 
           {/* Bouton partage */}
@@ -555,7 +503,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
 
         {/* Bouton favoris */}
         <BookmarkIconButton
-          isSaved={isFavorite}
+          isSaved={post.isFavorite}
           onClick={handleFavorite}
           className="h-8 w-8 rounded-full p-0"
           size={20}
@@ -577,7 +525,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
         postId={post.id}
         isOpen={isCommentsModalOpen}
         onClose={() => setIsCommentsModalOpen(false)}
-        setCommentsCount={setCommentsCount}
       />
 
       {/* Modal de confirmation de suppression */}

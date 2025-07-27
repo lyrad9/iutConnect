@@ -52,6 +52,7 @@ export const eventFormSchema = z.object({
   photo: imageFileValidator.optional(),
   allowsParticipants: z.boolean().default(true),
   target: z.string().optional(),
+  groupId: z.string().optional(), // Ajout du groupId optionnel
 });
 
 export type EventFormValues = z.infer<typeof eventFormSchema>;

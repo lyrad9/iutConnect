@@ -4,7 +4,8 @@ import { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { query } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
+import { filter } from "convex-helpers/server/filter";
 export const createPostInHome = mutation({
   args: {
     content: v.string(),
@@ -21,7 +22,10 @@ export const createPostInHome = mutation({
     if (!user) {
       throw new ConvexError("User not found");
     }
-    if (user.role === "USER" && !user.permissions.includes("CREATE_POST")) {
+    if (
+      user.role === "USER" &&
+      !user.permissions.includes("CREATE_POST_IN_GROUP")
+    ) {
       return {
         error: "Vous n'êtes pas autorisé à créer un post",
         code: "UNAUTHORIZED",
@@ -147,20 +151,34 @@ export const getPosts = query({
     if (!user) {
       throw new ConvexError("User not found");
     } */
-    const posts = await ctx.db
-      .query("posts")
-      /*   .withIndex("by_creation_date") */
+    // utiliser filter de convex pour ne garder que les posts dpnt l'utilisateur est membre parmi les posts de groupes
+    const posts = filter(ctx.db.query("posts"), async (post) => {
+      if (post.groupId) {
+        const membership = await ctx.db
+          .query("groupMembers")
+          .withIndex("by_user_and_group", (q) =>
+            q
+              .eq("userId", userId as Id<"users">)
+              .eq("groupId", post.groupId as Id<"forums">)
+          )
+          .unique();
+        return !!membership;
+      }
+      return true;
+    })
       .order("desc")
       .filter((q) =>
         q.or(
+          // Pour les posts de groupes
           q.eq(q.field("status"), "approved"),
+          // Pour les posts normaux
           q.eq(q.field("status"), undefined)
         )
       )
       .paginate(args.paginationOpts);
 
     const enrichedPosts = await Promise.all(
-      posts.page.map(async (post) => {
+      (await posts).page.map(async (post) => {
         const author = await ctx.db.get(post.authorId);
         let group = undefined;
         if (post.groupId) {
@@ -231,6 +249,200 @@ export const getPosts = query({
                 author?.role === "ADMIN" || author?.role === "SUPERADMIN",
             },
 
+            group: group
+              ? {
+                  id: group._id,
+                  name: group.name,
+                  profilePicture: group.profilePicture
+                    ? ((await ctx.storage.getUrl(
+                        group.profilePicture as Id<"_storage">
+                      )) as string)
+                    : undefined,
+                  creator: group.authorId,
+                }
+              : undefined,
+            comments: commentsWithAuthor,
+            commentsCount: post.comments.length,
+          },
+          createdAt: post.createdAt,
+          isLiked: post.likes.includes(userId as Id<"users">),
+          isFavorite: !!isFavorite,
+        };
+      })
+    );
+
+    return {
+      ...posts,
+      page: enrichedPosts,
+    };
+  },
+});
+
+export const createGroupPost = mutation({
+  args: {
+    content: v.string(),
+    attachmentIds: v.array(v.string()),
+    groupId: v.id("forums"),
+  },
+  handler: async (ctx, args) => {
+    const { content, attachmentIds, groupId } = args;
+    const userId = await getAuthUserId(ctx);
+    const group = await ctx.db.get(groupId);
+    if (userId === null) {
+      throw new ConvexError("User not authenticated");
+    }
+
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+    // Vérifier que le groupe existe
+
+    if (!group) {
+      throw new ConvexError("Group not found");
+    }
+
+    // Vérifier que l'utilisateur est membre du groupe
+    const membership = await ctx.db
+      .query("groupMembers")
+      .withIndex("by_user_and_group", (q) =>
+        q.eq("userId", userId).eq("groupId", groupId).eq("groupType", "forum")
+      )
+      .unique();
+
+    if (!membership) {
+      throw new ConvexError(
+        "You must be a member of this group to create posts"
+      );
+    }
+    // Vérifier que l'utilisateur a la permission de créer des posts
+    if (
+      group.requiresPostApproval &&
+      (!user.permissions.includes("CREATE_POST_IN_GROUP") ||
+        !user.permissions.includes("ALL")) &&
+      user.role === "USER"
+    ) {
+      return {
+        error: "Vous n'êtes pas autorisé à créer un post dans ce groupe",
+        code: "UNAUTHORIZED",
+      };
+    }
+
+    // Insérer le post dans la base de données
+    const postId = await ctx.db.insert("posts", {
+      content,
+      medias: attachmentIds,
+      authorId: userId,
+      groupId: groupId,
+      createdAt: Date.now(),
+      likes: [],
+      comments: [],
+    });
+    // Appeler le scheduler pour notifier les membres du groupe de la création du post
+    await ctx.scheduler.runAfter(
+      5,
+      internal.scheduledPosts.createScheduledGroupPost,
+      { groupId, userId, postId }
+    );
+    return postId;
+  },
+});
+
+export const getGroupPostsById = query({
+  args: {
+    groupId: v.id("forums"),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new ConvexError("User not authenticated");
+    }
+
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
+      .order("desc")
+      .filter((q) =>
+        q.or(
+          q.eq(q.field("status"), "approved"),
+          q.eq(q.field("status"), undefined)
+        )
+      )
+      .paginate(args.paginationOpts);
+
+    const enrichedPosts = await Promise.all(
+      posts.page.map(async (post) => {
+        const author = await ctx.db.get(post.authorId);
+        const group = await ctx.db.get(args.groupId);
+
+        const comments = await ctx.db
+          .query("comments")
+          .withIndex("by_target", (q) => q.eq("targetType", "post"))
+          .filter((q) => q.eq(q.field("targetId"), post._id))
+          .order("desc")
+          .collect();
+
+        const commentsWithAuthor = await Promise.all(
+          comments.map(async (comment) => {
+            const commentAuthor = await ctx.db.get(comment.authorId);
+            return {
+              ...comment,
+              author: commentAuthor
+                ? {
+                    id: commentAuthor._id,
+                    name: `${commentAuthor.firstName} ${commentAuthor.lastName}`,
+                    username: commentAuthor.username,
+                    profilePicture: commentAuthor.profilePicture
+                      ? ((await ctx.storage.getUrl(
+                          commentAuthor.profilePicture as Id<"_storage">
+                        )) as string)
+                      : undefined,
+                    role: commentAuthor.role,
+                    isAdmin:
+                      commentAuthor.role === "ADMIN" ||
+                      commentAuthor.role === "SUPERADMIN",
+                  }
+                : undefined,
+              isLiked: comment.likes.includes(userId as Id<"users">),
+            };
+          })
+        );
+
+        // Get files stored in convex with serving files
+        const medias = await Promise.all(
+          post.medias.map((media) =>
+            ctx.storage.getUrl(media as Id<"_storage">)
+          )
+        );
+
+        // Check if post is favourite
+        const isFavorite = await ctx.db
+          .query("favorites")
+          .withIndex("by_user_and_post", (q) =>
+            q.eq("userId", userId as Id<"users">).eq("postId", post._id)
+          )
+          .unique();
+
+        return {
+          id: post._id,
+          type: "post" as const,
+          data: {
+            ...post,
+            medias: medias,
+            author: {
+              id: author?._id as Id<"users">,
+              name: `${author?.firstName} ${author?.lastName}`,
+              username: author?.username || null,
+              profilePicture: author?.profilePicture
+                ? ((await ctx.storage.getUrl(
+                    author.profilePicture as Id<"_storage">
+                  )) as string)
+                : undefined,
+              role: author?.role,
+              isAdmin:
+                author?.role === "ADMIN" || author?.role === "SUPERADMIN",
+            },
             group: group
               ? {
                   id: group._id,

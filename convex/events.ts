@@ -32,6 +32,7 @@ export const createEventInHome = mutation({
       collaborators: v.optional(v.array(v.string())),
       allowsParticipants: v.boolean(),
       target: v.optional(v.string()),
+      groupId: v.optional(v.id("forums")),
     }),
   },
   handler: async (ctx, args) => {
@@ -44,12 +45,44 @@ export const createEventInHome = mutation({
     if (!user) {
       throw new Error("User not found");
     }
-    if (user.role === "USER" && !user.permissions.includes("CREATE_EVENT")) {
+    if (
+      user.role === "USER" &&
+      !user.permissions.includes("CREATE_EVENT") &&
+      !event.groupId
+    ) {
       return {
         error: "Vous n'êtes pas autorisé à créer un événement",
         code: "UNAUTHORIZED",
       };
     }
+    // Si l'évènement est associé à un groupe
+    if (event.groupId) {
+      const membership = await ctx.db
+        .query("groupMembers")
+        .withIndex("by_user_and_group", (q) =>
+          q.eq("userId", userId).eq("groupId", event.groupId as Id<"forums">)
+        )
+        .unique();
+
+      if (!membership) {
+        throw new Error("You must be a member of this group to create events");
+      }
+      //  je récupère le groupe associé
+      const group = await ctx.db.get(event.groupId as Id<"forums">);
+      // Si le groupe nécessite une approbation, vérifier que l'utilisateur a les permissions
+      if (
+        group?.requiresPostApproval &&
+        (!user.permissions.includes("CREATE_EVENT_IN_GROUP") ||
+          !user.permissions.includes("ALL")) &&
+        user.role === "USER"
+      ) {
+        return {
+          error: "Vous n'êtes pas autorisé à créer un événement dans ce groupe",
+          code: "UNAUTHORIZED",
+        };
+      }
+    }
+
     // Créer un évènement
     const eventId = await ctx.db.insert("events", {
       authorId: userId,
@@ -82,6 +115,7 @@ export const createEventInHome = mutation({
       comments: [],
       likes: [],
       target: event.target,
+      groupId: event.groupId,
       isCancelled: false,
     });
     // Appeler le scheduler pour notifier les utilsiateurs et ajouter l'auteur et les co-organisateurs comme participants

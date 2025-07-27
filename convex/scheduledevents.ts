@@ -42,7 +42,9 @@ export const createScheduledEvent = internalMutation({
     await Promise.all(
       usersToNotify.map((notifiedUser) =>
         ctx.db.insert("notifications", {
-          title: `Un nouvel événement a été créé: ${event.name}`,
+          title: event.groupId
+            ? `Un nouveau événement a été dans le groupe ${event.name}`
+            : `Un nouveau événement a été créé`,
           content: event.collaborators?.includes(notifiedUser._id)
             ? "Vous avez été choisi comme co-organisateur"
             : undefined,
