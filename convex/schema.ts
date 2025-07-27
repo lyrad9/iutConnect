@@ -220,7 +220,7 @@ export default defineSchema({
     .index("by_userId_isAdmin", ["userId", "isAdmin"])
     .index("by_user", ["userId"])
     .index("by_group", ["groupId", "groupType"])
-    .index("by_user_and_group", ["userId", "groupId", "groupType"])
+    .index("by_user_and_group", ["userId", "groupId", "groupType", "status"])
     .index("by_status", ["status"]),
 
   // Publications

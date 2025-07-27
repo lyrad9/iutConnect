@@ -151,7 +151,7 @@ export const getPosts = query({
       throw new ConvexError("User not found");
     } */
     // utiliser filter de convex pour ne garder que les posts dpnt l'utilisateur est membre parmi les posts de groupes
-    const postsQuery = filter(ctx.db.query("posts"), async (post) => {
+    const postsQuery = filter(await ctx.db.query("posts"), async (post) => {
       if (post.groupId) {
         const membership = await ctx.db
           .query("groupMembers")
@@ -159,6 +159,8 @@ export const getPosts = query({
             q
               .eq("userId", userId as Id<"users">)
               .eq("groupId", post.groupId as Id<"forums">)
+              .eq("groupType", "forum")
+              .eq("status", "accepted")
           )
           .unique();
         return !!membership;
@@ -502,6 +504,8 @@ export const getAllGroupPosts = query({
           q
             .eq("userId", userId as Id<"users">)
             .eq("groupId", post.groupId as Id<"forums">)
+            .eq("groupType", "forum")
+            .eq("status", "accepted")
         )
         .unique();
       return !!membership;
