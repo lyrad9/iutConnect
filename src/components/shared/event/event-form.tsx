@@ -103,6 +103,7 @@ export function EventForm({
           await createEventInHome({
             event: {
               ...data,
+              groupId: undefined,
               photo: storageId,
             },
           });
