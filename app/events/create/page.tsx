@@ -221,6 +221,7 @@ export default function EventCreatePage() {
       const event = await createEventInHome({
         event: {
           ...data,
+          groupId: undefined,
           photo: storageId as Id<"_storage"> | undefined,
         },
       });
