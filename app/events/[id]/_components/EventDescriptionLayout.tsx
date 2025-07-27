@@ -34,12 +34,12 @@ import { ScrollToTop } from "@/src/components/ui/scroll-to-top";
 /**
  * Layout pour afficher la description complète d'un événement
  */
-export function EventDescriptionLayout({ eventId }: { eventId: string }) {
+export function EventDescriptionLayout({ id }: { id: string }) {
   const router = useRouter();
 
   // Récupérer les données de l'événement
   const event = useQuery(api.events.getEventById, {
-    eventId: eventId as Id<"events">,
+    eventId: id as Id<"events">,
   });
 
   // Récupérer l'utilisateur connecté
