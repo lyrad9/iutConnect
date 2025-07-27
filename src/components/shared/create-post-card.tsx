@@ -18,12 +18,14 @@ import {
 import { usePathname } from "next/navigation";
 type CreatePostCardProps = {
   groupId?: Id<"forums">;
+  profilImageGroup?: string;
   placeholder?: string;
   showEventButton?: boolean;
 };
 
 export function CreatePostCard({
   groupId,
+  profilImageGroup,
   placeholder = "Créer une publication",
   showEventButton = true,
 }: CreatePostCardProps) {
@@ -121,11 +123,18 @@ export function CreatePostCard({
       <div className="mb-6 overflow-hidden rounded-xl border bg-card shadow-sm transition-all">
         <div className="p-4">
           <div className="flex gap-3">
-            <SmartAvatar
-              avatar={currentUser?.profilePicture as string | undefined}
-              name={`${currentUser?.firstName} ${currentUser?.lastName}`}
-              size="md"
-            />
+            {groupId ? (
+              <SmartAvatar
+                avatar={profilImageGroup as string | undefined}
+                size="md"
+              />
+            ) : (
+              <SmartAvatar
+                avatar={currentUser?.profilePicture as string | undefined}
+                name={`${currentUser?.firstName} ${currentUser?.lastName}`}
+                size="md"
+              />
+            )}
 
             {/* Zone de contenu qui change en fonction de post/event */}
             <div className="flex-1">

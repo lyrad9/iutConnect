@@ -82,7 +82,12 @@ export function GroupLayout({ id }: { id: string }) {
         content: "0",
         variant: "secondary",
       }, */
-      content: <DiscussionsTab groupId={group._id} />,
+      content: (
+        <DiscussionsTab
+          groupId={group._id}
+          profilImageGroup={group.profilePicture}
+        />
+      ),
     },
     {
       id: "events",

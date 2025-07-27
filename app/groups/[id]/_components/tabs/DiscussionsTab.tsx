@@ -11,17 +11,22 @@ import GroupFeed from "@/src/components/groups/group-feed";
 
 type DiscussionsTabProps = {
   groupId: Id<"forums">;
+  profilImageGroup?: string;
 };
 
 /**
  * Onglet "Discussions" pour afficher les publications du groupe
  */
-export function DiscussionsTab({ groupId }: DiscussionsTabProps) {
+export function DiscussionsTab({
+  groupId,
+  profilImageGroup,
+}: DiscussionsTabProps) {
   return (
     <div className="space-y-6">
       {/* Zone de création de post */}
       <CreatePostCard
         groupId={groupId}
+        profilImageGroup={profilImageGroup}
         placeholder="Partagez quelque chose avec votre groupe..."
         showEventButton={true}
       />

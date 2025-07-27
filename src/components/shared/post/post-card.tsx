@@ -228,7 +228,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
       } else {
         await likePost({ postId: post.id as Id<"posts"> });
       }
-      router.refresh();
     } catch (error) {
       // En cas d'erreur, revenir à l'état précédent
       console.error("Erreur lors du like:", error);
@@ -251,7 +250,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
 
         toast.success("Publication ajoutée aux favoris");
       }
-      router.refresh();
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de la gestion des favoris");
     }
@@ -344,7 +342,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                       href={`/groups/${post.group.id}`}
                       className="hover:underline"
                     >
-                      {post.group.name}
+                      {`Groupe (${post.group?.name})`}
                     </Link>
                   </>
                 )}

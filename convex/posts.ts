@@ -142,7 +142,6 @@ export const unlikePost = mutation({
 export const getPosts = query({
   args: {
     paginationOpts: paginationOptsValidator,
-    userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -152,8 +151,8 @@ export const getPosts = query({
       throw new ConvexError("User not found");
     } */
     // utiliser filter de convex pour ne garder que les posts dpnt l'utilisateur est membre parmi les posts de groupes
-    const posts = filter(ctx.db.query("posts"), async (post) => {
-      if (post.groupId) {
+    const postsQuery = filter(ctx.db.query("posts"), async (post) => {
+      /*  if (post.groupId) {
         const membership = await ctx.db
           .query("groupMembers")
           .withIndex("by_user_and_group", (q) =>
@@ -163,7 +162,7 @@ export const getPosts = query({
           )
           .unique();
         return !!membership;
-      }
+      } */
       return true;
     })
       .order("desc")
@@ -174,11 +173,11 @@ export const getPosts = query({
           // Pour les posts normaux
           q.eq(q.field("status"), undefined)
         )
-      )
-      .paginate(args.paginationOpts);
+      );
 
+    const result = await postsQuery.paginate(args.paginationOpts);
     const enrichedPosts = await Promise.all(
-      (await posts).page.map(async (post) => {
+      result.page.map(async (post) => {
         const author = await ctx.db.get(post.authorId);
         let group = undefined;
         if (post.groupId) {
@@ -272,7 +271,7 @@ export const getPosts = query({
     );
 
     return {
-      ...posts,
+      ...result,
       page: enrichedPosts,
     };
   },
