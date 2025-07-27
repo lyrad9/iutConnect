@@ -152,7 +152,7 @@ export const getPosts = query({
     } */
     // utiliser filter de convex pour ne garder que les posts dpnt l'utilisateur est membre parmi les posts de groupes
     const postsQuery = filter(ctx.db.query("posts"), async (post) => {
-      /*  if (post.groupId) {
+      if (post.groupId) {
         const membership = await ctx.db
           .query("groupMembers")
           .withIndex("by_user_and_group", (q) =>
@@ -162,7 +162,7 @@ export const getPosts = query({
           )
           .unique();
         return !!membership;
-      } */
+      }
       return true;
     })
       .order("desc")
@@ -495,8 +495,19 @@ export const getAllGroupPosts = query({
             q.eq(q.field("status"), undefined)
           ) && q.neq(q.field("groupId"), undefined)
       );
+    const filterPosts = filter(postsQuery, async (post) => {
+      const membership = await ctx.db
+        .query("groupMembers")
+        .withIndex("by_user_and_group", (q) =>
+          q
+            .eq("userId", userId as Id<"users">)
+            .eq("groupId", post.groupId as Id<"forums">)
+        )
+        .unique();
+      return !!membership;
+    });
 
-    const result = await postsQuery.paginate(args.paginationOpts);
+    const result = await filterPosts.paginate(args.paginationOpts);
 
     const enrichedPosts = await Promise.all(
       result.page.map(async (post) => {
