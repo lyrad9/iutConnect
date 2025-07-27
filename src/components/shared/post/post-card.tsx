@@ -132,6 +132,16 @@ const ImageViewer = ({
               src={images[currentIndex]}
               alt="Image agrandie"
               className="h-full max-w-full object-cover"
+              /* style={
+                viewerImgMaxHeight
+                  ? { maxHeight: viewerImgMaxHeight }
+                  : undefined
+              }
+              onLoad={(e) => {
+                const width = e.currentTarget.naturalWidth;
+                if (width > 500) setViewerImgMaxHeight("500px");
+                else setViewerImgMaxHeight(undefined);
+              }} */
             />
           </div>
 
@@ -192,6 +202,10 @@ const ImageViewer = ({
 };
 
 export function PostCard({ post, highlightComments = false }: PostCardProps) {
+  // Ajout d'un état local pour la hauteur max
+  const [imgMaxHeight, setImgMaxHeight] = React.useState<string | undefined>(
+    undefined
+  );
   const [, setTick] = useState(0);
   const router = useRouter();
   useEffect(() => {
@@ -400,65 +414,119 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
             )}
           >
             {/* Afficher jusqu'à 4 médias */}
-            {post.medias.slice(0, 4).map((media, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "overflow-hidden rounded-lg cursor-pointer relative group",
-                  post.medias && post.medias.length === 3 && index === 0
-                    ? "col-span-2"
-                    : "",
-                  post.medias && post.medias.length > 3 && index === 0
-                    ? "col-span-2 row-span-2"
-                    : ""
-                )}
-                onClick={() => handleImageClick(index)}
-              >
-                <img
-                  src={media}
-                  alt="Media du post"
-                  className="size-full object-cover transition-transform group-hover:scale-105 duration-300"
-                  loading="lazy" // Chargement paresseux pour les images
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div className="transform scale-75 group-hover:scale-100 transition-all p-2 rounded-full bg-black/40 text-white">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                      <line x1="11" y1="8" x2="11" y2="14"></line>
-                      <line x1="8" y1="11" x2="14" y2="11"></line>
-                    </svg>
+            {post.medias.slice(0, 4).map((media, index) => {
+              //verifier si  c'est le dernier post parmi les quatre
+              if (index === post.medias.slice(0, 4).length - 1) {
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      "overflow-hidden rounded-lg cursor-pointer relative group"
+                      /*  post.medias && post.medias.length >= 3 && index === 0
+                        ? "col-span-2"
+                        : "", */
+                    )}
+                    onClick={() => handleImageClick(index)}
+                  >
+                    <img
+                      src={media}
+                      alt="Media du post"
+                      className="size-full object-cover transition-transform group-hover:scale-105 duration-300"
+                      loading="lazy" // Chargement paresseux pour les images
+                      style={
+                        imgMaxHeight ? { maxHeight: imgMaxHeight } : undefined
+                      }
+                      onLoad={(e) => {
+                        const width = e.currentTarget.naturalWidth;
+                        if (width > 400) setImgMaxHeight("400px");
+                      }}
+                    />
+
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      {post.medias && post.medias.length <= 4 && (
+                        <div className="transform scale-75 group-hover:scale-100 transition-all p-2 rounded-full bg-black/40 text-white">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <line x1="11" y1="8" x2="11" y2="14"></line>
+                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    {/* Indicateur pour médias additionnels */}
+                    {post.medias && post.medias.length > 4 && (
+                      <div className="bg-black/30 absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+                        +{post.medias.length - 4}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    "overflow-hidden rounded-lg cursor-pointer relative group",
+
+                    /*   index !== 0 && "h-36", */
+                    post.medias && post.medias.length === 3 && index === 0
+                      ? "col-span-2"
+                      : "",
+                    post.medias && post.medias.length > 3 && index === 0
+                      ? "col-span-2"
+                      : ""
+                  )}
+                  onClick={() => handleImageClick(index)}
+                >
+                  <img
+                    src={media}
+                    alt="Media du post"
+                    className="size-full object-cover transition-transform group-hover:scale-105 duration-300"
+                    loading="lazy" // Chargement paresseux pour les images
+                    style={
+                      imgMaxHeight
+                        ? { maxHeight: imgMaxHeight }
+                        : { maxHeight: "200px" }
+                    }
+                    onLoad={(e) => {
+                      const width = e.currentTarget.naturalWidth;
+                      if (width > 400) setImgMaxHeight("400px");
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="transform scale-75 group-hover:scale-100 transition-all p-2 rounded-full bg-black/40 text-white">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="11" y1="8" x2="11" y2="14"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-
-            {/* Indicateur pour médias additionnels */}
-            {post.medias && post.medias.length > 4 && (
-              <div
-                className="relative col-span-1 overflow-hidden rounded-lg cursor-pointer"
-                onClick={() => handleImageClick(4)}
-              >
-                <img
-                  src={post.medias[4]}
-                  alt="Media du post"
-                  className="size-full object-cover brightness-50"
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
-                  +{post.medias.length - 4}
-                </div>
-              </div>
-            )}
+              );
+            })}
           </div>
         )}
       </CardContent>
@@ -479,7 +547,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                 post.isLiked ? "fill-destructive text-destructive" : ""
               )}
             />
-            <span className="text-xs">{post.likes}</span>
+            {post.likes > 0 && <span className="text-xs">{post.likes}</span>}
           </Button>
 
           {/* Bouton commentaires */}
@@ -490,7 +558,9 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
             onClick={handleOpenCommentsModal}
           >
             <MessageSquare className="size-4" />
-            <span className="text-xs">{post.commentsCount}</span>
+            {post.commentsCount > 0 && (
+              <span className="text-xs">{post.commentsCount}</span>
+            )}
           </Button>
 
           {/* Bouton partage */}
