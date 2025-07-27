@@ -340,7 +340,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                 )}
               </div>
 
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
                 {/* Date relative */}
                 <span>
                   {formatDistanceToNow(new Date(post.createdAt), {
