@@ -62,8 +62,8 @@ export function EventDescriptionLayout({ eventId }: { eventId: string }) {
   }
 
   // Vérifier si l'utilisateur est participant
-  const isParticipant = event.participants?.includes(
-    currentUser?._id as Id<"users">
+  const isParticipant = event.participants.find(
+    (p) => p?.id === currentUser?._id
   );
 
   // Formater les dates
@@ -184,7 +184,9 @@ export function EventDescriptionLayout({ eventId }: { eventId: string }) {
               </h4>
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={event.author?.profilePicture} />
+                  <AvatarImage
+                    src={event.author?.profilePicture as string | undefined}
+                  />
                   <AvatarFallback>
                     {event.author?.name?.charAt(0)}
                   </AvatarFallback>
@@ -236,7 +238,7 @@ export function EventDescriptionLayout({ eventId }: { eventId: string }) {
                 <div className="flex flex-wrap gap-2">
                   {event.collaborators.map((collaboratorId) => (
                     <Badge
-                      key={collaboratorId}
+                      key={collaboratorId?.id}
                       variant="outline"
                       className="text-xs"
                     >
@@ -260,7 +262,7 @@ export function EventDescriptionLayout({ eventId }: { eventId: string }) {
                 className="flex-1"
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
-                Rejoindre l'événement
+                Rejoindre l&apos;événement
               </Button>
             )}
 
