@@ -117,7 +117,7 @@ export function getEventEndTimestamp(event: {
  */
 export function formatEventDate(
   startDate: number | Date,
-  startTime: string,
+  startTime?: string,
   endDate?: number | Date | null,
   endTime?: string | null
 ): { text: string; isLive: boolean } {

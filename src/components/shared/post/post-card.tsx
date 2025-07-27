@@ -10,6 +10,7 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/src/components/ui/button";
@@ -118,7 +119,7 @@ const ImageViewer = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-screen-lg h-[90vh] max-h-[90vh] p-0 bg-black/90 border-none">
+      <DialogContent className="max-w-screen-lg h-[90vh] max-h-[90vh] p-0 bg-black/90 border-none overflow-hidden">
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Image actuelle */}
           <div className="w-full h-full flex items-center justify-center">
@@ -130,19 +131,19 @@ const ImageViewer = ({
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               src={images[currentIndex]}
               alt="Image agrandie"
-              className="max-h-full max-w-full object-contain"
+              className="h-full max-w-full object-cover"
             />
           </div>
 
           {/* Bouton de fermeture */}
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white z-50 rounded-full"
             onClick={onClose}
           >
             <X size={20} />
-          </Button>
+          </Button> */}
 
           {/* Navigation entre images */}
           {images.length > 1 && (

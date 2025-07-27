@@ -8,6 +8,7 @@ import { PostCard } from "@/src/components/shared/post/post-card";
 import { EmptyState } from "@/src/components/ui/empty-state";
 import { MessageSquare, Loader2 } from "lucide-react";
 import GroupFeed from "@/src/components/groups/group-feed";
+import { ScrollToTop } from "@/src/components/ui/scroll-to-top";
 
 type DiscussionsTabProps = {
   groupId: Id<"forums">;
@@ -22,7 +23,7 @@ export function DiscussionsTab({
   profilImageGroup,
 }: DiscussionsTabProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-2 md:px-16">
       {/* Zone de création de post */}
       <CreatePostCard
         groupId={groupId}
@@ -33,6 +34,9 @@ export function DiscussionsTab({
 
       {/* Liste des posts */}
       <GroupFeed groupId={groupId} />
+
+      {/* Bouton de retour en haut de page */}
+      <ScrollToTop />
     </div>
   );
 }

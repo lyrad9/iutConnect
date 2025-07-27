@@ -8,6 +8,7 @@ import { api, internal } from "./_generated/api";
 import { filter } from "convex-helpers/server/filter";
 import { getEventEndTimestamp, getEventTimeTimestamp } from "@/src/lib/utils";
 import { isCurrentEvent } from "@/src/lib/utils";
+import { constants } from "fs";
 export const generateUploadUrl = mutation({
   handler: async (ctx) => {
     return await ctx.storage.generateUploadUrl();
@@ -740,7 +741,7 @@ export const getOwnedEvents = query({
   },
   handler: async (ctx, args) => {
     const userId = (await getAuthUserId(ctx)) as Id<"users">;
-
+    const user = await ctx.db.get(userId);
     // Construction de la requête de base
     let baseQuery;
     if (args.searchTerm) {
@@ -764,7 +765,13 @@ export const getOwnedEvents = query({
       } else if (args.role === "coorganizer") {
         return (event.collaborators?.includes(userId) ?? false) && matchesType;
       } else if (args.role === "participant") {
-        return (event.participants?.includes(userId) ?? false) && matchesType;
+        return (
+          ((event.participants?.includes(userId) &&
+            (event.authorId !== userId ||
+              !event.collaborators?.includes(userId))) ??
+            false) &&
+          matchesType
+        );
       } else {
         return (
           (event.authorId === userId ||
@@ -871,6 +878,208 @@ export const getOwnedEvents = query({
     return {
       ...eventsPage,
       page: sortedEvents,
+    };
+  },
+});
+
+// ... existing code ...
+
+export const getGroupEvents = query({
+  args: {
+    groupId: v.id("forums"),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("User not authenticated");
+    }
+
+    // Récupérer les événements du groupe
+    const eventsQuery = ctx.db
+      .query("events")
+      .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
+      .order("desc")
+      .filter((q) =>
+        q.or(
+          // Pour les événements approuvés
+          q.eq(q.field("status"), "approved"),
+          // Pour les événements sans statut (par défaut approuvés)
+          q.eq(q.field("status"), undefined)
+        )
+      );
+
+    const result = await eventsQuery.paginate(args.paginationOpts);
+
+    const enrichedEvents = await Promise.all(
+      result.page.map(async (event) => {
+        const author = await ctx.db.get(event.authorId);
+
+        // Récupérer les informations de l'image si elle existe
+        const photo = event.photo
+          ? await ctx.storage.getUrl(event.photo as Id<"_storage">)
+          : undefined;
+
+        // Récupérer les informations des participants si ils existent
+        const participants = event.participants
+          ? await Promise.all(
+              event.participants.map(async (participantId) => {
+                const participant = await ctx.db.get(participantId);
+                return participant
+                  ? {
+                      id: participant._id,
+                      name: `${participant.firstName} ${participant.lastName}`,
+                      username: participant.username,
+                      profilePicture: participant.profilePicture
+                        ? await ctx.storage.getUrl(
+                            participant.profilePicture as Id<"_storage">
+                          )
+                        : undefined,
+                      role: participant.role,
+                      isAdmin:
+                        participant.role === "ADMIN" ||
+                        participant.role === "SUPERADMIN",
+                    }
+                  : null;
+              })
+            )
+          : [];
+
+        return {
+          id: event._id,
+          name: event.name,
+          description: event.description,
+          photo,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          locationType: event.locationType,
+          locationDetails: event.locationDetails,
+          eventType: event.eventType,
+          author: author
+            ? {
+                id: author._id,
+                name: `${author.firstName} ${author.lastName}`,
+                username: author.username,
+                profilePicture: author.profilePicture
+                  ? await ctx.storage.getUrl(
+                      author.profilePicture as Id<"_storage">
+                    )
+                  : undefined,
+                role: author.role,
+                isAdmin:
+                  author.role === "ADMIN" || author.role === "SUPERADMIN",
+              }
+            : undefined,
+          target: event.target,
+          createdAt: event.createdAt,
+          participants: event.participants,
+          allowsParticipants: event.allowsParticipants,
+          isCancelled: event.isCancelled,
+        };
+      })
+    );
+
+    return {
+      ...result,
+      page: enrichedEvents,
+    };
+  },
+});
+
+export const getEventById = query({
+  args: {
+    eventId: v.id("events"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("User not authenticated");
+    }
+
+    const event = await ctx.db.get(args.eventId);
+    if (!event) {
+      return null;
+    }
+
+    // Récupérer l'auteur de l'événement
+    const author = await ctx.db.get(event.authorId);
+
+    // Récupérer les informations de l'image si elle existe
+    const photo = event.photo
+      ? await ctx.storage.getUrl(event.photo as Id<"_storage">)
+      : undefined;
+
+    // Récupérer les informations des participants si ils existent
+    const participants = event.participants
+      ? await Promise.all(
+          event.participants.map(async (participantId) => {
+            const participant = await ctx.db.get(participantId);
+            return participant
+              ? {
+                  id: participant._id,
+                  name: `${participant.firstName} ${participant.lastName}`,
+                  username: participant.username,
+                  profilePicture: participant.profilePicture
+                    ? await ctx.storage.getUrl(
+                        participant.profilePicture as Id<"_storage">
+                      )
+                    : undefined,
+                  role: participant.role,
+                  isAdmin:
+                    participant.role === "ADMIN" ||
+                    participant.role === "SUPERADMIN",
+                }
+              : null;
+          })
+        )
+      : [];
+
+    // Récupérer les informations des collaborateurs si ils existent
+    const collaborators = event.collaborators
+      ? await Promise.all(
+          event.collaborators.map(async (collaboratorId) => {
+            const collaborator = await ctx.db.get(collaboratorId);
+            return collaborator
+              ? {
+                  id: collaborator._id,
+                  name: `${collaborator.firstName} ${collaborator.lastName}`,
+                  username: collaborator.username,
+                  profilePicture: collaborator.profilePicture
+                    ? await ctx.storage.getUrl(
+                        collaborator.profilePicture as Id<"_storage">
+                      )
+                    : undefined,
+                  role: collaborator.role,
+                  isAdmin:
+                    collaborator.role === "ADMIN" ||
+                    collaborator.role === "SUPERADMIN",
+                }
+              : null;
+          })
+        )
+      : [];
+
+    return {
+      ...event,
+      photo,
+      author: author
+        ? {
+            id: author._id,
+            name: `${author.firstName} ${author.lastName}`,
+            username: author.username,
+            profilePicture: author.profilePicture
+              ? await ctx.storage.getUrl(
+                  author.profilePicture as Id<"_storage">
+                )
+              : undefined,
+            role: author.role,
+            isAdmin: author.role === "ADMIN" || author.role === "SUPERADMIN",
+          }
+        : undefined,
+      participants: participants.filter(Boolean),
+      collaborators: collaborators.filter(Boolean),
     };
   },
 });

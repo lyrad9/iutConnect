@@ -58,7 +58,6 @@ export function CommentsModal({ isOpen, onClose, postId }: CommentsModalProps) {
           content: commentText,
         });
         setCommentText("");
-        router.refresh();
       }
     } catch (error) {
       console.error("Erreur lors de l'envoi du commentaire:", error);

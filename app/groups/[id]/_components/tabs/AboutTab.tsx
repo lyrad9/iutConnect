@@ -81,7 +81,7 @@ export function AboutTab({ group }: selectGroupProps) {
   }, [status, isLoading, loadMore]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-2 md:px-16">
       {/* À propos du groupe */}
       <Card>
         <CardHeader>

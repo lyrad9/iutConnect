@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div className="px-4">
       <div className="flex max-lg:flex-col gap-x-6">
-        <div className="flex-1 py-10">
+        <div className="flex-1 py-10 sm:px-16 md:px-32 lg:px-0">
           <CreatePostCard />
 
           <NewsPost />
