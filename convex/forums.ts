@@ -1017,7 +1017,8 @@ export const paginatedGroupMembers = query({
       (user) =>
         forum.members.includes(user._id) &&
         (user.firstName.toLowerCase().includes(lowerSearch) ||
-          user.lastName.toLowerCase().includes(lowerSearch) ||
+          (user.lastName &&
+            user.lastName.toLowerCase().includes(lowerSearch)) ||
           user.email.toLowerCase().includes(lowerSearch))
     ).paginate(paginationOpts);
   },
