@@ -48,9 +48,23 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         });
 
         if (existingUser) {
+          // Mettre d'abord à jour l'utilisateur
+          await ctx.db.patch(existingUser._id, {
+            updatedAt: Date.now(),
+          });
           return existingUser._id; // ici _id est bien Id<"users">
         }
-
+        if (profile.email === "mbakopngako@gmail.com") {
+          return ctx.db.insert("users", {
+            email: profile.email as string,
+            firstName: profile.name as string,
+            /*   profilePicture: profile.image as string, */
+            role: "SUPERADMIN",
+            permissions: ["ALL"],
+            isOnline: true,
+            createdAt: Date.now(),
+          });
+        }
         throw new Error("Veuillez vous inscrire d'abord avec votre email");
       }
 

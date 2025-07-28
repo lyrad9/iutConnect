@@ -35,6 +35,10 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Preloaded, usePreloadedQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { redirect } from "next/navigation";
+import { hasDashboardAccess } from "@/src/lib/verify-role-admin";
 
 const statsData = [
   { icon: Users, label: "Utilisateurs", value: "2,847", change: "+12%" },
@@ -108,7 +112,11 @@ const pendingRequests = [
   },
 ];
 
-export function Dashboard() {
+export function Dashboard({
+  user,
+}: {
+  user: Preloaded<typeof api.users.currentUser>;
+}) {
   const [currentStatIndex, setCurrentStatIndex] = useState(0);
 
   useEffect(() => {
@@ -117,7 +125,13 @@ export function Dashboard() {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
-
+  const currentUser = usePreloadedQuery(user);
+  if (!currentUser) redirect("/sign-up");
+  const hasAccess = hasDashboardAccess(
+    currentUser.role,
+    currentUser?.permissions
+  );
+  if (!hasAccess) redirect("/");
   return (
     <div className="space-y-6">
       <div>

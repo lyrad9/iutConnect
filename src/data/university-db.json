@@ -5,7 +5,7 @@
       "password": "password123",
       "firstName": "Dupont",
       "lastName": "Jean",
-      "fieldOfStudy": "GL",
+      "fieldOfStudy": "Génie Logiciel",
       "level": "III",
       "classroom": "GL3C",
       "phoneNumber": "+237699999999"
@@ -15,7 +15,7 @@
       "password": "password456",
       "firstName": "Mbala",
       "lastName": "Marie",
-      "fieldOfStudy": "ASR",
+      "fieldOfStudy": "Adiministration réseau et sécurité",
       "level": "II",
       "classroom": "ASR2A",
       "phoneNumber": "+237699999999"
@@ -25,7 +25,7 @@
       "password": "password789",
       "firstName": "Kouam",
       "lastName": "Pierre",
-      "fieldOfStudy": "MGT",
+      "fieldOfStudy": "Management",
       "level": "I",
       "classroom": "MGT1B",
       "phoneNumber": "+237699999999"
