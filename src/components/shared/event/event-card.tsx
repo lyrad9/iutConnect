@@ -61,6 +61,7 @@ import {
   formatEventDate,
   formatDate,
   formattedTime,
+  generateCsvFromParticipants,
 } from "@/src/lib/utils";
 import { eventTypes } from "@/src/components/utils/const/event-type";
 import { Id } from "@/convex/_generated/dataModel";
@@ -163,6 +164,33 @@ const EventTooltipContent = ({ event }: { event: EventType }) => (
 );
 
 export function EventCard({ event }: { event: EventType }) {
+  const exportEventParticipants = useMutation(
+    api.events.exportEventParticipants
+  );
+  const handleExportParticipants = async () => {
+    try {
+      const participants = await exportEventParticipants({
+        eventId: event.id as Id<"events">,
+      });
+      if (!participants || participants.length === 0) {
+        toast.error("Aucun participant à exporter.");
+        return;
+      }
+      const csv = generateCsvFromParticipants(participants);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `participants-${event.name}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Export CSV réussi !");
+    } catch (error) {
+      console.error("Erreur lors de l'export CSV :", error);
+      toast.error("Erreur lors de l'export CSV.");
+    }
+  };
   // État pour suivre la participation
   const [isParticipating, setIsParticipating] = useState(
     event.isParticipating || false
@@ -256,10 +284,10 @@ export function EventCard({ event }: { event: EventType }) {
   };
 
   // Gérer l'export des participants
-  const handleExportParticipants = async () => {
+  /*  const handleExportParticipants = async () => {
     // Cette fonction sera implémentée plus tard
-    console.log("Exporter les participants de l'événement:", event.id);
-  };
+    handleExportParticipants
+  }; */
 
   // Obtenir le type d'événement sachant que le type de l'évènement correspond à la propriété content de eventTypes
 

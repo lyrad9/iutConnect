@@ -238,3 +238,19 @@ export function getUserRoleType(user: {
   if (user.fonction && user.fonction !== "Etudiant") return "staff";
   return undefined;
 }
+
+export function generateCsvFromParticipants(
+  participants: Array<{
+    firstName: string;
+    lastName?: string;
+    email: string;
+    eventName: string;
+  }>
+): string {
+  const header = "Nom,Prénom,Adresse mail,Nom de l'évènement";
+  const rows = participants.map(
+    (p) =>
+      `"${p.lastName ?? ""}","${p.firstName}","${p.email}","${p.eventName}"`
+  );
+  return [header, ...rows].join("\r\n");
+}
