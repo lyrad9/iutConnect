@@ -28,7 +28,7 @@ export function AuthAdminDropdown() {
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton>
           <SmartAvatar
-            avatar={user.profilePicture}
+            avatar={user.profilePicture as string | undefined}
             name={user.firstName + (user.lastName ? ` ${user.lastName}` : "")}
             size="sm"
             className="mr-2"

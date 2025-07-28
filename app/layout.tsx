@@ -21,23 +21,23 @@ import {
 } from "@/src/components/groups/group-confirmation-modals";
 
 const inter = Inter({ subsets: ["latin"] });
-/* const geistSans = Geist({
+const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-}); */
+});
 
-/* const geistMono = Geist_Mono({
+const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 const AnekTelugu = Anek_Telugu({
   subsets: ["latin"],
   variable: "--font-caption",
-}); */
+});
 export const metadata: Metadata = {
   title: "IUT - Réseau social",
   description:
-    "Connect with students, join groups, and stay updated with campus events",
+    "Connectez-vous avec d’autres étudiants, rejoignez des groupes et restez informé des événements du campus",
 };
 
 export default function RootLayout({
@@ -49,9 +49,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          /*  geistSans.variable,
+          geistSans.variable,
           geistMono.variable,
-          AnekTelugu.variable, */
+          AnekTelugu.variable,
           "antialiased size-full bg-background font-sans  text-foreground"
         )}
       >

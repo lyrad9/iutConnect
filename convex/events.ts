@@ -1086,14 +1086,6 @@ export const getEventById = query({
 
 export const exportEventParticipants = mutation({
   args: { eventId: v.id("events") },
-  returns: v.array(
-    v.object({
-      firstName: v.string(),
-      lastName: v.optional(v.string()),
-      email: v.string(),
-      eventName: v.string(),
-    })
-  ),
   handler: async (ctx, args) => {
     const event = await ctx.db.get(args.eventId);
     if (!event) throw new Error("Event not found");
@@ -1104,12 +1096,12 @@ export const exportEventParticipants = mutation({
     const users = await Promise.all(
       (participants ?? []).map(async (p) => {
         const user = await ctx.db.get(p.userId);
-        if (!user) return null;
+
         return {
-          firstName: user.firstName,
-          lastName: user.lastName ?? "",
-          email: user.email,
-          eventName: event.name,
+          firstName: user?.firstName as string,
+          lastName: user?.lastName ?? "",
+          email: user?.email as string,
+          eventName: event.name as string,
         };
       })
     );
