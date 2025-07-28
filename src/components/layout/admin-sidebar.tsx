@@ -10,6 +10,8 @@ import {
   Bell,
   Settings,
   Home,
+  User2,
+  ChevronUp,
 } from "lucide-react";
 
 import {
@@ -26,7 +28,15 @@ import {
   SidebarRail,
 } from "@/src/components/ui/sidebar";
 import Link from "next/link";
+import {
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/src/components/ui/dropdown-menu";
 
+import { AuthAdminDropdown } from "../auth/auth-admin-dropdown";
 const data = {
   navMain: [
     {
@@ -108,12 +118,7 @@ export function AdminSidebar({
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild>
-              <Link href="/">
-                <Home />
-                <span>Retour au site</span>
-              </Link>
-            </SidebarMenuButton>
+            <AuthAdminDropdown />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

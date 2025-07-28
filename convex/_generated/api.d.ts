@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as CustomProfile from "../CustomProfile.js";
 import type * as MagicLinkProvider from "../MagicLinkProvider.js";
+import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as authActions from "../authActions.js";
 import type * as comments from "../comments.js";
@@ -39,6 +40,7 @@ import type * as users from "../users.js";
 declare const fullApi: ApiFromModules<{
   CustomProfile: typeof CustomProfile;
   MagicLinkProvider: typeof MagicLinkProvider;
+  admin: typeof admin;
   auth: typeof auth;
   authActions: typeof authActions;
   comments: typeof comments;
