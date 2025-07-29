@@ -161,9 +161,9 @@ export const getUnreadCount = query({
   args: {},
   handler: async (ctx, args) => {
     const user = await ctx.runQuery(api.users.currentUser);
-    if (!user) {
+    /*  if (!user) {
       throw new Error("User not found");
-    }
+    } */
     const userId = user?._id as Id<"users">;
     const unreadNotifications = await ctx.db
       .query("notifications")
