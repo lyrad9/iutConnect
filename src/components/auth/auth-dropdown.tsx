@@ -18,6 +18,7 @@ import {
   Users,
   CalendarDays,
   Shield,
+  LayoutDashboard,
 } from "lucide-react";
 import { SmartAvatar } from "../shared/smart-avatar";
 import { useState } from "react";
@@ -141,7 +142,7 @@ export const AuthDropdown = () => {
                 {accessToDashboard && (
                   <DropdownMenuItem asChild>
                     <Link href="/admins" className="">
-                      <CalendarDays
+                      <LayoutDashboard
                         size={16}
                         className="mr-2"
                         aria-hidden="true"
