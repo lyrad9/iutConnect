@@ -1034,12 +1034,16 @@ export const deletePost = mutation({
     if (!userId) {
       throw new ConvexError("User not authentificated");
     }
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
     // Vérifier que l'utilisateur est l'auteur du post
     const post = await ctx.db.get(args.postId);
     if (!post) {
       throw new ConvexError("Post not found");
     }
-    if (post.authorId !== userId) {
+    if (post.authorId !== userId && user.role !== "SUPERADMIN") {
       throw new ConvexError("You are not the author of this post");
     }
     // Supprimer le post

@@ -22,26 +22,37 @@ import {
 import { SmartAvatar } from "../shared/smart-avatar";
 import { useState } from "react";
 import { LogoutConfirmationModal } from "./logout-confirmation-modal";
-
+import { hasDashboardAccess } from "@/src/lib/verify-role-admin";
+import { UserPermission, UserRole } from "@/convex/schema";
+import {
+  hasAdmin,
+  hasCreateEventPermissions,
+  hasCreateGroupPermissions,
+  hasCreatePostPermissions,
+} from "@/src/lib/check-permissions";
 export const AuthDropdown = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const user = useQuery(api.users.currentUser);
-
-  // Vérifier si l'utilisateur est un administrateur
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
-  const hasPermissions = user?.permissions?.some((permission) =>
-    ["CREATE_GROUP", "CREATE_EVENT"].includes(permission)
+  const accessToDashboard = hasDashboardAccess(
+    user?.role as (typeof UserRole)[number],
+    user?.permissions as (typeof UserPermission)[number][]
   );
+  // Vérifier si l'utilisateur est un administrateur
 
+  const hasPermissions =
+    hasCreateEventPermissions(
+      user?.permissions as (typeof UserPermission)[number][]
+    ) ||
+    hasCreateGroupPermissions(
+      user?.permissions as (typeof UserPermission)[number][]
+    );
   // Déterminer les permissions spécifiques
-  const canCreateGroup =
-    isAdmin ||
-    user?.permissions?.includes("CREATE_GROUP") ||
-    user?.permissions?.includes("ALL");
-  const canCreateEvent =
-    isAdmin ||
-    user?.permissions?.includes("CREATE_EVENT") ||
-    user?.permissions?.includes("ALL");
+  const canCreateGroup = hasCreateGroupPermissions(
+    user?.permissions as (typeof UserPermission)[number][]
+  );
+  const canCreateEvent = hasCreateEventPermissions(
+    user?.permissions as (typeof UserPermission)[number][]
+  );
 
   return (
     <>
@@ -70,6 +81,9 @@ export const AuthDropdown = () => {
             <span className="text-muted-foreground truncate text-xs font-normal">
               {user?.email}
             </span>
+            <span className="text-muted-foreground truncate text-xs font-normal">
+              {user?.role}
+            </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -96,7 +110,7 @@ export const AuthDropdown = () => {
           </DropdownMenuGroup>
 
           {/* Section des actions d'administration */}
-          {(isAdmin || hasPermissions) && (
+          {(accessToDashboard || hasPermissions) && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuLabel className="flex items-center text-xs text-muted-foreground">
@@ -121,6 +135,18 @@ export const AuthDropdown = () => {
                         aria-hidden="true"
                       />
                       <span>Créer un évènement</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {accessToDashboard && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admins" className="">
+                      <CalendarDays
+                        size={16}
+                        className="mr-2"
+                        aria-hidden="true"
+                      />
+                      <span>Accéder au dashboard</span>
                     </Link>
                   </DropdownMenuItem>
                 )}

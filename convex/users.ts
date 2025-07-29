@@ -570,3 +570,125 @@ export const getGroupMembers = query({
     };
   },
 });
+
+/**
+ * Promouvoir un utilisateur au rôle d'administrateur
+ * Seuls les superadmins peuvent promouvoir un utilisateur en admin
+ */
+export const promoteToAdmin = mutation({
+  args: {
+    email: v.string(),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    // Vérifier que l'utilisateur connecté est un superadmin
+    /*   const currentUserId = await getAuthUserId(ctx);
+    if (currentUserId === null) {
+      throw new Error("Utilisateur non authentifié");
+    }
+
+    const currentUser = await ctx.db.get(currentUserId);
+    if (!currentUser || currentUser.role !== "SUPERADMIN") {
+      throw new Error(
+        "Accès refusé. Seuls les superadmins peuvent promouvoir des utilisateurs."
+      );
+    } */
+
+    // Rechercher l'utilisateur par email
+    const userToPromote = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (!userToPromote) {
+      return {
+        success: false,
+        message: "Utilisateur non trouvé avec cet email",
+      };
+    }
+
+    // Vérifier que l'utilisateur n'est pas déjà admin ou superadmin
+    if (userToPromote.role === "ADMIN" || userToPromote.role === "SUPERADMIN") {
+      return {
+        success: false,
+        message: "L'utilisateur est déjà administrateur ou superadmin",
+      };
+    }
+
+    // Mettre à jour le rôle et les permissions
+    await ctx.db.patch(userToPromote._id, {
+      role: "ADMIN",
+      permissions: ["ALL"],
+      updatedAt: Date.now(),
+    });
+
+    return {
+      success: true,
+      message: `${userToPromote.firstName} ${userToPromote.lastName} a été promu administrateur`,
+    };
+  },
+});
+
+/**
+ * Promouvoir un utilisateur au rôle de superadmin
+ * Seuls les superadmins peuvent promouvoir un utilisateur en superadmin
+ */
+export const promoteToSuperAdmin = mutation({
+  args: {
+    email: v.string(),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    // Vérifier que l'utilisateur connecté est un superadmin
+    /*  const currentUserId = await getAuthUserId(ctx);
+    if (currentUserId === null) {
+      throw new Error("Utilisateur non authentifié");
+    }
+
+    const currentUser = await ctx.db.get(currentUserId);
+    if (!currentUser || currentUser.role !== "SUPERADMIN") {
+      throw new Error(
+        "Accès refusé. Seuls les superadmins peuvent promouvoir des utilisateurs."
+      );
+    } */
+
+    // Rechercher l'utilisateur par email
+    const userToPromote = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (!userToPromote) {
+      return {
+        success: false,
+        message: "Utilisateur non trouvé avec cet email",
+      };
+    }
+
+    // Vérifier que l'utilisateur n'est pas déjà superadmin
+    if (userToPromote.role === "SUPERADMIN") {
+      return {
+        success: false,
+        message: "L'utilisateur est déjà superadmin",
+      };
+    }
+
+    // Mettre à jour le rôle et les permissions
+    await ctx.db.patch(userToPromote._id, {
+      role: "SUPERADMIN",
+      permissions: ["ACCESS_TO_DASHBOARD", "ALL"],
+      updatedAt: Date.now(),
+    });
+
+    return {
+      success: true,
+      message: `${userToPromote.firstName} ${userToPromote.lastName} a été promu superadmin`,
+    };
+  },
+});

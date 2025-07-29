@@ -31,6 +31,36 @@
       "phoneNumber": "+237699999999"
     },
     {
+      "registrationNumber": "2498763",
+      "password": "kemadjeu8",
+      "firstName": "Kemadjeu",
+      "lastName": "Jerry",
+      "fieldOfStudy": "Génie Logiciel",
+      "level": "III",
+      "classroom": "GL3C",
+      "phoneNumber": "+237699999999"
+    },
+    {
+      "registrationNumber": "2457463",
+      "password": "Rahima8",
+      "firstName": "Rahima",
+      "lastName": "Saidou",
+      "fieldOfStudy": "Génie Logiciel",
+      "level": "III",
+      "classroom": "GL3C",
+      "phoneNumber": "+237699999999"
+    },
+    {
+      "registrationNumber": "2418463",
+      "password": "Richy8",
+      "firstName": "Richy",
+      "lastName": "Richy",
+      "fieldOfStudy": "Génie Réseaux et télécoms",
+      "level": "III",
+      "classroom": "GRT3A",
+      "phoneNumber": "+237699999999"
+    },
+    {
       "registrationNumber": "ST002",
       "password": "password456",
       "firstName": "Mbala",

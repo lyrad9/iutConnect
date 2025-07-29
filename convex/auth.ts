@@ -54,7 +54,11 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           });
           return existingUser._id; // ici _id est bien Id<"users">
         }
-        if (profile.email === "mbakopngako@gmail.com") {
+        if (
+          profile.email === "mbakopngako@gmail.com" ||
+          profile.email === "rahimasaidou333@gmail.com" ||
+          profile.email === "richyyoudom@gmail.com"
+        ) {
           return ctx.db.insert("users", {
             email: profile.email as string,
             firstName: profile.name as string,
@@ -94,8 +98,8 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         const baseData = {
           email: email as string,
           registrationNumber: registrationNumber as string,
-          password: password as string,
           lastName: lastName as string,
+          password: password as string,
           firstName: firstName as string,
           interests: [] as string[],
           socialNetworks: [] as any[],

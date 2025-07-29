@@ -22,7 +22,7 @@ Provide students with a secure, intuitive, and responsive platform to foster com
 ### Authentication
 
 Comme il s'agit d'un réseau social pour une université, seul des étudiants inscrits à l'université, le personnel(professeur, comptable, etc...) et les administrateurs pourront avoir accès à cette plateforme.
-De ce fait, les étudiants et le personnel devront se connecter à travers leur matricule et mot de passe pour accéder à l'application. Quand aux adminstrateurs, ils peuvent se connecter avec soit par mail ou par Google.
+De ce fait, les étudiants et le personnel devront se connecter à travers leur matricule et mot de passe pour accéder à l'application. Quand aux adminstrateurs, ils peuvent se connecteront par Google.
 
 ### User Management
 
@@ -31,9 +31,10 @@ A user is identified by:
 - Profile picture (optional)
 - Cover photo (optional)
 - User's last name
-- User's first name
+- User's first name (optional)
 - User's email
-- User's registration number
+- User's registration number(optional)
+- password
 - User's phone number
 - User's function (student, professor, accountant, HR, etc.)
 - User's field of study (for students)
@@ -46,7 +47,6 @@ A user is identified by:
 - User's bio (optional)
 - Skills (optional): marketing, communication, typescript development, etc.
 - isOnline (online or not)
-- password
 
 2. **User profile**
 
