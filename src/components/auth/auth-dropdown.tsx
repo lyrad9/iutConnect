@@ -34,6 +34,7 @@ import {
 export const AuthDropdown = () => {
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const user = useQuery(api.users.currentUser);
+  if (!user) return null;
   const accessToDashboard = hasDashboardAccess(
     user?.role as (typeof UserRole)[number],
     user?.permissions as (typeof UserPermission)[number][]

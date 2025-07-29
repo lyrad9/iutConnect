@@ -56,8 +56,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         }
         if (
           profile.email === "mbakopngako@gmail.com" ||
-          profile.email === "rahimasaidou333@gmail.com" ||
-          profile.email === "richyyoudom@gmail.com"
+          profile.email === "rahimasaidou333@gmail.com"
         ) {
           return ctx.db.insert("users", {
             email: profile.email as string,
