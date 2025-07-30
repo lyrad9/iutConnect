@@ -383,7 +383,10 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
  */}
               {/*     <DropdownMenuSeparator /> */}
               <DropdownMenuItem
-                disabled={currentUser?._id !== post.author.id}
+                disabled={
+                  currentUser?._id !== post.author.id &&
+                  currentUser?.role !== "SUPERADMIN"
+                }
                 className="text-destructive"
                 onClick={() => setIsDeleteModalOpen(true)}
               >
