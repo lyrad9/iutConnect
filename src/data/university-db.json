@@ -11,6 +11,16 @@
       "phoneNumber": "+237699999999"
     },
     {
+      "registrationNumber": "ST0013",
+      "password": "password1238",
+      "firstName": "Dupont",
+      "lastName": "Jean",
+      "fieldOfStudy": "Génie Logiciel",
+      "level": "III",
+      "classroom": "GL3C",
+      "phoneNumber": "+237699999999"
+    },
+    {
       "registrationNumber": "2478963",
       "password": "dongmo83",
       "firstName": "Dongmo",
