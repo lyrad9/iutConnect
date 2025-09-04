@@ -54,6 +54,7 @@ export interface SideEventLinkProps {
   location: string;
   type: keyof typeof eventTypes;
   photo?: string | null;
+  locationType: "online" | "on-site";
 }
 
 export interface TrendType {

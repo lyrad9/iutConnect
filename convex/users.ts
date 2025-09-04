@@ -55,14 +55,14 @@ export const selectCollaborators = query({
           avatar: user.profilePicture,
           email: user.email,
         })) || []
-      );
+      ).filter((user) => user.id !== userId);
     }
 
     // Recherche sur le champ email
     const emailResults = await ctx.db
       .query("users")
       .withSearchIndex("search_email", (q) => q.search("email", searchTerm))
-      .take(limit);
+      .collect();
     // Recherche sur le prénom
     const firstNameResults = await ctx.db
       .query("users")
@@ -118,7 +118,7 @@ export const getUserById = query({
   },
 });
 /**
- * Récpérer un utilisateur à partir de son matricule
+ * Récupérer un utilisateur à partir de son matricule
  */
 export const getUserByRegistrationNumber = internalQuery({
   args: { registrationNumber: v.string() },
@@ -196,10 +196,10 @@ export const currentUser = query({
     // recuperer les images du storage convex
     const profilePicture = user.profilePicture
       ? await ctx.storage.getUrl(user.profilePicture as Id<"_storage">)
-      : null;
+      : undefined;
     const coverPhoto = user.coverPhoto
       ? await ctx.storage.getUrl(user.coverPhoto as Id<"_storage">)
-      : null;
+      : undefined;
     // Exclure le password et le matricule
     const { password, registrationNumber, ...userWithoutSensitiveData } = user;
     return {
@@ -236,6 +236,7 @@ export const getUserPersonalInformation = query({
       lastName: user.lastName,
       username: user.username || null,
       phoneNumber: user.phoneNumber || null,
+      isPhoneNumberHidden: user.isPhoneNumberHidden || false,
       bio: user.bio || null,
       town: user.town || null,
       address: user.address || null,
@@ -300,6 +301,7 @@ export const updateUserPersonalInfo = mutation({
   args: {
     username: v.optional(v.string()),
     phoneNumber: v.optional(v.string()),
+    isPhoneNumberHidden: v.optional(v.boolean()),
     town: v.optional(v.string()),
     address: v.optional(v.string()),
     bio: v.optional(v.string()),
@@ -355,6 +357,8 @@ export const updateUserPersonalInfo = mutation({
     // Vérifier chaque champ et l'ajouter à l'objet de mise à jour s'il est défini
     if (args.username !== undefined) update.username = args.username;
     if (args.phoneNumber !== undefined) update.phoneNumber = args.phoneNumber;
+    if (args.isPhoneNumberHidden !== undefined)
+      update.isPhoneNumberHidden = args.isPhoneNumberHidden;
     if (args.town !== undefined) update.town = args.town;
     if (args.address !== undefined) update.address = args.address;
     if (args.bio !== undefined) update.bio = args.bio;
@@ -563,6 +567,128 @@ export const getGroupMembers = query({
     return {
       members: memberUsers.filter(Boolean),
       totalCount,
+    };
+  },
+});
+
+/**
+ * Promouvoir un utilisateur au rôle d'administrateur
+ * Seuls les superadmins peuvent promouvoir un utilisateur en admin
+ */
+export const promoteToAdmin = mutation({
+  args: {
+    email: v.string(),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    // Vérifier que l'utilisateur connecté est un superadmin
+    /*   const currentUserId = await getAuthUserId(ctx);
+    if (currentUserId === null) {
+      throw new Error("Utilisateur non authentifié");
+    }
+
+    const currentUser = await ctx.db.get(currentUserId);
+    if (!currentUser || currentUser.role !== "SUPERADMIN") {
+      throw new Error(
+        "Accès refusé. Seuls les superadmins peuvent promouvoir des utilisateurs."
+      );
+    } */
+
+    // Rechercher l'utilisateur par email
+    const userToPromote = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (!userToPromote) {
+      return {
+        success: false,
+        message: "Utilisateur non trouvé avec cet email",
+      };
+    }
+
+    // Vérifier que l'utilisateur n'est pas déjà admin ou superadmin
+    if (userToPromote.role === "ADMIN" || userToPromote.role === "SUPERADMIN") {
+      return {
+        success: false,
+        message: "L'utilisateur est déjà administrateur ou superadmin",
+      };
+    }
+
+    // Mettre à jour le rôle et les permissions
+    await ctx.db.patch(userToPromote._id, {
+      role: "ADMIN",
+      permissions: ["ALL"],
+      updatedAt: Date.now(),
+    });
+
+    return {
+      success: true,
+      message: `${userToPromote.firstName} ${userToPromote.lastName} a été promu administrateur`,
+    };
+  },
+});
+
+/**
+ * Promouvoir un utilisateur au rôle de superadmin
+ * Seuls les superadmins peuvent promouvoir un utilisateur en superadmin
+ */
+export const promoteToSuperAdmin = mutation({
+  args: {
+    email: v.string(),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    message: v.string(),
+  }),
+  handler: async (ctx, args) => {
+    // Vérifier que l'utilisateur connecté est un superadmin
+    /*  const currentUserId = await getAuthUserId(ctx);
+    if (currentUserId === null) {
+      throw new Error("Utilisateur non authentifié");
+    }
+
+    const currentUser = await ctx.db.get(currentUserId);
+    if (!currentUser || currentUser.role !== "SUPERADMIN") {
+      throw new Error(
+        "Accès refusé. Seuls les superadmins peuvent promouvoir des utilisateurs."
+      );
+    } */
+
+    // Rechercher l'utilisateur par email
+    const userToPromote = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", args.email))
+      .first();
+
+    if (!userToPromote) {
+      return {
+        success: false,
+        message: "Utilisateur non trouvé avec cet email",
+      };
+    }
+
+    // Vérifier que l'utilisateur n'est pas déjà superadmin
+    if (userToPromote.role === "SUPERADMIN") {
+      return {
+        success: false,
+        message: "L'utilisateur est déjà superadmin",
+      };
+    }
+
+    // Mettre à jour le rôle et les permissions
+    await ctx.db.patch(userToPromote._id, {
+      role: "SUPERADMIN",
+      permissions: ["ACCESS_TO_DASHBOARD", "ALL"],
+      updatedAt: Date.now(),
+    });
+
+    return {
+      success: true,
+      message: `${userToPromote.firstName} ${userToPromote.lastName} a été promu superadmin`,
     };
   },
 });

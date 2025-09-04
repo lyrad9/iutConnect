@@ -1,18 +1,20 @@
 import { z } from "zod";
 import { GROUP_MAIN_CATEGORIES } from "@/src/components/utils/const/group-main-categories";
-import { fileValidator } from "@/src/components/shared/post/post-form-schema";
+import { imageFileValidator } from "@/src/lib/image-file-validator";
 
 // Schéma de validation pour le formulaire de création de groupe
 export const groupFormSchema = z.object({
   // Nom du groupe (requis, entre 3 et 50 caractères)
   name: z
-    .string()
-    .min(3, "Le nom du groupe doit contenir au moins 3 caractères")
-    .max(50, "Le nom du groupe ne peut pas dépasser 50 caractères"),
+    .string({ required_error: "Le nom du groupe est requis" })
+    .min(3, { message: "Le nom du groupe doit contenir au moins 3 caractères" })
+    .max(50, {
+      message: "Le nom du groupe ne peut pas dépasser 50 caractères",
+    }),
 
   // Description brève (requis, max 100 mots)
   description: z
-    .string()
+    .string({ required_error: "La description est requise" })
     .min(10, "La description doit contenir au moins 10 caractères")
     .max(
       500,
@@ -54,13 +56,10 @@ export const groupFormSchema = z.object({
     .max(5, "Vous ne pouvez pas ajouter plus de 5 centres d'intérêt"),
 
   // Catégorie principale
-  mainCategory: z.enum([
-    "Academique",
-    "Technologique",
-    "Sport",
-    "Social",
-    "Autre",
-  ]),
+  mainCategory: z.enum(
+    ["Academique", "Technologique", "Sport", "Social", "Autre"],
+    { message: "La catégorie est requise" }
+  ),
 
   // Confidentialité
   confidentiality: z.enum(["public", "private"]),
@@ -72,18 +71,10 @@ export const groupFormSchema = z.object({
   requiresPostApproval: z.boolean().default(true),
 
   // Image de profil qui est un file (optionnel)
-  profilePicture: fileValidator
-    .optional()
-    .refine((file) => file && file.size <= 2024 * 2024, {
-      message: "La taille de l'image doit être inférieure à 2Mo",
-    }),
+  profilePicture: imageFileValidator.optional(),
 
   // Image de couverture (optionnel)
-  coverPhoto: fileValidator
-    .optional()
-    .refine((file) => file && file.size <= 2024 * 2024, {
-      message: "La taille de l'image doit être inférieure à 2Mo",
-    }),
+  coverPhoto: imageFileValidator.optional(),
 
   // Membres (optionnel)
   members: z
@@ -102,6 +93,10 @@ export type GroupFormValues = z.infer<typeof groupFormSchema>;
 
 // Valeurs par défaut pour le formulaire
 export const defaultGroupFormValues: Partial<GroupFormValues> = {
+  name: undefined,
+  description: undefined,
+  about: undefined,
+  mainCategory: undefined,
   confidentiality: "public",
   visibility: "visible",
   requiresPostApproval: true,

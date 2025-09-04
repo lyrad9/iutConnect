@@ -11,7 +11,6 @@ import {
   Calendar,
 } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
-import { Input } from "@/src/components/ui/input";
 import { ModeToggle } from "@/src/components/mode-toggle";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 
@@ -20,48 +19,45 @@ import { NotificationsDropdown } from "../notifications/notifictions-dropdown";
 
 import { AuthDropdown } from "../auth/auth-dropdown";
 import AuthBtn from "../auth/auth-btn";
-import { MenuShortcut, MenuItem } from "../ui/menu-shortcut";
+import MenuBtn from "../navigation/menu-btn";
 
-// Configuration des menus selon la page
-const NAVIGATION_ITEMS: MenuItem[] = [
-  { icon: Home, label: "Accueil", href: "/" },
-  { icon: Users, label: "Groupes", href: "/groups" },
-  { icon: Calendar, label: "Événements", href: "/events" },
-  { icon: User, label: "Profil", href: "/profile" },
-];
+import { SearchBar } from "../search/SearchBar";
+import { Skeleton } from "../ui/skeleton";
 
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="flex px-8 h-16 items-center justify-between">
-        <div className="flex items-center gap-2 md:gap-4">
-          {/*  <SiteSheet /> */}
-          <Link href="/" className="hidden items-center space-x-2 md:flex">
-            <span className="hidden font-bold sm:inline-block">UniConnect</span>
-          </Link>
-          <div className="hidden md:flex md:flex-1">
-            <form className="w-full max-w-[400px]">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search..."
-                  className="w-full rounded-full bg-muted pl-8 md:w-[300px] lg:w-[400px]"
-                />
-              </div>
-            </form>
-          </div>
+      <div className="px-4 flex h-16 items-center justify-between gap-2">
+        {/* Partie gauche: Logo et menu mobile */}
+        {/*   <div className="flex items-center gap-2"> */}
+
+        <Link href="/" className="shrink-0 flex items-center space-x-2">
+          <span className="font-bold text-lg">iutSocial</span>
+        </Link>
+        {/*   </div> */}
+
+        {/* Partie centrale: Barre de recherche */}
+        <div className="hidden md:flex flex-1 max-w-md">
+          <SearchBar />
         </div>
-        <nav className="flex items-center gap-2">
-          {/* Menu de navigation contextuel - visible uniquement sur mobile pour la page d'accueil */}
-          {/*  <MenuShortcut
-            items={NAVIGATION_ITEMS}
-         
-            animationSpeed={0.2}
-          /> */}
+
+        {/* Partie droite: Actions et profil */}
+        <div className="flex items-center gap-1">
+          <MenuBtn />
+          <div className="md:hidden block">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="flex items-center justify-center"
+            >
+              <Search className=" size-4" />
+            </Button>
+          </div>
+
+          {/* Notifications (utilisateur authentifié) */}
           <Authenticated>
             <NotificationsDropdown />
-            <Button variant="ghost" size="icon" className="relative" asChild>
+            {/* <Button variant="ghost" size="icon" className="relative" asChild>
               <Link href="/messages">
                 <MessageSquare className="size-5" />
                 <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
@@ -69,17 +65,24 @@ export default function Header() {
                 </span>
                 <span className="sr-only">Messages</span>
               </Link>
-            </Button>
+            </Button> */}
           </Authenticated>
+          <AuthLoading>
+            <Skeleton className="w-10 h-10 rounded-full" />
+          </AuthLoading>
+          {/* Switch thème */}
           <ModeToggle />
+          {/* Profil utilisateur ou bouton de connexion */}
           <Authenticated>
             <AuthDropdown />
           </Authenticated>
-        </nav>
-
-        <Unauthenticated>
-          <AuthBtn />
-        </Unauthenticated>
+          <Unauthenticated>
+            <AuthBtn />
+          </Unauthenticated>
+          <AuthLoading>
+            <Skeleton className="w-10 h-10 rounded-full" />
+          </AuthLoading>
+        </div>
       </div>
     </header>
   );

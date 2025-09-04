@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { usePaginatedQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { BookmarkCard } from "./BookmarkCard";
-import { BookmarkPlus, LoaderCircle, BookmarkX, Filter } from "lucide-react";
+import { Bookmark, BookmarkX } from "lucide-react";
 import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
 import { EmptyState } from "@/src/components/ui/empty-state";
-import { Input } from "@/src/components/ui/input";
 import { Button } from "@/src/components/ui/button";
 import { useRouter } from "next/navigation";
 import { PostCommentType } from "@/src/components/shared/post/post-card";
@@ -55,11 +54,11 @@ export function BookMarksList() {
   };
 
   return (
-    <div className="">
+    <div>
       {/* En-tête avec titre et actions */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div className="flex items-center gap-2">
-          <BookmarkPlus className="size-7 text-primary" />
+          <Bookmark className="size-7 text-primary" />
           <h1 className="text-2xl font-bold">Mes Favoris</h1>
         </div>
 

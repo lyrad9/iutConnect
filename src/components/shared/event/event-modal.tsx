@@ -70,6 +70,7 @@ interface EventModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   setIsPostOrEvent: React.Dispatch<React.SetStateAction<"post" | "event">>;
+  groupId?: Id<"forums">;
 }
 
 export function EventModal({
@@ -77,6 +78,7 @@ export function EventModal({
   onClose,
   onSuccess,
   setIsPostOrEvent,
+  groupId,
 }: EventModalProps) {
   const user = useQuery(api.users.currentUser);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -213,17 +215,24 @@ export function EventModal({
 
         storageId = result.storageId;
       }
+
+      // Utiliser la fonction appropriée selon le contexte (groupe ou global)
       const event = await createEventInHome({
         event: {
           ...data,
           photo: storageId as Id<"_storage"> | undefined,
+          groupId: groupId,
         },
       });
+
       if (event && event.code === "UNAUTHORIZED") {
         return toast.error(event.error as string);
       }
 
-      toast.success("Événement créé");
+      const successMessage = groupId
+        ? "Événement créé dans le groupe avec succès"
+        : "Événement créé";
+      toast.success(successMessage);
       /*  form.reset(); */
       setImagePreview(null);
       onSuccess?.();
@@ -691,7 +700,7 @@ export function EventModal({
                   !form.formState.isValid ||
                   !form.getValues("name") ||
                   !form.getValues("startDate") ||
-                  !form.getValues("startTime") ||
+                  /*  !form.getValues("startTime") || */
                   !form.getValues("eventType") ||
                   !form.getValues("location.value") ||
                   !form.getValues("description")

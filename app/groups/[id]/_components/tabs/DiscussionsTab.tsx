@@ -1,18 +1,42 @@
 "use client";
 
+import { usePaginatedQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { CreatePostCard } from "@/src/components/shared/create-post-card";
+import { PostCard } from "@/src/components/shared/post/post-card";
 import { EmptyState } from "@/src/components/ui/empty-state";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Loader2 } from "lucide-react";
+import GroupFeed from "@/src/components/groups/group-feed";
+import { ScrollToTop } from "@/src/components/ui/scroll-to-top";
+
+type DiscussionsTabProps = {
+  groupId: Id<"forums">;
+  profilImageGroup?: string;
+};
 
 /**
- * Onglet "Discussions" pour afficher les discussions du groupe
- * Pour l'instant, ce composant affiche simplement un état vide
+ * Onglet "Discussions" pour afficher les publications du groupe
  */
-export function DiscussionsTab() {
+export function DiscussionsTab({
+  groupId,
+  profilImageGroup,
+}: DiscussionsTabProps) {
   return (
-    <EmptyState
-      title="Aucune discussion pour le moment"
-      description="Les discussions du groupe seront affichées ici."
-      icons={[MessageSquare]}
-    />
+    <div className="space-y-6 px-2 md:px-16">
+      {/* Zone de création de post */}
+      <CreatePostCard
+        groupId={groupId}
+        profilImageGroup={profilImageGroup}
+        placeholder="Partagez quelque chose avec votre groupe..."
+        showEventButton={true}
+      />
+
+      {/* Liste des posts */}
+      <GroupFeed groupId={groupId} />
+
+      {/* Bouton de retour en haut de page */}
+      <ScrollToTop />
+    </div>
   );
 }

@@ -6,8 +6,9 @@ import { paginationOptsValidator } from "convex/server";
 import { query } from "./_generated/server";
 import { api, internal } from "./_generated/api";
 import { filter } from "convex-helpers/server/filter";
-import { getEventEndTimestamp } from "@/src/lib/utils";
-
+import { getEventEndTimestamp, getEventTimeTimestamp } from "@/src/lib/utils";
+import { isCurrentEvent } from "@/src/lib/utils";
+import { constants } from "fs";
 export const generateUploadUrl = mutation({
   handler: async (ctx) => {
     return await ctx.storage.generateUploadUrl();
@@ -32,6 +33,7 @@ export const createEventInHome = mutation({
       collaborators: v.optional(v.array(v.string())),
       allowsParticipants: v.boolean(),
       target: v.optional(v.string()),
+      groupId: v.optional(v.id("forums")),
     }),
   },
   handler: async (ctx, args) => {
@@ -44,12 +46,44 @@ export const createEventInHome = mutation({
     if (!user) {
       throw new Error("User not found");
     }
-    if (user.role === "USER" && !user.permissions.includes("CREATE_EVENT")) {
+    if (
+      user.role === "USER" &&
+      !user.permissions.includes("CREATE_EVENT") &&
+      !event.groupId
+    ) {
       return {
         error: "Vous n'êtes pas autorisé à créer un événement",
         code: "UNAUTHORIZED",
       };
     }
+    // Si l'évènement est associé à un groupe
+    if (event.groupId) {
+      const membership = await ctx.db
+        .query("groupMembers")
+        .withIndex("by_user_and_group", (q) =>
+          q.eq("userId", userId).eq("groupId", event.groupId as Id<"forums">)
+        )
+        .unique();
+
+      if (!membership) {
+        throw new Error("You must be a member of this group to create events");
+      }
+      //  je récupère le groupe associé
+      const group = await ctx.db.get(event.groupId as Id<"forums">);
+      // Si le groupe nécessite une approbation, vérifier que l'utilisateur a les permissions
+      if (
+        group?.requiresPostApproval &&
+        (!user.permissions.includes("CREATE_EVENT_IN_GROUP") ||
+          !user.permissions.includes("ALL")) &&
+        user.role === "USER"
+      ) {
+        return {
+          error: "Vous n'êtes pas autorisé à créer un événement dans ce groupe",
+          code: "UNAUTHORIZED",
+        };
+      }
+    }
+
     // Créer un évènement
     const eventId = await ctx.db.insert("events", {
       authorId: userId,
@@ -82,6 +116,7 @@ export const createEventInHome = mutation({
       comments: [],
       likes: [],
       target: event.target,
+      groupId: event.groupId,
       isCancelled: false,
     });
     // Appeler le scheduler pour notifier les utilsiateurs et ajouter l'auteur et les co-organisateurs comme participants
@@ -472,7 +507,7 @@ export const getDiscoverEvents = query({
 
     return {
       ...eventsPage,
-      page: enrichedEvents,
+      page: enrichedEvents.sort((a, b) => a.startDate - b.startDate),
     };
   },
 });
@@ -481,7 +516,7 @@ export const getDiscoverEvents = query({
  * Récupère les événements créés par l'utilisateur connecté
  * @param paginationOpts - Options de pagination
  */
-export const getUserEvents = query({
+export const getUserEventsSidebar = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
@@ -511,13 +546,14 @@ export const getUserEvents = query({
           location: event.locationDetails,
           type: event.eventType,
           photo: event.photo,
+          locationType: event.locationType,
         };
       })
     );
 
     return {
       ...events,
-      page: enrichedEvents,
+      page: enrichedEvents.sort((a, b) => b.date.localeCompare(a.date)),
     };
   },
 });
@@ -526,21 +562,24 @@ export const getUserEvents = query({
  * Récupère les événements à venir (date de début > date actuelle)
  * @param paginationOpts - Options de pagination
  */
-export const getUpcomingEvents = query({
+export const getUpcomingEventsSidebar = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
     const now = Date.now();
 
-    const events = await ctx.db
-      .query("events")
-      .withIndex("by_start_date", (q) => q.gt("startDate", now))
-      .order("asc") // Du plus proche au plus lointain
-      .paginate(args.paginationOpts);
-
+    const eventsQuery = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventTimeTimestamp(
+        event.startDate,
+        event.startTime
+      );
+      return startTimestamp > now && !event.isCancelled;
+    });
+    // Pagination et tri
+    const eventsPage = await eventsQuery.paginate(args.paginationOpts);
     const enrichedEvents = await Promise.all(
-      events.page.map(async (event) => {
+      eventsPage.page.map(async (event) => {
         // Formatage de la date pour l'affichage
         const eventDate = new Date(event.startDate);
         const formattedDate = new Intl.DateTimeFormat("fr-FR", {
@@ -556,13 +595,516 @@ export const getUpcomingEvents = query({
           location: event.locationDetails,
           type: event.eventType,
           photo: event.photo,
+          locationType: event.locationType,
         };
       })
     );
 
     return {
-      ...events,
+      ...eventsPage,
+      page: enrichedEvents.sort((a, b) => a.date.localeCompare(b.date)),
+    };
+  },
+});
+
+export const hasDiscoverEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventEndTimestamp({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+      const canParticipate = event.allowsParticipants
+        ? !event.participants?.includes(userId)
+        : event.authorId !== userId && !event.collaborators?.includes(userId);
+      return canParticipate && startTimestamp > now && !event.isCancelled;
+    });
+
+    return (await q.collect()).length > 0;
+  },
+});
+
+export const hasOwnedEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+    const q = filter(ctx.db.query("events"), async (event) => {
+      return (
+        event.authorId === userId ||
+        (event.collaborators?.includes(userId) as boolean)
+      );
+    });
+    return (await q.collect()).length > 0;
+  },
+});
+
+export const hasUpcomingEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    //Date de début inférieur à la date en cours simplement
+    const now = Date.now();
+
+    const events = await ctx.db
+      .query("events")
+      .withIndex("by_start_date", (q) => q.gt("startDate", now))
+      .filter((q) => q.eq(q.field("isCancelled"), false))
+      .collect();
+
+    return events.length > 0;
+  },
+});
+export const hasCurrentEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const isLive = isCurrentEvent({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+
+      // Un événement est en cours si l'heure actuelle est entre le début et la fin
+      return isLive && !event.isCancelled;
+    });
+
+    return (await q.collect()).length > 0;
+  },
+});
+export const getLastCurrentEvents = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const isLive = isCurrentEvent({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+
+      return isLive && !event.isCancelled;
+    });
+    // ordonner  du plus récent
+
+    return (await q.collect()).toSorted((a, b) => b.startDate - a.startDate);
+  },
+});
+
+export const hasPastEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const q = filter(ctx.db.query("events"), async (event) => {
+      const startTimestamp = getEventEndTimestamp({
+        startDate: event.startDate,
+        startTime: event.startTime,
+        endDate: event.endDate,
+        endTime: event.endTime,
+      });
+
+      return startTimestamp < now && !event.isCancelled;
+    });
+
+    return (await q.collect()).length > 0;
+  },
+});
+
+export const hasAttentedEventsPage = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+    const q = filter(ctx.db.query("events"), async (event) => {
+      return event.participants?.includes(userId) as boolean;
+    });
+    return (await q.collect()).length > 0;
+  },
+});
+
+/**
+ * Récupère les événements de l'utilisateur (créés ou auxquels il participe)
+ * avec filtres et recherche, classés par date de participation ou création selon le rôle
+ */
+export const getOwnedEvents = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    searchTerm: v.string(),
+    eventTypes: v.array(v.string()),
+    role: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = (await getAuthUserId(ctx)) as Id<"users">;
+    const user = await ctx.db.get(userId);
+    // Construction de la requête de base
+    let baseQuery;
+    if (args.searchTerm) {
+      baseQuery = ctx.db
+        .query("events")
+        .withSearchIndex("search_events", (q) =>
+          q.search("name", args.searchTerm)
+        );
+    } else {
+      baseQuery = ctx.db.query("events");
+    }
+
+    // Filtrage selon le rôle et les types d'événements
+    const eventsQuery = filter(baseQuery, (event) => {
+      const matchesType =
+        args.eventTypes.length === 0 ||
+        args.eventTypes.includes(event.eventType);
+
+      if (args.role === "organizer") {
+        return event.authorId === userId && matchesType;
+      } else if (args.role === "coorganizer") {
+        return (event.collaborators?.includes(userId) ?? false) && matchesType;
+      } else if (args.role === "participant") {
+        return (
+          ((event.participants?.includes(userId) &&
+            (event.authorId !== userId ||
+              !event.collaborators?.includes(userId))) ??
+            false) &&
+          matchesType
+        );
+      } else {
+        return (
+          (event.authorId === userId ||
+            (event.collaborators?.includes(userId) ?? false) ||
+            (event.participants?.includes(userId) ?? false)) &&
+          matchesType
+        );
+      }
+
+      // "all" - tous les événements où l'utilisateur a un rôle
+    });
+
+    // Pagination et tri
+    const eventsPage = await eventsQuery.paginate(args.paginationOpts);
+
+    const enrichedEvents = await Promise.all(
+      eventsPage.page.map(async (event) => {
+        const author = await ctx.db.get(event.authorId);
+        let group = undefined;
+        if (event.groupId) {
+          group = await ctx.db.get(event.groupId);
+        }
+        const participantsCount = event.participants?.length ?? 0;
+
+        // Déterminer le rôle de l'utilisateur dans cet événement
+        let userRole = "none";
+        if (event.authorId === userId) {
+          userRole = "organizer";
+        } else if (event.collaborators?.includes(userId)) {
+          userRole = "coorganizer";
+        } else if (event.participants?.includes(userId)) {
+          userRole = "participant";
+        }
+
+        // Déterminer la date de référence pour le tri selon le rôle
+        let sortDate = event.createdAt;
+        if (userRole === "participant") {
+          // Pour les participants, utiliser la date d'inscription
+          const participation = await ctx.db
+            .query("eventParticipants")
+            .withIndex("by_event_and_user", (q) =>
+              q.eq("eventId", event._id).eq("userId", userId)
+            )
+            .first();
+          if (participation) {
+            sortDate = participation.createdAt;
+          }
+        }
+
+        return {
+          id: event._id,
+          name: event.name,
+          description: event.description,
+          photo: event.photo
+            ? ((await ctx.storage.getUrl(
+                event.photo as Id<"_storage">
+              )) as string)
+            : undefined,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          createdAt: event.createdAt,
+          sortDate: sortDate, // Date pour le tri
+          location: {
+            type: event.locationType,
+            value: event.locationDetails,
+          },
+          eventType: event.eventType,
+          target: event.target,
+          author: {
+            id: author?._id as Id<"users">,
+            name: `${author?.firstName} ${author?.lastName}`,
+            username: author?.username,
+            profilePicture: author?.profilePicture
+              ? ((await ctx.storage.getUrl(
+                  author?.profilePicture as Id<"_storage">
+                )) as string)
+              : undefined,
+            isAdmin: author?.role === "ADMIN" || author?.role === "SUPERADMIN",
+          },
+          group: group
+            ? {
+                id: group._id as Id<"forums">,
+                name: group.name,
+                profilePicture: group.profilePicture
+                  ? ((await ctx.storage.getUrl(
+                      group.profilePicture as Id<"_storage">
+                    )) as string)
+                  : undefined,
+              }
+            : undefined,
+          participantsCount,
+          allowsParticipants: event.allowsParticipants ?? false,
+          userRole: userRole,
+          isCancelled: event.isCancelled as boolean,
+        };
+      })
+    );
+
+    // Tri par date de référence (participation ou création)
+    const sortedEvents = enrichedEvents.sort((a, b) => b.sortDate - a.sortDate);
+
+    return {
+      ...eventsPage,
+      page: sortedEvents,
+    };
+  },
+});
+
+// ... existing code ...
+
+export const getGroupEvents = query({
+  args: {
+    groupId: v.id("forums"),
+    paginationOpts: paginationOptsValidator,
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("User not authenticated");
+    }
+
+    // Récupérer les événements du groupe
+    const eventsQuery = ctx.db
+      .query("events")
+      .withIndex("by_group", (q) => q.eq("groupId", args.groupId))
+      .order("desc")
+      .filter((q) =>
+        q.or(
+          // Pour les événements approuvés
+          q.eq(q.field("status"), "approved"),
+          // Pour les événements sans statut (par défaut approuvés)
+          q.eq(q.field("status"), undefined)
+        )
+      );
+
+    const result = await eventsQuery.paginate(args.paginationOpts);
+
+    const enrichedEvents = await Promise.all(
+      result.page.map(async (event) => {
+        const author = await ctx.db.get(event.authorId);
+
+        // Récupérer les informations de l'image si elle existe
+        const photo = event.photo
+          ? await ctx.storage.getUrl(event.photo as Id<"_storage">)
+          : undefined;
+
+        // Récupérer les informations des participants si ils existent
+        const participants = event.participants
+          ? await Promise.all(
+              event.participants.map(async (participantId) => {
+                const participant = await ctx.db.get(participantId);
+                return participant
+                  ? {
+                      id: participant._id,
+                      name: `${participant.firstName} ${participant.lastName}`,
+                      username: participant.username,
+                      profilePicture: participant.profilePicture
+                        ? await ctx.storage.getUrl(
+                            participant.profilePicture as Id<"_storage">
+                          )
+                        : undefined,
+                      role: participant.role,
+                      isAdmin:
+                        participant.role === "ADMIN" ||
+                        participant.role === "SUPERADMIN",
+                    }
+                  : null;
+              })
+            )
+          : [];
+
+        return {
+          id: event._id,
+          name: event.name,
+          description: event.description,
+          photo,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          startTime: event.startTime,
+          endTime: event.endTime,
+          locationType: event.locationType,
+          locationDetails: event.locationDetails,
+          eventType: event.eventType,
+          author: author
+            ? {
+                id: author._id,
+                name: `${author.firstName} ${author.lastName}`,
+                username: author.username,
+                profilePicture: author.profilePicture
+                  ? await ctx.storage.getUrl(
+                      author.profilePicture as Id<"_storage">
+                    )
+                  : undefined,
+                role: author.role,
+                isAdmin:
+                  author.role === "ADMIN" || author.role === "SUPERADMIN",
+              }
+            : undefined,
+          target: event.target,
+          createdAt: event.createdAt,
+          participants: event.participants,
+          allowsParticipants: event.allowsParticipants,
+          isCancelled: event.isCancelled,
+        };
+      })
+    );
+
+    return {
+      ...result,
       page: enrichedEvents,
     };
+  },
+});
+
+export const getEventById = query({
+  args: {
+    eventId: v.id("events"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("User not authenticated");
+    }
+
+    const event = await ctx.db.get(args.eventId);
+    if (!event) {
+      return null;
+    }
+
+    // Récupérer l'auteur de l'événement
+    const author = await ctx.db.get(event.authorId);
+
+    // Récupérer les informations de l'image si elle existe
+    const photo = event.photo
+      ? await ctx.storage.getUrl(event.photo as Id<"_storage">)
+      : undefined;
+
+    // Récupérer les informations des participants si ils existent
+    const participants = event.participants
+      ? await Promise.all(
+          event.participants.map(async (participantId) => {
+            const participant = await ctx.db.get(participantId);
+            return participant
+              ? {
+                  id: participant._id,
+                  name: `${participant.firstName} ${participant.lastName}`,
+                  username: participant.username,
+                  profilePicture: participant.profilePicture
+                    ? await ctx.storage.getUrl(
+                        participant.profilePicture as Id<"_storage">
+                      )
+                    : undefined,
+                  role: participant.role,
+                  isAdmin:
+                    participant.role === "ADMIN" ||
+                    participant.role === "SUPERADMIN",
+                }
+              : null;
+          })
+        )
+      : [];
+
+    // Récupérer les informations des collaborateurs si ils existent
+    const collaborators = event.collaborators
+      ? await Promise.all(
+          event.collaborators.map(async (collaboratorId) => {
+            const collaborator = await ctx.db.get(collaboratorId);
+            return collaborator
+              ? {
+                  id: collaborator._id,
+                  name: `${collaborator.firstName} ${collaborator.lastName}`,
+                  username: collaborator.username,
+                  profilePicture: collaborator.profilePicture
+                    ? await ctx.storage.getUrl(
+                        collaborator.profilePicture as Id<"_storage">
+                      )
+                    : undefined,
+                  role: collaborator.role,
+                  isAdmin:
+                    collaborator.role === "ADMIN" ||
+                    collaborator.role === "SUPERADMIN",
+                }
+              : null;
+          })
+        )
+      : [];
+
+    return {
+      ...event,
+      photo,
+      author: author
+        ? {
+            id: author._id,
+            name: `${author.firstName} ${author.lastName}`,
+            username: author.username,
+            profilePicture: author.profilePicture
+              ? await ctx.storage.getUrl(
+                  author.profilePicture as Id<"_storage">
+                )
+              : undefined,
+            role: author.role,
+            isAdmin: author.role === "ADMIN" || author.role === "SUPERADMIN",
+          }
+        : undefined,
+      participants: participants.filter(Boolean),
+      collaborators: collaborators.filter(Boolean),
+    };
+  },
+});
+
+export const exportEventParticipants = mutation({
+  args: { eventId: v.id("events") },
+  handler: async (ctx, args) => {
+    const event = await ctx.db.get(args.eventId);
+    if (!event) throw new Error("Event not found");
+    const participants = await ctx.db
+      .query("eventParticipants")
+      .withIndex("by_event", (q) => q.eq("eventId", args.eventId))
+      .collect();
+    const users = await Promise.all(
+      (participants ?? []).map(async (p) => {
+        const user = await ctx.db.get(p.userId);
+
+        return {
+          firstName: user?.firstName as string,
+          lastName: user?.lastName ?? "",
+          email: user?.email as string,
+          eventName: event.name as string,
+        };
+      })
+    );
+    return users.filter(Boolean);
   },
 });

@@ -1,8 +1,7 @@
 ---
-description: ENFORCE style in our application
-globs: **/*
 alwaysApply: true
 ---
+
 - Write concise, technical TypeScript code using functional and declarative programming patterns.
 - Avoid classes; prefer iteration and modularization over code duplication.
 - Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`).
@@ -42,4 +41,3 @@ alwaysApply: true
 - Optimize Web Vitals (LCP, CLS, FID).
 - Limit 'use client': Favor server components and Next.js SSR for data fetching or state management.
 - Use 'use client' only for Web API access in small components.
-

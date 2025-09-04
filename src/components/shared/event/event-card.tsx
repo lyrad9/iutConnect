@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Target,
   Clock,
+  File,
 } from "lucide-react";
 import {
   Avatar,
@@ -60,6 +61,7 @@ import {
   formatEventDate,
   formatDate,
   formattedTime,
+  generateCsvFromParticipants,
 } from "@/src/lib/utils";
 import { eventTypes } from "@/src/components/utils/const/event-type";
 import { Id } from "@/convex/_generated/dataModel";
@@ -97,11 +99,98 @@ type EventType = {
   createdAt: number;
   participantsCount: number;
   allowsParticipants: boolean;
-  isParticipating: boolean;
+  isParticipating?: boolean;
   isCancelled: boolean;
+  userRole?: string;
 };
 
+// Composant pour le contenu du tooltip/popover
+const EventTooltipContent = ({ event }: { event: EventType }) => (
+  <div className="w-full">
+    <h3 className="text-lg font-bold mb-2">{event.name}</h3>
+
+    {/* Groupe si présent */}
+    {event.group && (
+      <div className="flex items-center gap-2 text-sm mb-2">
+        <Avatar className="h-5 w-5">
+          <AvatarImage
+            src={event.group.profilePicture || "/placeholder.svg"}
+            alt={event.group.name}
+          />
+          <AvatarFallback>{getInitials(event.group.name)}</AvatarFallback>
+        </Avatar>
+        <span className="font-medium">{event.group.name}</span>
+      </div>
+    )}
+
+    {/* Description courte */}
+    <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
+      {event.description}
+    </p>
+
+    <div className="space-y-2 mb-3">
+      {/* Auteur */}
+      <div className="flex items-center gap-2 text-sm">
+        <UserIcon className="size-4 text-muted-foreground" />
+        <span>Crée par {event.author.name}</span>
+      </div>
+
+      {/* Lieu */}
+      <div className="flex items-center gap-2 text-sm">
+        {event.location.type === "on-site" ? (
+          <MapPin className="size-4 text-muted-foreground" />
+        ) : (
+          <Globe className="size-4 text-muted-foreground" />
+        )}
+        <span className="line-clamp-1">{event.location.value}</span>
+      </div>
+
+      {/* Cible si présente */}
+      {event.target && (
+        <div className="flex items-center gap-2 text-sm">
+          <Target className="size-4 text-muted-foreground" />
+          <span>Pour {event.target}</span>
+        </div>
+      )}
+    </div>
+
+    <Button asChild size="sm" className="w-full">
+      <Link href={`/events/${event.id}`}>
+        Voir l&apos;événement
+        <ChevronRight className="ml-1 h-4 w-4" />
+      </Link>
+    </Button>
+  </div>
+);
+
 export function EventCard({ event }: { event: EventType }) {
+  const exportEventParticipants = useMutation(
+    api.events.exportEventParticipants
+  );
+  const handleExportParticipants = async () => {
+    try {
+      const participants = await exportEventParticipants({
+        eventId: event.id as Id<"events">,
+      });
+      if (!participants || participants.length === 0) {
+        toast.error("Aucun participant à exporter.");
+        return;
+      }
+      const csv = generateCsvFromParticipants(participants);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `participants-${event.name}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Export CSV réussi !");
+    } catch (error) {
+      console.error("Erreur lors de l'export CSV :", error);
+      toast.error("Erreur lors de l'export CSV.");
+    }
+  };
   // État pour suivre la participation
   const [isParticipating, setIsParticipating] = useState(
     event.isParticipating || false
@@ -113,10 +202,11 @@ export function EventCard({ event }: { event: EventType }) {
 
   // Récupérer le chemin actuel pour déterminer si on affiche les actions admin
   const pathname = usePathname();
-  const showAdminActions =
-    pathname?.includes("/events/past") ||
+  const showAdminActions = pathname !== "/events";
+  /*  pathname?.includes("/events/past") ||
+    pathname?.includes("/events/owned") ||
     pathname?.includes("/events/attended") ||
-    pathname?.includes("/events/upcoming");
+    pathname?.includes("/events/ongoing"); */
 
   // Récupérer l'utilisateur courant
   const currentUser = useQuery(api.users.currentUser);
@@ -154,10 +244,12 @@ export function EventCard({ event }: { event: EventType }) {
         setParticipantsCount((prevCount) => Math.max(prevCount - 1, 0));
         setIsParticipating(false);
         await unsubscribeFromEvent({ eventId: event.id as Id<"events"> });
+        toast.success("Vous avez été retiré de l'événement");
       } else {
         setParticipantsCount((prevCount) => prevCount + 1);
         setIsParticipating(true);
         await subscribeToEvent({ eventId: event.id as Id<"events"> });
+        toast.success("Vous avez rejoint l'événement");
       }
     } catch (error) {
       // En cas d'erreur, restaurer l'état précédent
@@ -192,14 +284,16 @@ export function EventCard({ event }: { event: EventType }) {
   };
 
   // Gérer l'export des participants
-  const handleExportParticipants = async () => {
+  /*  const handleExportParticipants = async () => {
     // Cette fonction sera implémentée plus tard
-    console.log("Exporter les participants de l'événement:", event.id);
-  };
+    handleExportParticipants
+  }; */
 
-  // Obtenir le type d'événement
-  const eventTypeInfo =
-    eventTypes[event.eventType as keyof typeof eventTypes] || eventTypes.social;
+  // Obtenir le type d'événement sachant que le type de l'évènement correspond à la propriété content de eventTypes
+
+  const eventTypeInfo = Object.values(eventTypes).find(
+    (type) => type.content === event.eventType
+  );
 
   // Vérifier si l'événement est créé par un administrateur de groupe
   const isGroupAdminEvent = event.group;
@@ -209,14 +303,14 @@ export function EventCard({ event }: { event: EventType }) {
 
   return (
     <Card className="pt-0 relative overflow-x-hidden">
-      {/*   {!isEventCancelled && (
+      {isEventCancelled && (
         <div className="z-50 absolute inset-0 flex items-center justify-center bg-muted-foreground/40">
           <Badge className="absolute left-2 top-2 bg-destructive text-white">
             <AlertCircle className="mr-1 h-4 w-4" />
             Annulé
           </Badge>
         </div>
-      )} */}
+      )}
       <div className="relative h-48 overflow-hidden">
         {/* Image de couverture de l'événement */}
 
@@ -225,124 +319,114 @@ export function EventCard({ event }: { event: EventType }) {
           alt={event.name}
           className="size-full object-cover"
         />
-        <Badge className="absolute bottom-3 left-3" variant="secondary">
-          {eventTypeInfo.icon}
-          <span className="ml-1">{eventTypeInfo.content}</span>
+        <Badge
+          className={`absolute bottom-3 left-3 ${eventTypeInfo?.color} ${eventTypeInfo?.textColor}`}
+          /*   style={{
+            backgroundColor: eventTypeInfo?.color,
+            color: eventTypeInfo?.textColor,
+          }} */
+        >
+          {eventTypeInfo?.icon}
+          <span className="ml-1">{eventTypeInfo?.content}</span>
         </Badge>
 
         <div className="flex absolute top-2 right-2 z-50">
           {/* Menu d'actions */}
-          {/*  {(isEventOwner || showAdminActions) && ( */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 rounded-full bg-black/80 p-0"
-              >
-                <MoreHorizontal className="size-4" />
-                <span className="sr-only">Plus d&apos;options</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {event.allowsParticipants && (
-                <DropdownMenuItem onClick={handleExportParticipants}>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Exporter la liste des participants
+          {showAdminActions && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 rounded-full bg-black/80 p-0"
+                >
+                  <MoreHorizontal className="size-4" />
+                  <span className="sr-only">Plus d&apos;options</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/events/${event.id}`}>
+                    <File className="mr-2 h-4 w-4" />
+                    Voir l&apos;évènement
+                  </Link>
                 </DropdownMenuItem>
-              )}
 
-              {!isEventCancelled && (
-                <DropdownMenuItem onClick={handleCancelEvent}>
-                  <X className="mr-2 h-4 w-4" />
-                  Annuler l&apos;événement
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleDeleteEvent}
-                className="text-destructive"
-              >
-                <Trash className="mr-2 h-4 w-4" />
-                Supprimer
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {/* )} */}
+                {isEventOwner && event.allowsParticipants && (
+                  <DropdownMenuItem onClick={handleExportParticipants}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Exporter la liste des participants
+                  </DropdownMenuItem>
+                )}
+
+                {isEventOwner && !isEventCancelled && (
+                  <DropdownMenuItem onClick={handleCancelEvent}>
+                    <X className="mr-2 h-4 w-4" />
+                    Annuler l&apos;événement
+                  </DropdownMenuItem>
+                )}
+
+                {isEventOwner && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleDeleteEvent}
+                      className="text-destructive"
+                    >
+                      <Trash className="mr-2 h-4 w-4" />
+                      Supprimer
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
       {/* Contenu de l'événement */}
       <CardContent>
-        {/* Titre avec popover */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <CardTitle className="text-xl mb-2 hover:underline cursor-pointer w-fit">
-              {event.name}
-            </CardTitle>
-          </TooltipTrigger>
-          <TooltipContent
-            arrowColor="accent"
-            className="w-80 p-4 bg-accent"
-            side="bottom"
-          >
-            <h3 className="text-lg font-bold mb-2">{event.name}</h3>
-
-            {/* Groupe si présent */}
-            {event.group && (
-              <div className="flex items-center gap-2 text-sm mb-2">
-                <Avatar className="h-5 w-5">
-                  <AvatarImage
-                    src={event.group.profilePicture || "/placeholder.svg"}
-                    alt={event.group.name}
-                  />
-                  <AvatarFallback>
-                    {getInitials(event.group.name)}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="font-medium">{event.group.name}</span>
-              </div>
-            )}
-
-            {/* Description courte */}
-            <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-              {event.description}
-            </p>
-
-            <div className="space-y-2 mb-3">
-              {/* Auteur */}
-              <div className="flex items-center gap-2 text-sm">
-                <UserIcon className="size-4 text-muted-foreground" />
-                <span>Crée par {event.author.name}</span>
-              </div>
-
-              {/* Lieu */}
-              <div className="flex items-center gap-2 text-sm">
-                {event.location.type === "on-site" ? (
-                  <MapPin className="size-4 text-muted-foreground" />
-                ) : (
-                  <Globe className="size-4 text-muted-foreground" />
+        {/* Titre avec tooltip pour desktop et popover pour mobile */}
+        <div className="lg:block hidden">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h2 className="text-xl md:text-lg sm:text-base mb-2 hover:underline cursor-pointer truncate">
+                {event.name}
+                {event.userRole && event.userRole === "coorganizer" && (
+                  <span className="ml-1 text-sm text-muted-foreground">
+                    (Co-organisateur)
+                  </span>
                 )}
-                <span className="line-clamp-1">{event.location.value}</span>
-              </div>
+              </h2>
+            </TooltipTrigger>
+            <TooltipContent
+              arrowColor="accent"
+              className="w-80 p-4 bg-accent"
+              side="bottom"
+            >
+              <EventTooltipContent event={event} />
+            </TooltipContent>
+          </Tooltip>
+        </div>
 
-              {/* Cible si présente */}
-              {event.target && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Target className="size-4 text-muted-foreground" />
-                  <span>Pour {event.target}</span>
-                </div>
-              )}
-            </div>
-
-            <Button asChild size="sm" className="w-full">
-              <Link href={`/events/${event.id}`}>
-                Voir l&apos;événement
-                <ChevronRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </TooltipContent>
-        </Tooltip>
+        {/* Version mobile avec popover */}
+        <div className="lg:hidden block">
+          <Popover>
+            <PopoverTrigger asChild>
+              <h2 className="text-xl md:text-lg sm:text-base mb-2 hover:underline cursor-pointer truncate">
+                {event.name}
+                {event.userRole && event.userRole === "coorganizer" && (
+                  <span className="ml-1 text-sm text-muted-foreground">
+                    (Co-organisateur)
+                  </span>
+                )}
+              </h2>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4">
+              <EventTooltipContent event={event} />
+            </PopoverContent>
+          </Popover>
+        </div>
 
         {/* Détails de l'événement */}
         <div className="space-y-2">
@@ -400,31 +484,33 @@ export function EventCard({ event }: { event: EventType }) {
       </CardContent>
 
       {/* Pied de carte avec actions */}
-      <CardFooter className="">
-        {/* Bouton de participation si l'événement accepte les participants */}
-        {event.allowsParticipants && (
-          <Button
-            variant={isParticipating ? "default" : "outline"}
-            className={cn(
-              "w-full",
-              isParticipating && "border-primary text-primary"
-            )}
-            onClick={handleParticipation}
-          >
-            {isParticipating ? (
-              <>
-                <Check className="size-4" />
-                Je participe
-              </>
-            ) : (
-              <>
-                <UserIcon className="size-4" />
-                Participer
-              </>
-            )}
-          </Button>
-        )}
-      </CardFooter>
+      {pathname === "/events" && (
+        <CardFooter className="">
+          {/* Bouton de participation si l'événement accepte les participants */}
+          {event.allowsParticipants && (
+            <Button
+              variant={isParticipating ? "default" : "outline"}
+              className={cn(
+                "w-full",
+                isParticipating && "border-primary text-primary"
+              )}
+              onClick={handleParticipation}
+            >
+              {isParticipating ? (
+                <>
+                  <Check className="size-4" />
+                  Je participe
+                </>
+              ) : (
+                <>
+                  <UserIcon className="size-4" />
+                  Participer
+                </>
+              )}
+            </Button>
+          )}
+        </CardFooter>
+      )}
     </Card>
   );
 }

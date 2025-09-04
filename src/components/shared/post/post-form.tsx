@@ -19,6 +19,8 @@ import { BaseSyntheticEvent } from "react";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { Id } from "@/convex/_generated/dataModel";
+
 export type PostFormRef = {
   submit: (e?: BaseSyntheticEvent | undefined) => Promise<void>;
   reset: UseFormReset<PostFormValues>;
@@ -32,6 +34,8 @@ export type PostFormProps = {
   formRef: React.RefObject<PostFormRef | null>;
   onFormChange?: () => void;
   setIsSubmitting: (isSubmitting: boolean) => void;
+  groupId?: Id<"forums">; // Nouveau prop pour identifier le groupe
+  placeholder?: string; // Placeholder personnalisé
 };
 
 export function PostForm({
@@ -41,6 +45,8 @@ export function PostForm({
   formRef,
   onFormChange,
   setIsSubmitting,
+  groupId,
+  placeholder = "Créer une publication",
 }: PostFormProps) {
   const router = useRouter();
   const url = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
@@ -151,7 +157,16 @@ export function PostForm({
       for (const file of data.attachments as File[]) {
         formData.append("attachments", file);
       }
-      const response = await fetch(`${url}/uploadPostImagesInHome`, {
+
+      // Ajouter le groupId si c'est un post de groupe
+      if (groupId) {
+        formData.append("groupId", groupId);
+      }
+
+      const endpoint = groupId
+        ? "uploadGroupPostImages"
+        : "uploadPostImagesInHome";
+      const response = await fetch(`${url}/${endpoint}`, {
         method: "POST",
         body: formData,
         headers: {
@@ -160,7 +175,7 @@ export function PostForm({
         },
       });
 
-      if (!response.ok) {
+      if (!response.ok && response.status === 500) {
         const error = await response.json();
         throw new Error(error.message);
       }
@@ -172,7 +187,10 @@ export function PostForm({
         return;
       }
       if (result.success) {
-        toast.success("Publication créée avec succès");
+        const successMessage = groupId
+          ? "Publication créée dans le groupe avec succès"
+          : "Publication créée avec succès";
+        toast.success(successMessage);
         form.reset();
         setPreviewAttachments([]);
         onSubmitSuccess();
@@ -213,7 +231,7 @@ export function PostForm({
               form.setValue("content", e.target.value, { shouldValidate: true })
             }
             onFocus={handleFocus}
-            placeholder="Ajouter un post ou un évènement"
+            placeholder={placeholder}
             className={cn(
               "min-h-[60px] w-full resize-none border-0 bg-transparent p-2 focus-visible:ring-0",
               isExpanded ? "min-h-[120px]" : ""

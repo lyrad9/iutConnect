@@ -48,7 +48,7 @@ export function NotificationsDropdown() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="size-5" />
+          <Bell className="size-4" />
           {unreadCount > 0 && (
             <span className="absolute right-1 top-1 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] text-white">
               {unreadCount > 40 ? "40+" : unreadCount}
@@ -57,7 +57,7 @@ export function NotificationsDropdown() {
           <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-120 p-0">
+      <DropdownMenuContent align="end" className="w-80 sm:w-120 p-0">
         <div className="flex items-center justify-between p-4 border-b">
           <h3 className="font-medium">Notifications</h3>
           {unreadCount > 0 && (

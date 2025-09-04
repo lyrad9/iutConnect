@@ -8,16 +8,11 @@ import {
   MoreHorizontal,
   MessageSquare,
   Heart,
-  Share,
-  BookmarkPlus,
-  Send,
-  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  X,
 } from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/components/ui/avatar";
+
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import {
@@ -34,8 +29,6 @@ import {
   DropdownMenuTrigger,
 } from "@/src/components/ui/dropdown-menu";
 import { cn, getInitials } from "@/src/lib/utils";
-import { Textarea } from "@/src/components/ui/textarea";
-import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { likePost, unlikePost } from "@/convex/posts";
 import { Id } from "@/convex/_generated/dataModel";
@@ -46,6 +39,10 @@ import { AdminBadgeCheck } from "@/src/svg/Icons";
 import { DeletePostModal } from "../post/delete-post-modal";
 import { CommentsModal } from "../comments/comments-modal";
 import { toast } from "sonner";
+import { BookmarkIconButton } from "@/src/components/ui/bookmark-icon-button";
+import { Dialog, DialogContent } from "@/src/components/ui/dialog";
+import { motion, AnimatePresence } from "motion/react";
+import { useMutation, useQuery } from "convex/react";
 
 // Types pour les composants
 export interface PostAuthorType {
@@ -102,7 +99,113 @@ interface PostCardProps {
   highlightComments?: boolean;
 }
 
+// Composant pour afficher une image en plein écran avec zoom
+const ImageViewer = ({
+  images,
+  currentIndex,
+  isOpen,
+  onClose,
+  onNext,
+  onPrevious,
+}: {
+  images: string[];
+  currentIndex: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onNext: () => void;
+  onPrevious: () => void;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-screen-lg h-[90vh] max-h-[90vh] p-0 bg-black/90 border-none overflow-hidden">
+        <div className="relative w-full h-full flex items-center justify-center">
+          {/* Image actuelle */}
+          <div className="w-full h-full flex items-center justify-center">
+            <motion.img
+              key={currentIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              src={images[currentIndex]}
+              alt="Image agrandie"
+              className="h-full max-w-full object-cover"
+              /* style={
+                viewerImgMaxHeight
+                  ? { maxHeight: viewerImgMaxHeight }
+                  : undefined
+              }
+              onLoad={(e) => {
+                const width = e.currentTarget.naturalWidth;
+                if (width > 500) setViewerImgMaxHeight("500px");
+                else setViewerImgMaxHeight(undefined);
+              }} */
+            />
+          </div>
+
+          {/* Bouton de fermeture */}
+          {/* <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white z-50 rounded-full"
+            onClick={onClose}
+          >
+            <X size={20} />
+          </Button> */}
+
+          {/* Navigation entre images */}
+          {images.length > 1 && (
+            <>
+              {currentIndex > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-4 bg-black/40 hover:bg-black/60 text-white z-50 rounded-full"
+                  onClick={onPrevious}
+                >
+                  <ChevronLeft size={24} />
+                </Button>
+              )}
+              {currentIndex < images.length - 1 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 bg-black/40 hover:bg-black/60 text-white z-50 rounded-full"
+                  onClick={onNext}
+                >
+                  <ChevronRight size={24} />
+                </Button>
+              )}
+
+              {/* Indicateur de position */}
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1">
+                {images.map((_, index) => (
+                  <div
+                    key={index}
+                    className={cn(
+                      "h-2 w-2 rounded-full transition-all",
+                      index === currentIndex
+                        ? "bg-white scale-125"
+                        : "bg-white/50"
+                    )}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export function PostCard({ post, highlightComments = false }: PostCardProps) {
+  // Ajout d'un état local pour la hauteur max
+  const [imgMaxHeight, setImgMaxHeight] = React.useState<string | undefined>(
+    undefined
+  );
   const [, setTick] = useState(0);
   const router = useRouter();
   useEffect(() => {
@@ -113,18 +216,10 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
   }, []);
   /*   console.log("post", post); */
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false);
-  // État pour le nombre de commentaires
-  const [commentsCount, setCommentsCount] = useState<number>(
-    post.commentsCount
-  );
-  /*   console.log("commentsCount", commentsCount); */
-  // État pour suivre si le post est aimé
-  const [isLiked, setIsLiked] = useState(post.isLiked);
-  // État pour le nombre de likes
-  const [likesCount, setLikesCount] = useState(post.likes);
-  // État pour les favoris
-  const [isFavorite, setIsFavorite] = useState(post.isFavorite);
-  // État pour afficher/masquer les commentaires
+
+  // États pour la visionneuse d'images
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Mutation pour aimer un post
   const likePost = useMutation(api.posts?.likePost);
@@ -142,22 +237,15 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
   // Gérer l'action "j'aime"
   const handleLike = async () => {
     try {
-      // Mettre à jour l'UI immédiatement (optimiste)
-      setIsLiked(!isLiked);
-      setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
-
       // Appeler l'API pour persister l'action
-      if (isLiked) {
+      if (post.isLiked) {
         await unlikePost({ postId: post.id as Id<"posts"> });
       } else {
         await likePost({ postId: post.id as Id<"posts"> });
       }
-      router.refresh();
     } catch (error) {
       // En cas d'erreur, revenir à l'état précédent
       console.error("Erreur lors du like:", error);
-      setIsLiked(isLiked);
-      setLikesCount((prev) => (isLiked ? prev + 1 : prev - 1));
     }
   };
   // Gérer l'ouverture de la modal de commentaires
@@ -168,23 +256,43 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
   // Gérer l'ajout/suppression des favoris
   const handleFavorite = async () => {
     try {
-      if (isFavorite) {
+      if (post.isFavorite) {
         await removeFromFavorites({ postId: post.id as Id<"posts"> });
-        setIsFavorite(false);
+
         toast.success("Publication retirée des favoris");
       } else {
         await addToFavorites({ postId: post.id as Id<"posts"> });
-        setIsFavorite(true);
+
         toast.success("Publication ajoutée aux favoris");
       }
-      router.refresh();
     } catch (error: any) {
       toast.error(error.message || "Erreur lors de la gestion des favoris");
     }
   };
+
+  // Gérer le clic sur une image
+  const handleImageClick = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsImageViewerOpen(true);
+  };
+
+  // Navigation dans la visionneuse d'images
+  const goToNextImage = () => {
+    if (currentImageIndex < post.medias.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const goToPreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
   // État pour l'ouverture de la modal de suppression
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const currentUser = useQuery(api.users?.currentUser);
+
   return (
     <Card className="overflow-hidden gap-4">
       {/* En-tête de la carte avec les informations de l'auteur */}
@@ -204,31 +312,6 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                 size="md"
               />
             )}
-
-            {/* 
-            <Avatar className="size-10">
-              {isGroupAdminPost ? (
-                // Pour les posts de groupe par le créateur du groupe, on affiche l'avatar du groupe
-                <AvatarImage
-                  src={post.group?.profilePicture || "/placeholder.svg"}
-                  alt={post.group?.name}
-                />
-              ) : (
-                // Pour les posts normaux, on affiche l'avatar de l'utilisateur
-                <AvatarImage
-                  src={post.author.profilePicture || undefined}
-                  alt={post.author.name}
-                />
-              )}
-               Fallback en cas d'absence d'image chez le user 
-              {!isGroupAdminPost && (
-                <AvatarFallback className="bg-primary dark:bg-white text-white dark:text-primary font-bold">
-                  {getInitials(post.author.name)}
-                </AvatarFallback>
-              )}
-            </Avatar> 
-            
-            */}
 
             <div>
               {/* Affichage du nom d'utilisateur si disponible (pour Strategy A) */}
@@ -257,7 +340,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                 )}
               </div>
 
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
                 {/* Date relative */}
                 <span>
                   {formatDistanceToNow(new Date(post.createdAt), {
@@ -274,7 +357,7 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
                       href={`/groups/${post.group.id}`}
                       className="hover:underline"
                     >
-                      {post.group.name}
+                      {`Groupe (${post.group?.name})`}
                     </Link>
                   </>
                 )}
@@ -300,7 +383,10 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
  */}
               {/*     <DropdownMenuSeparator /> */}
               <DropdownMenuItem
-                disabled={currentUser?._id !== post.author.id}
+                disabled={
+                  currentUser?._id !== post.author.id &&
+                  currentUser?.role !== "SUPERADMIN"
+                }
                 className="text-destructive"
                 onClick={() => setIsDeleteModalOpen(true)}
               >
@@ -331,61 +417,119 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
             )}
           >
             {/* Afficher jusqu'à 4 médias */}
-            {post.medias.slice(0, 4).map((media, index) => (
-              <div
-                key={index}
-                className={cn(
-                  "overflow-hidden rounded-lg",
-                  post.medias && post.medias.length === 3 && index === 0
-                    ? "col-span-2"
-                    : "",
-                  post.medias && post.medias.length > 3 && index === 0
-                    ? "col-span-2 row-span-2"
-                    : ""
-                )}
-              >
-                <img
-                  src={media}
-                  alt="Media du post"
-                  className="size-full object-cover transition-transform hover:scale-105"
-                  loading="lazy" // Chargement paresseux pour les images
-                />
-                {/*  {media.type === "image" ? (
-                  <img
-                    src={media.url}
-                    alt="Media du post"
-                    className="size-full object-cover transition-transform hover:scale-105"
-                    loading="lazy" // Chargement paresseux pour les images
-                  />
-                ) : (
-                  <video
-                    src={media.url}
-                    controls
-                    className="size-full"
-                    preload="metadata" // Précharger uniquement les métadonnées
-                  />
-                )} */}
-              </div>
-            ))}
+            {post.medias.slice(0, 4).map((media, index) => {
+              //verifier si  c'est le dernier post parmi les quatre
+              if (index === post.medias.slice(0, 4).length - 1) {
+                return (
+                  <div
+                    key={index}
+                    className={cn(
+                      "overflow-hidden rounded-lg cursor-pointer relative group"
+                      /*  post.medias && post.medias.length >= 3 && index === 0
+                        ? "col-span-2"
+                        : "", */
+                    )}
+                    onClick={() => handleImageClick(index)}
+                  >
+                    <img
+                      src={media}
+                      alt="Media du post"
+                      className="size-full object-cover transition-transform group-hover:scale-105 duration-300"
+                      loading="lazy" // Chargement paresseux pour les images
+                      style={
+                        imgMaxHeight ? { maxHeight: imgMaxHeight } : undefined
+                      }
+                      onLoad={(e) => {
+                        const width = e.currentTarget.naturalWidth;
+                        if (width > 400) setImgMaxHeight("400px");
+                      }}
+                    />
 
-            {/* Indicateur pour médias additionnels */}
-            {post.medias && post.medias.length > 4 && (
-              <div className="relative col-span-1 overflow-hidden rounded-lg">
-                <img
-                  src={post.medias[4]}
-                  alt="Media du post"
-                  className="size-full object-cover brightness-50"
-                />
-                {/*    <img
-                  src={post.medias[4].url}
-                  alt="Media du post"
-                  className="size-full object-cover brightness-50"
-                /> */}
-                <div className="absolute inset-0 flex items-center justify-center text-lg font-bold text-white">
-                  +{post.medias.length - 4}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      {post.medias && post.medias.length <= 4 && (
+                        <div className="transform scale-75 group-hover:scale-100 transition-all p-2 rounded-full bg-black/40 text-white">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <line x1="11" y1="8" x2="11" y2="14"></line>
+                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    {/* Indicateur pour médias additionnels */}
+                    {post.medias && post.medias.length > 4 && (
+                      <div className="bg-black/30 absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">
+                        +{post.medias.length - 4}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    "overflow-hidden rounded-lg cursor-pointer relative group",
+
+                    /*   index !== 0 && "h-36", */
+                    post.medias && post.medias.length === 3 && index === 0
+                      ? "col-span-2"
+                      : "",
+                    post.medias && post.medias.length > 3 && index === 0
+                      ? "col-span-2"
+                      : ""
+                  )}
+                  onClick={() => handleImageClick(index)}
+                >
+                  <img
+                    src={media}
+                    alt="Media du post"
+                    className="size-full object-cover transition-transform group-hover:scale-105 duration-300"
+                    loading="lazy" // Chargement paresseux pour les images
+                    style={
+                      imgMaxHeight
+                        ? { maxHeight: imgMaxHeight }
+                        : { maxHeight: "200px" }
+                    }
+                    onLoad={(e) => {
+                      const width = e.currentTarget.naturalWidth;
+                      if (width > 400) setImgMaxHeight("400px");
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="transform scale-75 group-hover:scale-100 transition-all p-2 rounded-full bg-black/40 text-white">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        <line x1="11" y1="8" x2="11" y2="14"></line>
+                        <line x1="8" y1="11" x2="14" y2="11"></line>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
         )}
       </CardContent>
@@ -403,10 +547,10 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
             <Heart
               className={cn(
                 "size-4",
-                isLiked ? "fill-destructive text-destructive" : ""
+                post.isLiked ? "fill-destructive text-destructive" : ""
               )}
             />
-            <span className="text-xs">{likesCount}</span>
+            {post.likes > 0 && <span className="text-xs">{post.likes}</span>}
           </Button>
 
           {/* Bouton commentaires */}
@@ -417,7 +561,9 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
             onClick={handleOpenCommentsModal}
           >
             <MessageSquare className="size-4" />
-            <span className="text-xs">{commentsCount}</span>
+            {post.commentsCount > 0 && (
+              <span className="text-xs">{post.commentsCount}</span>
+            )}
           </Button>
 
           {/* Bouton partage */}
@@ -428,30 +574,29 @@ export function PostCard({ post, highlightComments = false }: PostCardProps) {
         </div>
 
         {/* Bouton favoris */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 rounded-full p-0"
+        <BookmarkIconButton
+          isSaved={post.isFavorite}
           onClick={handleFavorite}
-        >
-          <BookmarkPlus
-            className={cn(
-              "size-4",
-              isFavorite ? "fill-primary text-primary" : ""
-            )}
-          />
-          <span className="sr-only">
-            {isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-          </span>
-        </Button>
+          className="h-8 w-8 rounded-full p-0"
+          size={20}
+        />
       </CardFooter>
+
+      {/* Visionneuse d'images */}
+      <ImageViewer
+        images={post.medias}
+        currentIndex={currentImageIndex}
+        isOpen={isImageViewerOpen}
+        onClose={() => setIsImageViewerOpen(false)}
+        onNext={goToNextImage}
+        onPrevious={goToPreviousImage}
+      />
 
       {/* Modal de commentaires */}
       <CommentsModal
         postId={post.id}
         isOpen={isCommentsModalOpen}
         onClose={() => setIsCommentsModalOpen(false)}
-        setCommentsCount={setCommentsCount}
       />
 
       {/* Modal de confirmation de suppression */}

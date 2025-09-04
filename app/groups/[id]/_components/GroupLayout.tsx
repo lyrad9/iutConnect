@@ -82,7 +82,12 @@ export function GroupLayout({ id }: { id: string }) {
         content: "0",
         variant: "secondary",
       }, */
-      content: <DiscussionsTab />,
+      content: (
+        <DiscussionsTab
+          groupId={group._id}
+          profilImageGroup={group.profilePicture}
+        />
+      ),
     },
     {
       id: "events",
@@ -92,7 +97,7 @@ export function GroupLayout({ id }: { id: string }) {
         content: "0",
         variant: "secondary",
       }, */
-      content: <EventsTab />,
+      content: <EventsTab groupId={group._id} />,
     },
   ];
 

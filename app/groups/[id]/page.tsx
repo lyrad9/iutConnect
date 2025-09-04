@@ -8,7 +8,7 @@ export default async function GroupPage({
   const { id } = await params;
 
   return (
-    <div className="container px-4 py-6 md:py-8">
+    <div className="px-4 py-6 md:py-8">
       <GroupLayout id={id} />
     </div>
   );

@@ -10,6 +10,7 @@ import {
   User,
   Search,
   BookmarkPlus,
+  Bookmark,
 } from "lucide-react";
 
 export const NavigationItems = [
@@ -48,7 +49,7 @@ export const NavigationItems = [
   },
   {
     href: "/bookmarks",
-    icon: <BookmarkPlus className="size-5" />,
+    icon: <Bookmark className="size-5" />,
     label: "Favoris",
   },
   {

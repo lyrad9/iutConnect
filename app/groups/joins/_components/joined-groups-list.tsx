@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
+import React, { useRef } from "react";
+import { useQuery, usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
@@ -27,45 +28,43 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import {
-  Loader2,
-  Search,
-  Users,
-  MoreVertical,
-  LogOut,
-  Eye,
+  Earth,
   Globe,
   LockKeyhole,
-  Trash2,
-  Earth,
+  Search,
+  Users,
   Lock,
+  MoreVertical,
+  Eye,
+  LogOut,
+  Trash2,
 } from "lucide-react";
-import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import Link from "next/link";
 import { EmptyState } from "@/src/components/ui/empty-state";
-import { useDebounce } from "use-debounce";
 import { GroupMembersAvatars } from "@/src/components/groups/group-members-avatars";
 import { Badge } from "@/src/components/ui/badge";
 import LoadingPendingRequests from "./Loading";
 import { SmartAvatar } from "@/src/components/shared/smart-avatar";
 import { useGroupModal } from "@/src/components/contexts/group-modal-context";
+import { useInfiniteScroll } from "@/src/hooks/use-infinite-scroll";
+import { Id } from "@/convex/_generated/dataModel";
+import { useJoinedGroupsFilters } from "@/src/hooks/useJoinedGroupsFilters";
+import JoinedSearchFiltersSection from "./joined-search-filters-section";
 
 export default function JoinedGroupsList() {
-  // États pour la recherche et le filtre
-  const [rawTerm, setRawTerm] = useState("");
-  const [searchQuery] = useDebounce(rawTerm, 400);
-  const [filterType, setFilterType] = useState<"all" | "admin" | "member">(
-    "all"
-  );
-  // Référence pour l'élément d'intersection observer
-  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const { filters } = useJoinedGroupsFilters();
+  // Référence pour le conteneur
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
   // Récupérer l'utilisateur connecté
   const currentUser = useQuery(api.users.currentUser);
+
   // Utiliser le contexte des modales
   const { openLeaveModal, openDeleteModal } = useGroupModal();
 
-  // Requête paginée pour récupérer les groupes rejoints
+  // Requête paginée pour récupérer les groupes rejoints avec les filtres provenant des props
   const {
     results: joinedGroups,
     status,
@@ -74,41 +73,24 @@ export default function JoinedGroupsList() {
   } = usePaginatedQuery(
     api.forums.getUserGroups,
     {
-      searchTerm: searchQuery,
-      filterType: filterType,
+      searchTerm: filters.searchTerm,
+      filterType: filters.filterType as "all" | "admin" | "member",
     },
     {
       initialNumItems: 10,
     }
   );
 
-  // Configurer l'intersection observer pour charger plus de groupes
-  useEffect(() => {
-    if (status !== "CanLoadMore" || isLoading) return;
-
-    const observed = loaderRef.current;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore(6);
-        }
-      },
-      { rootMargin: "200px" }
-    );
-
-    if (observed) {
-      observer.observe(observed);
-    }
-
-    return () => {
-      if (observed) {
-        observer.unobserve(observed);
-      }
-    };
-  }, [status, isLoading, loadMore]);
+  // Utiliser le hook useInfiniteScroll pour gérer le chargement progressif
+  const loaderRef = useInfiniteScroll({
+    loading: isLoading,
+    hasMore: status === "CanLoadMore",
+    onLoadMore: () => loadMore(6),
+    rootMargin: "200px",
+  });
 
   return (
-    <Card>
+    <Card ref={containerRef}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Users className="h-5 w-5" />
@@ -122,34 +104,7 @@ export default function JoinedGroupsList() {
       </CardHeader>
 
       <CardContent>
-        {/* Filtres et recherche */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Rechercher un groupe..."
-              className="pl-9"
-              value={rawTerm}
-              onChange={(e) => setRawTerm(e.target.value)}
-            />
-          </div>
-          <Select
-            onValueChange={(value) =>
-              setFilterType(value as "all" | "admin" | "member")
-            }
-          >
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Filtrer par type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les groupes</SelectItem>
-              <SelectItem value="admin">Groupes administrés</SelectItem>
-              <SelectItem value="member">Groupes rejoints</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
+        <JoinedSearchFiltersSection />
         <div className="space-y-4">
           {joinedGroups && joinedGroups.length > 0 ? (
             <>
@@ -314,9 +269,22 @@ export default function JoinedGroupsList() {
                   </div>
                 </Card>
               ))}
-              <div ref={loaderRef} className="h-10" />
-              {isLoading && (
-                <Loader2 className="animate-spin size-7 mx-auto " />
+
+              {/* Référence pour l'infinite scroll */}
+              {status === "CanLoadMore" && (
+                <div
+                  ref={loaderRef}
+                  className="py-4 flex justify-center items-center text-muted-foreground text-sm"
+                >
+                  {isLoading && (
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mr-2" />
+                  )}
+                  <span>
+                    {isLoading
+                      ? "Chargement..."
+                      : "Faire défiler pour voir plus"}
+                  </span>
+                </div>
               )}
             </>
           ) : isLoading ? (
@@ -327,14 +295,14 @@ export default function JoinedGroupsList() {
             </>
           ) : (
             <EmptyState
-              title={rawTerm ? "Aucun résultat" : "Aucun groupe"}
+              title="Aucun groupe trouvé"
               description={
-                rawTerm
-                  ? "Aucun groupe ne correspond à votre recherche"
-                  : "Vous n'avez rejoint aucun groupe"
+                filters.searchTerm || filters.filterType !== "all"
+                  ? "Essayez de modifier vos critères de recherche"
+                  : "Vous n'avez pas encore rejoint de groupes"
               }
               icons={[Users]}
-              className="py-8"
+              className="py-16 max-w-full"
             />
           )}
         </div>

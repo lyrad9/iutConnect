@@ -10,15 +10,14 @@ export default function Home() {
   return (
     <div className="px-4">
       <div className="flex max-lg:flex-col gap-x-6">
-        <div className="flex-1 lg:py-10">
+        <div className="flex-1 py-10 sm:px-16 md:px-32 lg:px-0">
           <CreatePostCard />
-          <Suspense fallback={<FeedSkeleton />}>
-            <NewsPost />
-            {/*  <NewsFeed /> */}
-          </Suspense>
+
+          <NewsPost />
+          {/*  <NewsFeed /> */}
         </div>
         <div className="sticky top-14 max-h-[calc(100svh-3.5rem)] overflow-x-hidden pt-10 pb-24 hidden lg:flex overflow-y-auto items-stretch h-screen lg:w-96 w-full scrollbar-hide flex-col gap-y-8">
-          <SuggestedUsers />
+          {/*   <SuggestedUsers /> */}
           <WhatsHappening />
         </div>
       </div>

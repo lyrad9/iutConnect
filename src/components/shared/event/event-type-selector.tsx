@@ -38,7 +38,7 @@ export function EventTypeSelector({ control }: EventTypeSelectorProps) {
               </SelectTrigger>
               <SelectContent className="">
                 {Object.entries(eventTypes).map(([key, { content }]) => (
-                  <SelectItem key={key} value={key}>
+                  <SelectItem key={key} value={content}>
                     {content}
                   </SelectItem>
                 ))}

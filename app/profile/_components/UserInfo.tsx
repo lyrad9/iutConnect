@@ -5,7 +5,9 @@ import {
   MailIcon,
   AtSign,
   Shield,
+  Phone,
 } from "lucide-react";
+import { AdminBadgeCheck } from "@/src/svg/Icons";
 import { EditProfileBtn } from "./edit-profile-btn";
 
 import { useQuery } from "convex/react";
@@ -14,46 +16,42 @@ import { SmartAvatar } from "@/src/components/shared/smart-avatar";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { Skeleton } from "@/src/components/ui/skeleton";
 import { Badge } from "@/src/components/ui/badge";
+import Image from "next/image";
+import Link from "next/link";
 
 export default function UserInfo() {
   const user = useQuery(api.users.currentUser);
+  console.log("userInfoCoverPhoto", user?.coverPhoto);
+  // Déterminer si on doit afficher le numéro de téléphone
+  const showPhoneNumber = user?.phoneNumber && !user?.isPhoneNumberHidden;
 
   return (
     <>
       <Authenticated>
         <div className="relative rounded-xl bg-muted overflow-hidden">
-          <div className="h-48 overflow-hidden md:h-72">
-            <img
-              src={user?.coverPhoto || "/placeholder.svg"}
+          <div className="w-full relative aspect-square h-48 overflow-hidden md:h-72">
+            <Image
+              src={
+                (user?.coverPhoto as string | undefined) ?? "/placeholder.svg"
+              }
               alt="Cover"
-              className="size-full object-cover aspect-square"
+              className="object-cover"
+              fill
+              priority
             />
           </div>
 
           <div className="p-4 md:p-6">
             <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-              <div className="flex items-end">
+              <div className="flex flex-col items-start">
                 <div className="relative -mt-20 mr-4">
                   <SmartAvatar
                     avatar={user?.profilePicture as string}
                     name={user?.firstName + " " + user?.lastName}
                     size="xl"
-                    className="size-32 border-4 border-background object-cover aspect-square shadow-md"
+                    className="size-32 border-4 border-background shadow-md"
                     fallbackClassName="text-4xl"
                   />
-
-                  {/* Badge de rôle */}
-                  {(user?.role === "ADMIN" || user?.role === "SUPERADMIN") && (
-                    <div className="absolute -bottom-1 -right-1 rounded-full bg-background p-1">
-                      <Badge
-                        variant="secondary"
-                        className="flex items-center gap-1"
-                      >
-                        <Shield className="h-3 w-3" />
-                        {user.role === "SUPERADMIN" ? "Super Admin" : "Admin"}
-                      </Badge>
-                    </div>
-                  )}
                 </div>
 
                 <div>
@@ -66,9 +64,15 @@ export default function UserInfo() {
                   )}
 
                   {/* Nom complet */}
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
-                    {user?.firstName} {user?.lastName}
-                  </h1>
+                  <div className="flex items-center gap-2">
+                    <h1 className="inline text-2xl md:text-3xl font-bold tracking-tight">
+                      {user?.firstName} {user?.lastName}
+                    </h1>
+                    {(user?.role === "ADMIN" ||
+                      user?.role === "SUPERADMIN") && (
+                      <AdminBadgeCheck className="size-6 text-blue-500 stroke-2" />
+                    )}
+                  </div>
 
                   {/* Fonction de l'utilisateur */}
                   {user?.fonction && (
@@ -90,13 +94,22 @@ export default function UserInfo() {
                         </span>
                       </div>
                     )}
-                    {/* Vérifier si l'utilisateur a renseigné son diplôme et sa classe */}
+
+                    {/* Vérifier si l'utilisateur a renseigné sa filière et sa classe */}
                     {user?.fieldOfStudy && user?.classroom && (
                       <div className="flex items-center gap-1">
                         <Calendar className="size-4" />
                         <span>
                           {user?.fieldOfStudy}, {user?.classroom}
                         </span>
+                      </div>
+                    )}
+
+                    {/* Afficher le numéro de téléphone s'il existe et n'est pas masqué */}
+                    {showPhoneNumber && (
+                      <div className="flex items-center gap-1">
+                        <Phone className="size-4" />
+                        <span>{user.phoneNumber}</span>
                       </div>
                     )}
                     {/* Afficher son email */}
@@ -106,20 +119,24 @@ export default function UserInfo() {
                         {user?.email}
                       </span>
                     </div>
+
                     {/* Afficher le site personnel de l'utilisateur où le network est égale à Site personnel*/}
                     {user?.socialNetworks &&
                       user.socialNetworks.map(
                         (network) =>
                           network.network === "Site personnel" && (
-                            <div
+                            <Link
                               key={network.network}
-                              className="flex items-center gap-1"
+                              href={network.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline flex items-center gap-1"
                             >
                               <LinkIcon className="size-4" />
                               <span className="text-ellipsis overflow-hidden whitespace-nowrap">
                                 {network.link}
                               </span>
-                            </div>
+                            </Link>
                           )
                       )}
                   </div>
@@ -132,8 +149,8 @@ export default function UserInfo() {
             {/* Réseaux sociaux - version simplifiée */}
             {user?.socialNetworks && user.socialNetworks.length > 0 && (
               <div className="mt-4 border-t pt-4 border-muted">
-                <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Mes Réseaux sociaux:
+                <p className="text-sm font-medium text-muted-foreground mb-2">
+                  Mes Réseaux sociaux
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {user.socialNetworks
@@ -146,7 +163,6 @@ export default function UserInfo() {
                         rel="noopener noreferrer"
                         className="text-sm text-primary hover:underline flex items-center gap-1 bg-primary/5 px-3 py-1 rounded-full"
                       >
-                        <LinkIcon className="h-3 w-3" />
                         {network.network}
                       </a>
                     ))}

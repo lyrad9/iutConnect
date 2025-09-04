@@ -44,6 +44,7 @@ export function SmartAvatar({
   return (
     <Avatar className={cn(sizeClasses[size], className)}>
       <AvatarImage
+        className="object-cover aspect-square "
         src={name ? avatar : avatar ? avatar : "/placeholder.svg"}
         alt={name}
       />

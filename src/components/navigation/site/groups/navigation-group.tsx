@@ -61,7 +61,7 @@ export default function NavigationGroup() {
     {
       href: "/groups/joins",
       icon: <Users className="h-4 w-4" />,
-      label: "Vos groupes",
+      label: "Mes groupes",
     },
   ];
 

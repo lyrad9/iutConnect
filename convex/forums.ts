@@ -46,8 +46,18 @@ export const getGroupById = query({
       .first();
     return {
       ...group,
-      postsCount: posts.length,
+      profilePicture: group.profilePicture
+        ? ((await ctx.storage.getUrl(
+            group.profilePicture as Id<"_storage">
+          )) as string)
+        : undefined,
+      coverPhoto: group.coverPhoto
+        ? ((await ctx.storage.getUrl(
+            group.coverPhoto as Id<"_storage">
+          )) as string)
+        : undefined,
       eventsCount: events.length,
+      postsCount: posts.length,
       requestStatus: !!membership && membership.status === "pending",
       /*   members: members.length, */
     };
@@ -287,10 +297,11 @@ export const getDiscoverUserGroups = query({
     }
     // Récupérer les groupes avec pagination
     const groupsPage = await groupsQuery.paginate(args.paginationOpts);
-    // Filtrer les groupes où l'utilisateur n'est pas admin (author)
-    const filteredGroups = groupsPage.page.filter(
-      (group) => group.authorId !== userId
-    );
+
+    // Filtrer les groupes où l'utilisateur n'est pas admin (author) ou membre
+    const filteredGroups = groupsPage.page
+      .filter((group) => group.authorId !== userId)
+      .filter((group) => !group.members?.includes(userId));
 
     // Récupérer les informations supplémentaires pour chaque groupe
     const groupsWithDetails = await Promise.all(
@@ -310,8 +321,8 @@ export const getDiscoverUserGroups = query({
           .first();
 
         // Transformer les URLs des images
-        const profilePictureUrl = group.profilePicture ?? null;
-        const coverPhotoUrl = group.coverPhoto ?? null;
+        /*   const profilePictureUrl = group.profilePicture ?? null;
+        const coverPhotoUrl = group.coverPhoto ?? null; */
         /*    const profilePictureUrl = group.profilePicture
           ? await ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
           : null;
@@ -327,8 +338,18 @@ export const getDiscoverUserGroups = query({
           name: group.name,
 
           description: group.description || "",
-          coverImage: coverPhotoUrl,
-          logoImage: profilePictureUrl,
+          logoImage: group.profilePicture
+            ? ((await ctx.storage.getUrl(
+                group.profilePicture as Id<"_storage">
+              )) as string)
+            : undefined,
+          coverImage: group.coverPhoto
+            ? ((await ctx.storage.getUrl(
+                group.coverPhoto as Id<"_storage">
+              )) as string)
+            : undefined,
+          /*  coverImage: coverPhotoUrl,
+          logoImage: profilePictureUrl, */
           members: group.members,
           membersCount,
           type: group.mainCategory,
@@ -357,8 +378,20 @@ export const getDiscoverUserGroups = query({
 
 export const hasGroups = query({
   handler: async (ctx) => {
-    const groups = await ctx.db.query("forums").collect();
-    return groups.length > 0;
+    const userId = await getAuthUserId(ctx);
+    const groups = await ctx.db
+      .query("forums")
+      // filtrer par l'auteur
+
+      .withIndex("by_visibility_and_status", (q) =>
+        q.eq("visibility", "visible").eq("status", "active")
+      )
+      .collect();
+    return (
+      groups.filter((group) => group.authorId !== userId).length > 0 ||
+      groups.filter((group) => !group.members?.includes(userId as Id<"users">))
+        .length > 0
+    );
   },
 });
 
@@ -554,10 +587,11 @@ export const sidebarGetUserGroups = query({
             ...group,
             name: group.name,
             membersCount: group.members ? group.members.length : 0,
-            /*    avatar: group.profilePicture
-              ? ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
-              : null, */
-            avatar: group.profilePicture ?? null,
+            avatar: group.profilePicture
+              ? ((await ctx.storage.getUrl(
+                  group.profilePicture as Id<"_storage">
+                )) as string)
+              : undefined,
           };
         })
       ),
@@ -598,32 +632,59 @@ export const getUserGroups = query({
 
       return matchesSearch && matchesRole;
     }).paginate(args.paginationOpts);
+    const enrichedGroups = await Promise.all(
+      groups.page.map(async (group) => {
+        const author = await ctx.db.get(group.authorId);
+        // Recupérer la propriété joinedAt à la table grupMembers
+        const joinedAt = await ctx.db
+          .query("groupMembers")
+          .withIndex("by_user_and_group", (q) =>
+            q.eq("userId", userId as Id<"users">).eq("groupId", group._id)
+          )
+          .first();
+
+        return {
+          ...group,
+          profilePicture: group.profilePicture
+            ? ((await ctx.storage.getUrl(
+                group.profilePicture as Id<"_storage">
+              )) as string)
+            : undefined,
+          coverPhoto: group.coverPhoto
+            ? ((await ctx.storage.getUrl(
+                group.coverPhoto as Id<"_storage">
+              )) as string)
+            : undefined,
+          name: group.name,
+          membersCount: group.members ? group.members.length : 0,
+          avatar: group.profilePicture
+            ? ((await ctx.storage.getUrl(
+                group.profilePicture as Id<"_storage">
+              )) as string)
+            : undefined,
+
+          /* avatar: group.profilePicture
+        ? await ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
+        : null, */
+          joinedAt: joinedAt?.joinedAt,
+        };
+      })
+    );
 
     return {
       ...groups,
-      page: await Promise.all(
-        groups.page.map(async (group) => {
-          const author = await ctx.db.get(group.authorId);
-          // Recupérer la propriété joinedAt à la table grupMembers
-          const joinedAt = await ctx.db
-            .query("groupMembers")
-            .withIndex("by_user_and_group", (q) =>
-              q.eq("userId", userId as Id<"users">).eq("groupId", group._id)
-            )
-            .first();
-
-          return {
-            ...group,
-            name: group.name,
-            membersCount: group.members ? group.members.length : 0,
-            avatar: group.profilePicture ?? null,
-            /* avatar: group.profilePicture
-              ? await ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
-              : null, */
-            joinedAt: joinedAt?.joinedAt,
-          };
-        })
-      ),
+      page: enrichedGroups.sort((a, b) => {
+        if (args.filterType === "admin") {
+          // Classer par date de création récente
+          return b.createdAt - a.createdAt;
+        } else if (args.filterType === "member") {
+          // Classer par date d'adhésion récente
+          return (b.joinedAt ?? 0) - (a.joinedAt ?? 0);
+        } else {
+          // Classer par date de création récente
+          return b.createdAt - a.createdAt;
+        }
+      }),
     };
   },
 });
@@ -660,7 +721,11 @@ export const getManagedGroups = query({
             /*       avatar: group.profilePicture
               ? ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
               : null, */
-            avatar: group.profilePicture ?? null,
+            avatar: group.profilePicture
+              ? ((await ctx.storage.getUrl(
+                  group.profilePicture as Id<"_storage">
+                )) as string)
+              : undefined,
             /*   coverPhoto: group.coverPhoto
               ? ctx.storage.getUrl(group.coverPhoto as Id<"_storage">)
               : null, */
@@ -869,14 +934,18 @@ export const getUserPendingRequests = query({
             description: group.description,
             confidentiality: group.confidentiality,
 
-            profilePicture: group.profilePicture,
-            coverPhoto: group.coverPhoto,
-            /*  profilePicture: group.profilePicture
-                  ? await ctx.storage.getUrl(group.profilePicture as Id<"_storage">)
-                  : null,
-                coverPhoto: group.coverPhoto
-                  ? await ctx.storage.getUrl(group.coverPhoto as Id<"_storage">)
-                  : null, */
+            /*   profilePicture: group.profilePicture,
+            coverPhoto: group.coverPhoto, */
+            profilePicture: group.profilePicture
+              ? ((await ctx.storage.getUrl(
+                  group.profilePicture as Id<"_storage">
+                )) as string)
+              : undefined,
+            coverPhoto: group.coverPhoto
+              ? ((await ctx.storage.getUrl(
+                  group.coverPhoto as Id<"_storage">
+                )) as string)
+              : undefined,
             authorName: author
               ? `${author.firstName} ${author.lastName}`
               : "Inconnu",
@@ -888,7 +957,9 @@ export const getUserPendingRequests = query({
     // Filtrer les éléments null (groupes qui n'existent plus)
     return {
       ...pendingMemberships,
-      page: pendingRequests.filter(Boolean),
+      page: pendingRequests.sort((a, b) => {
+        return (b?.requestAt ?? 0) - (a?.requestAt ?? 0);
+      }),
     };
   },
 });
@@ -946,7 +1017,8 @@ export const paginatedGroupMembers = query({
       (user) =>
         forum.members.includes(user._id) &&
         (user.firstName.toLowerCase().includes(lowerSearch) ||
-          user.lastName.toLowerCase().includes(lowerSearch) ||
+          (user.lastName &&
+            user.lastName.toLowerCase().includes(lowerSearch)) ||
           user.email.toLowerCase().includes(lowerSearch))
     ).paginate(paginationOpts);
   },
@@ -962,12 +1034,16 @@ export const deletePost = mutation({
     if (!userId) {
       throw new ConvexError("User not authentificated");
     }
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
     // Vérifier que l'utilisateur est l'auteur du post
     const post = await ctx.db.get(args.postId);
     if (!post) {
       throw new ConvexError("Post not found");
     }
-    if (post.authorId !== userId) {
+    if (post.authorId !== userId && user.role !== "SUPERADMIN") {
       throw new ConvexError("You are not the author of this post");
     }
     // Supprimer le post

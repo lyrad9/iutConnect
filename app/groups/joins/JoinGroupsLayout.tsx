@@ -1,20 +1,16 @@
-import { Suspense } from "react";
+"use client";
 import PendingRequestsList from "./_components/pending-requests-list";
 import JoinedGroupsList from "./_components/joined-groups-list";
-import { Skeleton } from "@/src/components/ui/skeleton";
+import { HeaderGroupsEvents } from "@/src/components/layout/header-groups-events";
 
 export default function JoinsGroupsLayout() {
   return (
     <div className="container px-4 py-6 md:py-8 mx-auto">
       {/* En-tête avec titre */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Mes Groupes et Demandes
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Gérez vos demandes d&apos;adhésion et vos groupes
-        </p>
-      </div>
+      <HeaderGroupsEvents
+        title="Mes Groupes et Demandes"
+        description="Gérez vos demandes d'adhésion et vos groupes"
+      />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Section des groupes rejoints */}

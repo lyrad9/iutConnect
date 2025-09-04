@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -51,7 +52,7 @@ import { useIsDirty } from "@/src/hooks/use-is-dirty";
 import { useAuthToken } from "@convex-dev/auth/react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { Calendar as CalendarComponent } from "@/src/components/ui/calendar";
+
 import {
   Popover,
   PopoverContent,
@@ -59,6 +60,7 @@ import {
 } from "@/src/components/ui/popover";
 import { cn } from "@/src/lib/utils";
 import { CalendarMonthYearSelect } from "@/src/components/ui/calendar-month-year-select";
+import { Switch } from "@/src/components/ui/switch";
 
 // Type de lien social
 export type SocialLink = {
@@ -104,6 +106,7 @@ const profileFormSchema = z
       .min(1, "Le prénom doit contenir au moins 2 caractères"),
     lastName: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
     phoneNumber: z.string().optional(),
+    isPhoneNumberHidden: z.boolean().default(false),
     bio: z
       .string()
       .max(500, "La biographie ne doit pas dépasser 500 caractères")
@@ -227,6 +230,8 @@ const contentVariants = {
 };
 
 export default function EditProfilModal() {
+  const apiUrl = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+  const router = useRouter();
   const url = process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
   console.log(url);
   const { open, setOpen } = useEditProfilUserModal();
@@ -241,6 +246,7 @@ export default function EditProfilModal() {
   // États pour les images
   const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  console.log("profileImageFile", profileImageFile);
   console.log("coverImageFile", coverImageFile);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(
     null
@@ -273,6 +279,7 @@ export default function EditProfilModal() {
       firstName: "",
       lastName: "",
       phoneNumber: "",
+      isPhoneNumberHidden: false,
       bio: "",
       town: "",
       address: "",
@@ -289,7 +296,7 @@ export default function EditProfilModal() {
   // Suivre si le formulaire a des modifications
   const isDirty =
     useIsDirty(form) || profileImageFile !== null || coverImageFile !== null;
-
+  console.log("isDirty", isDirty);
   // Initialiser le formulaire avec les données utilisateur lorsqu'elles sont chargées
   useEffect(() => {
     if (userInfo && form) {
@@ -298,6 +305,7 @@ export default function EditProfilModal() {
         firstName: userInfo.firstName || "",
         lastName: userInfo.lastName || "",
         phoneNumber: userInfo.phoneNumber || "",
+        isPhoneNumberHidden: userInfo.isPhoneNumberHidden || false,
         bio: userInfo.bio || "",
         town: userInfo.town || "",
         address: userInfo.address || "",
@@ -350,11 +358,6 @@ export default function EditProfilModal() {
           current: false,
         })) || []
       );
-
-      // Si aucun lien social n'est défini, ajouter un lien pour le site personnel par défaut
-      if (!userInfo.socialNetworks || userInfo.socialNetworks.length === 0) {
-        form.setValue("socialLinks", [{ network: "Site personnel", link: "" }]);
-      }
     }
   }, [userInfo, form]);
 
@@ -375,6 +378,7 @@ export default function EditProfilModal() {
       const updateData: any = {
         username: values.username,
         phoneNumber: values.phoneNumber,
+        isPhoneNumberHidden: values.isPhoneNumberHidden,
         town: values.town,
         address: values.address,
         bio: values.bio,
@@ -410,22 +414,14 @@ export default function EditProfilModal() {
 
         if (profileImageFile) {
           formData.append("profilePicture", profileImageFile);
-          // Ajouter l'ancien ID s'il existe
-          /*  if (userImages?.profilePicture) {
-            formData.append("oldProfileId", userImages.profilePicture);
-          } */
         }
 
         if (coverImageFile) {
           formData.append("coverPhoto", coverImageFile);
-          // Ajouter l'ancien ID s'il existe
-          /*    if (userImages?.coverPhoto) {
-            formData.append("oldCoverId", userImages.coverPhoto);
-          } */
         }
 
         // Uploader les images
-        const response = await fetch("http://127.0.0.1:3211/uploadUserImages", {
+        const response = await fetch(`${apiUrl}/uploadUserImages`, {
           method: "POST",
           body: formData,
           headers: {
@@ -457,7 +453,7 @@ export default function EditProfilModal() {
       await updateUserInfo(updateData);
 
       toast.success("Profil mis à jour avec succès !");
-
+      router.refresh();
       // Réinitialiser l'état du fichier d'image
       setProfileImageFile(null);
       setCoverImageFile(null);
@@ -802,6 +798,30 @@ export default function EditProfilModal() {
                         )}
                       />
 
+                      <FormField
+                        control={form.control}
+                        name="isPhoneNumberHidden"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel>
+                                Masquer le numéro de téléphone
+                              </FormLabel>
+                              <FormDescription>
+                                Si activé, votre numéro de téléphone ne sera
+                                visible que par vous et les administrateurs
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
                       <div className="grid grid-cols-2 gap-4 items-start">
                         <FormField
                           control={form.control}
@@ -1055,7 +1075,7 @@ export default function EditProfilModal() {
                         ))}
 
                         {(form.watch("socialLinks")?.length || 0) < 4 && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center max-[500px]:flex-col gap-2">
                             <Button
                               type="button"
                               variant="outline"
@@ -1595,7 +1615,7 @@ export default function EditProfilModal() {
             <Button
               type="button"
               onClick={() => form.handleSubmit(onSubmit)()}
-              disabled={isSubmitting || !form.formState.isDirty}
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>

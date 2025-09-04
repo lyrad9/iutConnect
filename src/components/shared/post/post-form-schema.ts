@@ -33,7 +33,7 @@ export const postFormSchema = z
             }
           )
       )
-      .max(4, { message: "Maximum 4 images autorisées" })
+      .max(10, { message: "Maximum 10 images autorisées" })
       .optional(),
   })
   .refine(

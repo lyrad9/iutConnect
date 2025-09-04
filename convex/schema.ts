@@ -19,6 +19,7 @@ export const UserPermission: string[] = [
   "CREATE_EVENT",
   "CREATE_POST",
   "CREATE_USER",
+  "ACCESS_TO_DASHBOARD",
   "ALL",
 ] as const;
 /* export const UserFunction = [
@@ -57,18 +58,19 @@ export default defineSchema({
     // Informations personnelles
     profilePicture: v.optional(v.string()), // URL de l'image
     coverPhoto: v.optional(v.string()), // URL de l'image
-    lastName: v.string(),
+    lastName: v.optional(v.string()),
     firstName: v.string(),
     username: v.optional(v.string()),
     email: v.string(),
     emailVerificationTime: v.optional(v.number()),
-    registrationNumber: v.string(),
+    registrationNumber: v.optional(v.string()),
 
     phoneNumber: v.optional(v.string()),
+    isPhoneNumberHidden: v.optional(v.boolean()), // Indique si le numéro de téléphone est masqué ou non
     /* fonction: v.union(
       ...Object.values(USER_FUNCTIONS).map((f) => v.literal(f))
     ), */
-    fonction: v.string(),
+    fonction: v.optional(v.string()),
 
     // Informations académiques (pour les étudiants)
     fieldOfStudy: v.optional(v.string()),
@@ -93,7 +95,7 @@ export default defineSchema({
     bio: v.optional(v.string()),
     skills: v.optional(v.array(v.string())),
     isOnline: v.boolean(),
-    password: v.string(),
+    password: v.optional(v.string()),
     workExperience: v.optional(
       v.array(
         v.object({
@@ -219,7 +221,7 @@ export default defineSchema({
     .index("by_userId_isAdmin", ["userId", "isAdmin"])
     .index("by_user", ["userId"])
     .index("by_group", ["groupId", "groupType"])
-    .index("by_user_and_group", ["userId", "groupId", "groupType"])
+    .index("by_user_and_group", ["userId", "groupId", "groupType", "status"])
     .index("by_status", ["status"]),
 
   // Publications
@@ -262,7 +264,9 @@ export default defineSchema({
     endDate: v.optional(v.number()), // timestamp
     locationType: v.union(...EventLocationType.map((l) => v.literal(l))),
     locationDetails: v.string(), // lieu physique ou lien en ligne
-    eventType: v.union(...Object.keys(eventTypes).map((t) => v.literal(t))),
+    eventType: v.union(
+      ...Object.values(eventTypes).map((t) => v.literal(t.content))
+    ),
     groupId: v.optional(v.id("forums")),
     status: v.optional(v.union(...PostStatus.map((s) => v.literal(s)))), // État de l'événement : en attente, approuvé, rejeté
     likes: v.array(v.id("users")),

@@ -1,9 +1,12 @@
 import { cn } from "@/src/lib/utils";
 import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
-import Link from "next/link";
-import { Search, Plus, ChevronRight } from "lucide-react";
-
+import { Search } from "lucide-react";
+import NavigationEvent from "@/src/components/navigation/site/navigation-event";
+import {
+  OwnedEvents,
+  UpcomingEvents,
+} from "@/src/components/navigation/site/sidebar-navigation-content";
+import { EventCreateBtn } from "../shared/event/event-create-btn";
 // Composant d'en-tête avec titre et recherche
 function EventsHeader() {
   return (
@@ -22,27 +25,12 @@ function EventsHeader() {
           className="pl-8 bg-background rounded-full"
         />
       </div>
-      <Button
-        suppressHydrationWarning
-        asChild
-        size="sm"
-        className="bg-primary h-8 gap-1 w-full"
-      >
-        <Link href="/events/create">
-          <Plus className="h-3.5 w-3.5" />
-          <span>Créer un événement</span>
-        </Link>
-      </Button>
+      <EventCreateBtn className="w-full" />
     </div>
   );
 }
 
 // Import des composants de navigation et des événements
-import NavigationEvent from "@/src/components/navigation/site/navigation-event";
-import {
-  OwnedEvents,
-  UpcomingEvents,
-} from "@/src/components/navigation/site/sidebar-navigation-content";
 
 // Contenu à afficher quand on est dans /events
 export default function EventsContentSidebar({
@@ -59,18 +47,14 @@ export default function EventsContentSidebar({
     >
       <EventsHeader />
       <NavigationEvent />
-
       <div className="px-4 py-2">
         <div className="h-px bg-border" />
       </div>
-
       {/* Événements créés par l'utilisateur */}
       <OwnedEvents />
-
       <div className="px-4 py-2">
         <div className="h-px bg-border" />
       </div>
-
       {/* Événements à venir */}
       <UpcomingEvents />
     </aside>

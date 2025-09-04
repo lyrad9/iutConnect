@@ -7,39 +7,65 @@ import {
   DropdownMenuSeparator,
   DropdownMenuGroup,
 } from "@/src/components/ui/dropdown-menu";
-import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { redirect, useRouter } from "next/navigation";
 import {
   UserIcon,
-  SettingsIcon,
   LogOutIcon,
   ChevronDownIcon,
-  BookmarkPlus,
+  Bookmark,
+  Users,
+  CalendarDays,
+  Shield,
+  LayoutDashboard,
 } from "lucide-react";
 import { SmartAvatar } from "../shared/smart-avatar";
+import { useState } from "react";
+import { LogoutConfirmationModal } from "./logout-confirmation-modal";
+import { hasDashboardAccess } from "@/src/lib/verify-role-admin";
+import { UserPermission, UserRole } from "@/convex/schema";
+import {
+  hasAdmin,
+  hasCreateEventPermissions,
+  hasCreateGroupPermissions,
+  hasCreatePostPermissions,
+} from "@/src/lib/check-permissions";
 export const AuthDropdown = () => {
-  const { signOut } = useAuthActions();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const user = useQuery(api.users.currentUser);
-  const router = useRouter();
+  if (!user) return null;
+  const accessToDashboard = hasDashboardAccess(
+    user?.role as (typeof UserRole)[number],
+    user?.permissions as (typeof UserPermission)[number][]
+  );
+  // Vérifier si l'utilisateur est un administrateur
+
+  const hasPermissions =
+    hasCreateEventPermissions(
+      user?.permissions as (typeof UserPermission)[number][]
+    ) ||
+    hasCreateGroupPermissions(
+      user?.permissions as (typeof UserPermission)[number][]
+    );
+  // Déterminer les permissions spécifiques
+  const canCreateGroup = hasCreateGroupPermissions(
+    user?.permissions as (typeof UserPermission)[number][]
+  );
+  const canCreateEvent = hasCreateEventPermissions(
+    user?.permissions as (typeof UserPermission)[number][]
+  );
+
   return (
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          {/*    <Button
-            variant="ghost"
-            className="w-auto h-auto p-0 hover:bg-transparent"
-          > */}
-          <div className="flex items-center gap-2 cursor-pointer">
+          <div className="rounded-full flex items-center gap-2 cursor-pointer">
             <SmartAvatar
               avatar={user?.profilePicture || ""}
               name={`${user?.firstName} ${user?.lastName}`}
               size="sm"
-              className="rounded"
+              className="rounded-full"
             />
             <ChevronDownIcon
               size={16}
@@ -57,6 +83,9 @@ export const AuthDropdown = () => {
             <span className="text-muted-foreground truncate text-xs font-normal">
               {user?.email}
             </span>
+            <span className="text-muted-foreground truncate text-xs font-normal">
+              {user?.role}
+            </span>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -72,7 +101,7 @@ export const AuthDropdown = () => {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href="/bookmarks">
-                <BookmarkPlus
+                <Bookmark
                   size={16}
                   className="opacity-60 mr-2"
                   aria-hidden="true"
@@ -80,33 +109,73 @@ export const AuthDropdown = () => {
                 <span>Mes favoris</span>
               </Link>
             </DropdownMenuItem>
-            {/*   <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <SettingsIcon
-                  size={16}
-                  className="opacity-60 mr-2"
-                  aria-hidden="true"
-                />
-                <span>Settings</span>
-              </Link>
-            </DropdownMenuItem> */}
           </DropdownMenuGroup>
+
+          {/* Section des actions d'administration */}
+          {(accessToDashboard || hasPermissions) && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="flex items-center text-xs text-muted-foreground">
+                <Shield size={14} className="mr-1" />
+                Actions administrateur
+              </DropdownMenuLabel>
+              <DropdownMenuGroup>
+                {canCreateGroup && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/groups/create" className="">
+                      <Users size={16} className="mr-2" aria-hidden="true" />
+                      <span>Créer un groupe</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {canCreateEvent && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/events/create" className="">
+                      <CalendarDays
+                        size={16}
+                        className="mr-2"
+                        aria-hidden="true"
+                      />
+                      <span>Créer un évènement</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+                {accessToDashboard && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admins" className="">
+                      <LayoutDashboard
+                        size={16}
+                        className="mr-2"
+                        aria-hidden="true"
+                      />
+                      <span>Accéder au dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+            </>
+          )}
+
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={async () => {
-              await signOut();
-              redirect("/sign-up");
-            }}
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="text-red-500"
           >
             <LogOutIcon
               size={16}
               className="opacity-60 mr-2"
               aria-hidden="true"
             />
-            <span className="text-red-500">Déconnexion</span>
+            <span>Déconnexion</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Modal de confirmation de déconnexion */}
+      <LogoutConfirmationModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+      />
     </>
   );
 };

@@ -1,7 +1,11 @@
 import type React from "react";
 import { AdminSidebar } from "@/src/components/layout/admin-sidebar";
 import {
+  SidebarFooter,
   SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
 } from "@/src/components/ui/sidebar";
@@ -12,9 +16,10 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-  BreadcrumbSeparator,
 } from "@/src/components/ui/breadcrumb";
 
+import { User2, ChevronUp } from "lucide-react";
+import { BreadcrumbSeparator } from "@/src/components/ui/breadcrumb";
 export default function AdminLayout({
   children,
 }: {

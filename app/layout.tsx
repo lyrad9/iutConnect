@@ -35,9 +35,9 @@ const AnekTelugu = Anek_Telugu({
   variable: "--font-caption",
 });
 export const metadata: Metadata = {
-  title: "UniConnect - University Social Network",
+  title: "IUT - Réseau social",
   description:
-    "Connect with students, join groups, and stay updated with campus events",
+    "Connectez-vous avec d’autres étudiants, rejoignez des groupes et restez informé des événements du campus",
 };
 
 export default function RootLayout({

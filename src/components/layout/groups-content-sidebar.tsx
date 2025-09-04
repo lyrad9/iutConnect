@@ -1,17 +1,12 @@
 import { cn } from "@/src/lib/utils";
 import { Input } from "@/src/components/ui/input";
-import { Button } from "@/src/components/ui/button";
-import Link from "next/link";
+import { Search } from "lucide-react";
+import { GroupCreateBtn } from "../shared/forums/group-create-btn";
+import NavigationGroup from "@/src/components/navigation/site/groups/navigation-group";
 import {
-  Search,
-  Home,
-  Compass,
-  Users,
-  Plus,
-  ChevronRight,
-  Shield,
-} from "lucide-react";
-
+  JoinedGroups,
+  OwnedGroups,
+} from "@/src/components/navigation/site/sidebar-navigation-content";
 // Composant d'en-tête avec titre et recherche
 function GroupsHeader() {
   return (
@@ -30,27 +25,12 @@ function GroupsHeader() {
           className="pl-8 bg-background rounded-full"
         />
       </div>
-      <Button
-        suppressHydrationWarning
-        asChild
-        size="sm"
-        className="bg-primary h-8 gap-1 w-full"
-      >
-        <Link href="/groups/create">
-          <Plus className="h-3.5 w-3.5" />
-          <span>Créer un groupe</span>
-        </Link>
-      </Button>
+      <GroupCreateBtn className="w-full" />
     </div>
   );
 }
 
 // Composant de navigation principale des groupes
-import NavigationGroup from "@/src/components/navigation/site/groups/navigation-group";
-import {
-  JoinedGroups,
-  OwnedGroups,
-} from "@/src/components/navigation/site/sidebar-navigation-content";
 
 // Contenu à afficher quand on est dans /groups
 export default function GroupesContentSidebar({

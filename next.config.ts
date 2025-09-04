@@ -29,6 +29,10 @@ const nextConfig: NextConfig = {
         protocol: "http",
         hostname: "127.0.0.1",
       },
+      {
+        protocol: "https",
+        hostname: "festive-aardvark-68.convex.cloud",
+      },
     ],
   },
 };

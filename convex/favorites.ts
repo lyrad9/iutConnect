@@ -179,11 +179,27 @@ export const getUserFavorites = query({
                     id: commentAuthor._id,
                     name: `${commentAuthor.firstName} ${commentAuthor.lastName}`,
                     username: commentAuthor.username,
-                    profilePicture: commentAuthor.profilePicture,
+                    profilePicture: commentAuthor.profilePicture
+                      ? ((await ctx.storage.getUrl(
+                          commentAuthor.profilePicture as Id<"_storage">
+                        )) as string)
+                      : undefined,
                     role: commentAuthor.role,
                     isAdmin:
                       commentAuthor.role === "ADMIN" ||
                       commentAuthor.role === "SUPERADMIN",
+                  }
+                : undefined,
+              group: group
+                ? {
+                    id: group._id,
+                    name: group.name,
+                    profilePicture: group.profilePicture
+                      ? ((await ctx.storage.getUrl(
+                          group.profilePicture as Id<"_storage">
+                        )) as string)
+                      : undefined,
+                    creator: group.authorId,
                   }
                 : undefined,
               isLiked: comment.likes.includes(userId as Id<"users">),
@@ -202,7 +218,11 @@ export const getUserFavorites = query({
             id: author._id,
             name: `${author.firstName} ${author.lastName}`,
             username: author.username,
-            profilePicture: author.profilePicture,
+            profilePicture: author.profilePicture
+              ? ((await ctx.storage.getUrl(
+                  author.profilePicture as Id<"_storage">
+                )) as string)
+              : undefined,
             isAdmin: author.role === "ADMIN" || author.role === "SUPERADMIN",
           },
           content: post.content,
@@ -218,7 +238,11 @@ export const getUserFavorites = query({
             ? {
                 id: group._id,
                 name: group.name,
-                profilePicture: group.profilePicture,
+                profilePicture: group.profilePicture
+                  ? ((await ctx.storage.getUrl(
+                      group.profilePicture as Id<"_storage">
+                    )) as string)
+                  : undefined,
                 creator: group.authorId,
               }
             : undefined,
